@@ -1,10 +1,15 @@
 import * as admin from 'firebase-admin';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FirebaseAdminService {
-  constructor() {
-    const serviceAccount = require('../../firebase/firebase-adminsdk.json'); // 수정 필요
+  constructor(private readonly configService: ConfigService) {
+    const encodedKey = this.configService.get<string>('FIREBASE_ADMIN_SDK');
+
+    const serviceAccount = JSON.parse(
+      Buffer.from(encodedKey, 'base64').toString('utf8'),
+    );
 
     if (!admin.apps.length) {
       admin.initializeApp({
