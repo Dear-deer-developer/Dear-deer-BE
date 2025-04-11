@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Firebase Login Test</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  </head>
+  <body>
+    <h2>🔥 Firebase 로그인 테스트</h2>
+    <input id="email" placeholder="이메일" />
+    <input id="password" type="password" placeholder="비밀번호" />
+    <button onclick="login()">로그인</button>
+
+    <pre id="output"></pre>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: 'AIzaSyCUMzgzOkfPIOqPZ2gdiRBe9HCuHYg8rUQ',
+        authDomain: 'dear-deer-ca3b2.firebaseapp.com',
+        projectId: 'dear-deer-ca3b2',
+        storageBucket: 'dear-deer-ca3b2.firebasestorage.app',
+        messagingSenderId: '179953528227',
+        appId: '1:179953528227:web:7140c5272715d84805be16',
+      };
+
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      async function login() {
+        const email = document.getElementById('email').value;
+        const pw = document.getElementById('password').value;
+
+        try {
+          const userCred = await auth.signInWithEmailAndPassword(email, pw);
+          const idToken = await userCred.user.getIdToken();
+
+          document.getElementById('output').textContent =
+            '✅ ID Token:\n\n' + idToken;
+        } catch (err) {
+          document.getElementById('output').textContent =
+            '❌ 로그인 실패: ' + err.message;
+        }
+      }
+    </script>
+  </body>
+</html>
