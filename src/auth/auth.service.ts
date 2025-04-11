@@ -23,9 +23,9 @@ export class AuthService {
       // 사용자가 없는 경우 새 사용자 생성
       if (!user) {
         user = await this.usersService.create({
-          provider_id: providerId,
+          providerId: providerId,
           nickname,
-          zip_code: zipCode,
+          zipCode: zipCode,
         });
       }
 

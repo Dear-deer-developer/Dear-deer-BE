@@ -16,8 +16,10 @@ datasource db {
 model User {
   id Int @id @default(autoincrement())
   nickname String @unique
-  zip_code Int
-  provider_id String @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  zipCode Int @map("zip_code")
+  providerId String @unique @map("provider_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("users")
 }

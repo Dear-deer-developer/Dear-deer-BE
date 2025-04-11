@@ -7,14 +7,14 @@ export class UsersService {
 
   async findByProviderId(provider_id: string) {
     return this.prisma.user.findUnique({
-      where: { provider_id },
+      where: { providerId: provider_id },
     });
   }
 
   async create(data: {
-    provider_id: string;
+    providerId: string;
     nickname: string;
-    zip_code: number;
+    zipCode: number;
   }) {
     return this.prisma.user.create({
       data,
