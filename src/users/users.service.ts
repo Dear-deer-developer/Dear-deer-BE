@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
-  async findByProviderId(provider_id: string) {
-    return this.prisma.user.findUnique({
-      where: { providerId: provider_id },
-    });
+  async findByProviderId(providerId: string) {
+    return this.userRepository.findByProviderId(providerId);
   }
 
   async create(data: {
@@ -16,8 +14,6 @@ export class UsersService {
     nickname: string;
     zipCode: number;
   }) {
-    return this.prisma.user.create({
-      data,
-    });
+    return this.userRepository.createUser(data);
   }
 }
