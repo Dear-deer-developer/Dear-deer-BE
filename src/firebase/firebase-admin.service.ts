@@ -21,4 +21,8 @@ export class FirebaseAdminService {
   async verifyToken(idToken: string): Promise<admin.auth.DecodedIdToken> {
     return await admin.auth().verifyIdToken(idToken);
   }
+
+  async createCustomToken(uid: string): Promise<string> {
+    return await admin.auth().createCustomToken(uid);
+  }
 }
