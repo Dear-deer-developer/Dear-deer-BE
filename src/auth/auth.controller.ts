@@ -14,8 +14,7 @@ export class AuthController {
 
   @Post('kakao')
   async kakao(@Body('accessToken') accessToken: string) {
-    const firebaseToken =
-      await this.authService.getFirebaseCustomToken(accessToken);
+    const firebaseToken = await this.authService.kakaoLogin(accessToken);
     return { firebaseToken };
   }
 }
