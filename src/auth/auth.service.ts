@@ -7,14 +7,14 @@ import { lastValueFrom } from 'rxjs';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly firebaseAdmin: FirebaseAdminService,
+    private readonly firebaseAdminService: FirebaseAdminService,
     private readonly usersService: UsersService,
     private readonly httpService: HttpService, //kakao API 호출용
   ) {}
 
   async authenticate(idToken: string) {
     try {
-      const decoded = await this.firebaseAdmin.verifyToken(idToken);
+      const decoded = await this.firebaseAdminService.verifyToken(idToken);
       const providerId = decoded.uid;
       const nickname = decoded.name || '익명';
       const zipCode = 0;
@@ -60,7 +60,8 @@ export class AuthService {
         });
       }
 
-      const firebaseToken = await this.firebaseAdmin.createCustomToken(kakaoId);
+      const firebaseToken =
+        await this.firebaseAdminService.createCustomToken(kakaoId);
       return firebaseToken;
     } catch (err) {
       throw new UnauthorizedException('Invalid Kakao Access Token');
