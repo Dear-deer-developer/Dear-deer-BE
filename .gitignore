@@ -57,3 +57,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # firebase json파일
 firebase/firebase-adminsdk.json
+
+*.tar
