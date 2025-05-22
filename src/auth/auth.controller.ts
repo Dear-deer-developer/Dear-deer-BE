@@ -1,16 +1,9 @@
 import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { access } from 'fs';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Post('login')
-  async login(@Body('idToken') idToken: string) {
-    const user = await this.authService.authenticate(idToken);
-    return { user };
-  }
 
   @Post('kakao')
   async kakao(@Body('accessToken') accessToken: string) {
@@ -25,5 +18,3 @@ export class AuthController {
     return { firebaseToken };
   }
 }
-
-//카카오 인가코드 -> accessToken 발급 -> 사용자 정보 요청 -> db 조회 or 생성 -> firebaseCustomToken 발급 -> 프론트로 전달
