@@ -41,7 +41,7 @@ export class AuthService {
   }
 
   // Kakao Access Token -> Firebase Custom Token 발급
-  async kakaoLogin(accessToken: string): Promise<any> {
+  async kakaoLogin(accessToken: string): Promise<string> {
     try {
       const data = await this.getKakaoUserInfo(accessToken);
 
