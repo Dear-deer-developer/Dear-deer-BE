@@ -19,7 +19,7 @@ export class AuthService {
     try {
       const data = await this.getKakaoUserInfo(accessToken);
 
-      const kakaoId = `kakao:${data.id}`;
+      const kakaoId = `${data.id}`;
       const nickname = data.properties?.nickname || '익명';
       const zipCode = 0;
 
