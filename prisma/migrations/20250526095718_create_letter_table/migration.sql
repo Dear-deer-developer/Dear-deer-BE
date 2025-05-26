@@ -6,7 +6,6 @@ CREATE TABLE "letters" (
     "id" SERIAL NOT NULL,
     "sender_id" INTEGER NOT NULL,
     "receiver_id" INTEGER,
-    "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "image_url" TEXT,
     "status" "LetterStatus" NOT NULL,
