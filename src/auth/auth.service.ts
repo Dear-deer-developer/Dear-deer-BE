@@ -74,8 +74,6 @@ export class AuthService {
   }
 
   private async getKakaoUserInfo(accessToken: string) {
-    console.log('accessToken', accessToken);
-
     const response = await axios.get('https://kapi.kakao.com/v2/user/me', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
