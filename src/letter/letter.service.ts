@@ -23,25 +23,25 @@ export class LetterService {
   }
 
   /** 단일 조회 */
-  async findLetter(id: number) {
-    const letter = await this.letterRepository.findLetterById(id);
+  async findLetter(letterId: number) {
+    const letter = await this.letterRepository.findLetterById(letterId);
     if (!letter) throw new NotFoundException('Letter not found');
     return letter;
   }
 
   /** 전체 조회 */
-  async findLetters(id: number) {
-    const letters = await this.letterRepository.findLettersById(id);
+  async findLetters(letterId: number) {
+    const letters = await this.letterRepository.findLettersById(letterId);
     if (!letters) throw new NotFoundException('Letter not found');
     return letters;
   }
 
   /** 삭제 */
-  async deleteLetter(id: number) {
-    const letter = await this.letterRepository.findLetterById(id);
+  async deleteLetter(letterId: number) {
+    const letter = await this.letterRepository.findLetterById(letterId);
     if (!letter) {
-      throw new NotFoundException(`Letter with ID ${id} not found`);
+      throw new NotFoundException(`Letter with ID ${letterId} not found`);
     }
-    return this.letterRepository.deleteLetter(id);
+    return this.letterRepository.deleteLetter(letterId);
   }
 }

@@ -7,22 +7,22 @@ import { LetterStatus } from './enums/letter-status.enum';
 export class LetterRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 새 편지 전송 */
+  /** 새 편지 전송 - 수정 예저ㅓㅓㅓㅓㅓ엉*/
   sendLetter(data: Prisma.LetterUncheckedCreateInput): Promise<Letter> {
     return this.prisma.letter.create({ data });
   }
 
   /** writing이 이미 있으면 업데이트, 없으면 생성 */
   upsertWriting(sendLetterDto: {
-    id?: number;
+    letterId?: number;
     senderId: number;
     receiverId?: number | null;
     content: string;
     imageUrl?: string | null;
   }) {
-    if (sendLetterDto.id) {
+    if (sendLetterDto.letterId) {
       return this.prisma.letter.update({
-        where: { id: sendLetterDto.id },
+        where: { id: sendLetterDto.letterId },
         data: {
           ...sendLetterDto,
           status: LetterStatus.WRITING,
@@ -37,15 +37,15 @@ export class LetterRepository {
     });
   }
 
-  findLetterById(id: number) {
-    return this.prisma.letter.findUnique({ where: { id } });
+  findLetterById(letterId: number) {
+    return this.prisma.letter.findUnique({ where: { id: letterId } });
   }
 
-  findLettersById(id: number) {
-    return this.prisma.letter.findMany({ where: { id } });
+  findLettersById(letterId: number) {
+    return this.prisma.letter.findMany({ where: { id: letterId } });
   }
 
-  deleteLetter(id: number) {
-    return this.prisma.letter.delete({ where: { id } });
+  deleteLetter(letterId: number) {
+    return this.prisma.letter.delete({ where: { id: letterId } });
   }
 }
