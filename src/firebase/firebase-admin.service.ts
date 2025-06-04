@@ -23,7 +23,7 @@ export class FirebaseAdminService {
    * 개발시에만 사용 예정
    */
   async getIdTokenFromCustomToken(customToken: string) {
-    const apiKey = this.configService.get('FIREBASE_API_KEY');
+    const apiKey = this.configService.get<string>('FIREBASE_API_KEY');
     const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`;
     const res = await axios.post(url, {
       token: customToken,
