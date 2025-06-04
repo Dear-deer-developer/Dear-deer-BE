@@ -7,7 +7,7 @@ import { LetterStatus } from './enums/letter-status.enum';
 export class LetterRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 새 편지 전송 - 수정 예저ㅓㅓㅓㅓㅓ엉*/
+  /** 새 편지 전송 */
   sendLetter(data: Prisma.LetterUncheckedCreateInput): Promise<Letter> {
     return this.prisma.letter.create({ data });
   }
@@ -41,11 +41,35 @@ export class LetterRepository {
     return this.prisma.letter.findUnique({ where: { id: letterId } });
   }
 
-  findLettersById(letterId: number) {
-    return this.prisma.letter.findMany({ where: { id: letterId } });
+  findLettersById(userId: number) {
+    return this.prisma.letter.findMany({ where: { senderId: userId } });
   }
 
-  deleteLetter(letterId: number) {
-    return this.prisma.letter.delete({ where: { id: letterId } });
+  deleteLetter(letterIds: number[]) {
+    return this.prisma.letter.deleteMany({
+      where: {
+        id: { in: letterIds },
+      },
+    });
+  }
+
+  // 유저 소유의 유효한 편지 목록 조회
+  async findUserLettersByIds(letterIds: number[], userId: string) {
+    return this.prisma.letter.findMany({
+      where: {
+        id: { in: letterIds },
+        senderId: Number(userId), // 또는 senderId
+      },
+      select: { id: true },
+    });
+  }
+
+  // 실제 삭제
+  async deleteLetters(letterIds: number[]) {
+    return this.prisma.letter.deleteMany({
+      where: {
+        id: { in: letterIds },
+      },
+    });
   }
 }

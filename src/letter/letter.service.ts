@@ -30,18 +30,32 @@ export class LetterService {
   }
 
   /** 전체 조회 */
-  async findLetters(letterId: number) {
-    const letters = await this.letterRepository.findLettersById(letterId);
-    if (!letters) throw new NotFoundException('Letter not found');
+  async findLetters(userId: number) {
+    const letters = await this.letterRepository.findLettersById(userId);
     return letters;
   }
 
   /** 삭제 */
-  async deleteLetter(letterId: number) {
-    const letter = await this.letterRepository.findLetterById(letterId);
-    if (!letter) {
-      throw new NotFoundException(`Letter with ID ${letterId} not found`);
+  async deleteLetters(letterIds: number[], userId: string) {
+    // 1. 유효한 편지 조회 (user 소유)
+    const existingLetters = await this.letterRepository.findUserLettersByIds(
+      letterIds,
+      userId,
+    );
+    const validIds = existingLetters.map((letter) => letter.id);
+
+    if (validIds.length === 0) {
+      throw new NotFoundException('삭제할 편지를 찾을 수 없습니다.');
     }
-    return this.letterRepository.deleteLetter(letterId);
+
+    // 2. 실제 삭제
+    const result = await this.letterRepository.deleteLetters(validIds);
+
+    return {
+      deletedCount: result.count,
+      requestedCount: letterIds.length,
+      validIds,
+      invalidIds: letterIds.filter((id) => !validIds.includes(id)),
+    };
   }
 }

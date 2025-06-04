@@ -3,6 +3,7 @@ import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SendLetterDto } from './dto/send-letter.dto';
 import { SaveWritingDto } from './dto/save-writing.dto';
 import { ResLetterDto } from './dto/res-letter.dto';
+import { DeleteLettersDto } from './dto/delete.letter.dto';
 
 export const ApiLetters = {
   send: () =>
@@ -88,25 +89,68 @@ export const ApiLetters = {
         description: '해당 ID의 편지가 존재하지 않음',
       }),
     ),
-
   findAll: () =>
     applyDecorators(
-      ApiOperation({ summary: '전체 편지 조회' }),
+      ApiOperation({ summary: '자신의 전체 편지 조회' }),
       ApiResponse({
         status: 200,
         type: ResLetterDto,
         isArray: true,
-        description: '모든 편지 목록 반환',
+        description: '인증된 사용자의 모든 편지 목록을 반환합니다.',
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (토큰 없음 또는 잘못됨)',
+        content: {
+          'application/json': {
+            example: {
+              statusCode: 401,
+              message: 'Unauthorized',
+            },
+          },
+        },
       }),
     ),
-
-  remove: () =>
+  delete: () =>
     applyDecorators(
-      ApiOperation({ summary: '편지 삭제' }),
-      ApiResponse({ status: 204, description: '삭제 성공' }),
+      ApiOperation({ summary: '선택한 편지들 삭제' }),
+      ApiBody({
+        description: '삭제할 편지 ID 목록',
+        type: DeleteLettersDto,
+      }),
+      ApiResponse({
+        status: 204,
+        description: '성공적으로 삭제됨',
+      }),
+      ApiResponse({
+        status: 400,
+        description: '잘못된 요청. letterIds는 정수 배열이어야 함.',
+        content: {
+          'application/json': {
+            example: {
+              statusCode: 400,
+              message: ['letterIds must be an array of integers'],
+              error: 'Bad Request',
+            },
+          },
+        },
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증되지 않은 사용자',
+      }),
       ApiResponse({
         status: 404,
-        description: '존재하지 않는 편지 ID',
+        description: '존재하지 않는 편지 ID 포함',
+        content: {
+          'application/json': {
+            example: {
+              statusCode: 404,
+              message: '일치하는 편지가 없습니다.',
+              error: 'Not Found',
+            },
+          },
+        },
       }),
     ),
 };
