@@ -22,6 +22,7 @@ export class AuthController {
     return { firebaseToken };
   }
 
+  /** 개발시에 사용할 api */
   @Post('id-token')
   async getIdToken(@Body('customToken') customToken: string) {
     const idToken =
