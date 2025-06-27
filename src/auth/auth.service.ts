@@ -52,8 +52,8 @@ export class AuthService {
         'https://kauth.kakao.com/oauth/token',
         new URLSearchParams({
           grant_type: 'authorization_code',
-          client_id: this.configService.get('KAKAO_REST_API_KEY'), // 카카오 REST API 키
-          redirect_uri: this.configService.get('KAKAO_REDIRECT_URI'), // 등록한 URI와 반드시 같아야 함
+          client_id: this.configService.get<string>('KAKAO_REST_API_KEY'), // 카카오 REST API 키
+          redirect_uri: this.configService.get<string>('KAKAO_REDIRECT_URI'), // 등록한 URI와 반드시 같아야 함
           code,
         }),
         {
@@ -74,8 +74,6 @@ export class AuthService {
   }
 
   private async getKakaoUserInfo(accessToken: string) {
-    console.log('accessToken', accessToken);
-
     const response = await axios.get('https://kapi.kakao.com/v2/user/me', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
