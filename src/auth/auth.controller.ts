@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Query,
-  Get,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FirebaseAdminService } from 'src/firebase/firebase-admin.service';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -22,6 +14,9 @@ export class AuthController {
   ) {}
 
   @Post('kakao')
+  @ApiOperation({ summary: '카카오 accessToken으로 Firebase customToken 발급' })
+  @ApiBody({ schema: { example: { accessToken: '카카오 엑세스 토큰' } } })
+  @ApiResponse({ status: 200, description: 'Firebase Custom Token 발급 성공' })
   async kakao(@Body('accessToken') accessToken: string) {
     const firebaseToken = await this.authService.kakaoLogin(accessToken);
     return { firebaseToken };
@@ -43,11 +38,11 @@ export class AuthController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: '회원가입 - 닉네임 등록' })
+  @ApiOperation({ summary: '회원가입 - 닉네임 및 zipCode 등록' })
   @ApiBody({ type: RegisterUserDto })
   @ApiResponse({
     status: 201,
-    description: '회원가입 완료',
+    description: '회원가입 완료 및 사용자 정보 반환',
     type: RegisterUserResponseDto,
   })
   async register(

@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class RegisterUserDto {
   @ApiProperty({
     example: '123456789',
-    description: '카카오에서 받은 providerId',
+    description: '카카오에서 받은 고유 식별자 (providerId)',
   })
   @IsString()
   providerId: string;

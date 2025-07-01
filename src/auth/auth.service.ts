@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ConflictException,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
@@ -96,13 +97,19 @@ export class AuthService {
   async register(data: RegisterUserDto): Promise<RegisterUserResponseDto> {
     const { providerId, nickname } = data;
 
+    if (!providerId || !nickname) {
+      throw new BadRequestException(
+        'providerId와 nickname을 모두 입력해주세요.',
+      );
+    }
+
     const user = await this.usersService.findByProviderId(providerId);
     if (!user) {
       throw new NotFoundException('카카오 로그인을 먼저 진행해주세요.');
     }
 
-    if (user.nickname !== '익명') {
-      throw new Error('이미 회원가입이 완료된 사용자입니다.');
+    if (user.nickname && user.nickname !== '익명') {
+      throw new ConflictException('이미 회원가입이 완료된 사용자입니다.');
     }
 
     const updatedUser = await this.usersService.updateNicknameAndZipCode(
