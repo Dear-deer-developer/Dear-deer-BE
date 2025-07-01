@@ -1,9 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { FirebaseAdminService } from '../firebase/firebase-admin.service';
 import { UsersService } from '../users/users.service';
 import { HttpService } from '@nestjs/axios';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { RegisterUserResponseDto } from './dto/res-register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -84,5 +91,25 @@ export class AuthService {
     });
 
     return response.data;
+  }
+
+  async register(data: RegisterUserDto): Promise<RegisterUserResponseDto> {
+    const { providerId, nickname } = data;
+
+    const user = await this.usersService.findByProviderId(providerId);
+    if (!user) {
+      throw new NotFoundException('카카오 로그인을 먼저 진행해주세요.');
+    }
+
+    if (user.nickname !== '익명') {
+      throw new Error('이미 회원가입이 완료된 사용자입니다.');
+    }
+
+    const updatedUser = await this.usersService.updateNicknameAndZipCode(
+      providerId,
+      nickname,
+    );
+
+    return new RegisterUserResponseDto(updatedUser);
   }
 }

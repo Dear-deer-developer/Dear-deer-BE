@@ -18,4 +18,14 @@ export class UserRepository {
   }) {
     return this.prisma.user.create({ data });
   }
+
+  async updateByProviderId(
+    providerId: string,
+    data: Partial<{ nickname: string; zipCode: number }>,
+  ) {
+    return this.prisma.user.update({
+      where: { providerId },
+      data,
+    });
+  }
 }

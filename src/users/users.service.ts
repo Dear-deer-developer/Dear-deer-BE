@@ -16,4 +16,15 @@ export class UsersService {
   }) {
     return this.userRepository.createUser(data);
   }
+
+  async updateNicknameAndZipCode(providerId: string, nickname: string) {
+    const user = await this.userRepository.updateByProviderId(providerId, {
+      nickname,
+    });
+    const zipCode = 10000 + user.id;
+
+    return this.userRepository.updateByProviderId(providerId, {
+      zipCode,
+    });
+  }
 }
