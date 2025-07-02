@@ -60,7 +60,7 @@ export class LetterRepository {
         id: { in: letterIds },
         senderId: Number(userId), // 또는 senderId
       },
-      select: { id: true },
+      select: { id: true, imageUrl: true },
     });
   }
 

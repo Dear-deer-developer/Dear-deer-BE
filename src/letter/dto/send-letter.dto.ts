@@ -28,10 +28,10 @@ export class SendLetterDto {
   content: string;
 
   @ApiPropertyOptional({
-    example: 'https://image.url/image.jpg',
+    example: 'letters/test-image.png',
     description: '이미지 URL',
   })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   imageUrl?: string;
 }

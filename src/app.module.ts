@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { LetterModule } from './letter/letter.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LetterModule } from './letter/letter.module';
     ConfigModule.forRoot({ isGlobal: true }),
     HttpModule,
     LetterModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],
