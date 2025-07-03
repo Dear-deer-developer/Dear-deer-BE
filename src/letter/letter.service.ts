@@ -27,21 +27,47 @@ export class LetterService {
   }
 
   /** 단일 조회 */
-  async findLetter(letterId: number) {
-    let presignedUrl = null;
-
+  async findLetter(letterId: number, userId: number) {
     const letter = await this.letterRepository.findLetterById(letterId);
     if (!letter) throw new NotFoundException('Letter not found');
-    presignedUrl = await this.s3Service.generateGetObjectPresignedUrl(
+
+    let updatedLetter = letter;
+
+    // 내가 받은 편지이고, 상태가 SENT 라면
+    if (letter.receiverId === userId && letter.status === LetterStatus.SENT) {
+      updatedLetter = await this.letterRepository.updateLetterStatus(
+        letterId,
+        LetterStatus.RECEIVED,
+      );
+    }
+
+    const presignedUrl = await this.s3Service.generateGetObjectPresignedUrl(
       letter.imageUrl,
     );
-    return { letter, presignedUrl };
+
+    return { updatedLetter, presignedUrl };
   }
 
   /** 전체 조회 */
   async findLetters(userId: number) {
     const letters = await this.letterRepository.findLettersById(userId);
+
     return letters;
+  }
+
+  /** 내 사서함 확인 */
+  async findReceivedLetters(userId: number) {
+    return this.letterRepository.findReceivedLetters(userId);
+  }
+
+  /** 보낸 편지함 확인 */
+  async findSentLetters(userId: number) {
+    return this.letterRepository.findSentLetters(userId);
+  }
+
+  /** 임시 보관함 확인 */
+  async findDraftLetters(userId: number) {
+    return this.letterRepository.findDraftLetters(userId);
   }
 
   /** 삭제 */
