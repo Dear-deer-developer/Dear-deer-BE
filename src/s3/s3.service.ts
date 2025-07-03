@@ -7,6 +7,8 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
 
 @Injectable()
 export class S3Service {
@@ -20,10 +22,23 @@ export class S3Service {
   });
 
   /** 이미지 저장용 presigned URL 생성 */
-  async generatePresignedUrl(
-    key: string,
+  async generateUploadPresignedUrl(
+    userId: number,
+    originalFileName: string,
     contentType: string,
-  ): Promise<string> {
+  ): Promise<{ url: string; key: string }> {
+    // 확장자 추출
+    const ext = path.extname(originalFileName);
+    if (!ext) {
+      throw new Error('Invalid file extension');
+    }
+
+    // UUID 생성
+    const uuid = uuidv4();
+
+    // S3 image Key 생성
+    const key = `letters/${userId}/${uuid}${ext}`;
+
     const command = new PutObjectCommand({
       Bucket: this.configService.get<string>('AWS_S3_BUCKET'),
       Key: key,
@@ -31,7 +46,7 @@ export class S3Service {
     });
 
     const url = await getSignedUrl(this.s3Client, command, { expiresIn: 300 }); // 5분 유효
-    return url;
+    return { url, key };
   }
 
   /** 이미지 열람용 presigned URL 생성 */
