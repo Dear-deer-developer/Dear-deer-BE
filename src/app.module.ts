@@ -12,11 +12,11 @@ import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     FirebaseAdminModule,
     UsersModule,
     AuthModule,
     PrismaModule,
-    ConfigModule.forRoot({ isGlobal: true }),
     HttpModule,
     LetterModule,
     S3Module,
