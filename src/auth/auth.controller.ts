@@ -1,8 +1,6 @@
 import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FirebaseAdminService } from 'src/firebase/firebase-admin.service';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { RegisterUserResponseDto } from './dto/res-register-user.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('auth')
@@ -35,19 +33,5 @@ export class AuthController {
     const idToken =
       await this.firebaseAdminService.getIdTokenFromCustomToken(customToken);
     return { idToken };
-  }
-
-  @Post('register')
-  @ApiOperation({ summary: '회원가입 - 닉네임 및 zipCode 등록' })
-  @ApiBody({ type: RegisterUserDto })
-  @ApiResponse({
-    status: 201,
-    description: '회원가입 완료 및 사용자 정보 반환',
-    type: RegisterUserResponseDto,
-  })
-  async register(
-    @Body() body: RegisterUserDto,
-  ): Promise<RegisterUserResponseDto> {
-    return this.authService.register(body);
   }
 }
