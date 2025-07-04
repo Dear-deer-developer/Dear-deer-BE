@@ -1,5 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from './users.repository';
+import { zip } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -17,14 +22,19 @@ export class UsersService {
     return this.userRepository.createUser(data);
   }
 
-  async updateNicknameAndZipCode(providerId: string, nickname: string) {
-    const user = await this.userRepository.updateByProviderId(providerId, {
-      nickname,
-    });
-    const zipCode = 10000 + user.id;
+  async updateNickname(userId: number, nickname: string) {
+    const user = await this.userRepository.findById(userId);
 
-    return this.userRepository.updateByProviderId(providerId, {
-      zipCode,
-    });
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.nickname !== '익명') {
+      throw new ConflictException('닉네임은 최초 1회만 설정할 수 있습니다.');
+    }
+
+    const zipCode = 10000 + userId;
+
+    return this.userRepository.updateNickname(userId, nickname, zipCode);
   }
 }
