@@ -15,7 +15,7 @@ export class UsersController {
   @ApiBody({ type: UpdateNicknameDto })
   @ApiResponse({
     status: 200,
-    description: '닉네임 설정 완료',
+    description: '닉네임 설정/수정 완료',
     schema: {
       example: {
         id: 1,
@@ -27,21 +27,18 @@ export class UsersController {
     },
   })
   @ApiResponse({
-    status: 409,
-    description: '닉네임은 최초 1회만 설정할 수 있습니다.',
+    status: 404,
+    description: '존재하지 않는 사용자입니다.',
     schema: {
       example: {
-        statusCode: 409,
-        message: '닉네임은 최초 1회만 설정할 수 있습니다.',
-        error: 'Conflict',
+        statusCode: 404,
+        message: '사용자를 찾을 수 없습니다.',
+        error: 'Not Found',
       },
     },
   })
-  async updateNickname(
-    @Req() req: any,
-    @Body() { nickname }: UpdateNicknameDto,
-  ) {
-    const userId = req.user.id;
-    return this.usersService.updateNickname(userId, nickname);
+  async updateNickname(@Req() req: any, @Body() dto: UpdateNicknameDto) {
+    console.log('닉네임 업데이트 요청 들어옴 :', dto.nickname);
+    return this.usersService.updateNickname(req.user.id, dto.nickname);
   }
 }

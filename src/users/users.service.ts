@@ -29,10 +29,6 @@ export class UsersService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    if (user.nickname !== '익명') {
-      throw new ConflictException('닉네임은 최초 1회만 설정할 수 있습니다.');
-    }
-
     const zipCode = 10000 + userId;
 
     return this.userRepository.updateNickname(userId, nickname, zipCode);
