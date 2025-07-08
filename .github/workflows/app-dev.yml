@@ -23,11 +23,11 @@ jobs:
 
       - name: Build Docker image (development)
         run: |
-          docker build --platform linux/amd64 -f Dockerfile.dev -t nicodora/honey-moa-dev:latest .
+          docker build --platform linux/amd64 -t deardeploybot/dear-deer-be:latest .
 
       - name: Push Docker image
         run: |
-          docker push nicodora/honey-moa-dev:latest
+          docker push deardeploybot/dear-deer-be:latest
 
       # 배포 단계: EC2에 SSH로 접속하여 컨테이너 업데이트
       - name: Deploy to EC2
@@ -38,13 +38,13 @@ jobs:
           key: ${ { secrets.SSH_PRIVATE_KEY } }
           script: |
             # 기존 컨테이너 중지 및 삭제
-            sudo docker-compose -f docker-compose.dev.yaml down
+            sudo docker-compose down
 
             # 오래된 이미지 정리
-            sudo docker rmi -f nicodora/honey-moa-dev:latest || true
+            sudo docker rmi -f deardeploybot/dear-deer-be:latest || true
 
             # 최신 이미지 pull
-            sudo docker pull nicodora/honey-moa-dev:latest
+            sudo docker pull deardeploybot/dear-deer-be:latest
 
             # 최신 이미지로 Docker Compose 실행
-            sudo docker-compose -f docker-compose.dev.yaml up -d
+            sudo docker-compose up -d

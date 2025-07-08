@@ -78,7 +78,7 @@ export const ApiLetters = {
   findOne: () =>
     applyDecorators(
       ApiOperation({
-        summary: '단일 편지를 조회',
+        summary: '단일 편지 조회',
         description:
           '수신자가 본인이고, status가 `sent` 라면 status는 `received` 상태로 변경됩니다.',
       }),
