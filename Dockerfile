@@ -9,7 +9,6 @@ COPY prisma ./prisma
 RUN npx prisma generate
 
 COPY . .
-COPY .env .env
 
 RUN npm run build
 
