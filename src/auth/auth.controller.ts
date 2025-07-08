@@ -1,7 +1,9 @@
 import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FirebaseAdminService } from 'src/firebase/firebase-admin.service';
+import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -10,6 +12,9 @@ export class AuthController {
   ) {}
 
   @Post('kakao')
+  @ApiOperation({ summary: '카카오 accessToken으로 Firebase customToken 발급' })
+  @ApiBody({ schema: { example: { accessToken: '카카오 엑세스 토큰' } } })
+  @ApiResponse({ status: 200, description: 'Firebase Custom Token 발급 성공' })
   async kakao(@Body('accessToken') accessToken: string) {
     const firebaseToken = await this.authService.kakaoLogin(accessToken);
     return { firebaseToken };
