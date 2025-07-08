@@ -5,13 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { FirebaseAdminService } from 'src/firebase/firebase-admin.service';
-import { UserRepository } from 'src/users/users.repository';
+import { UsersRepository } from 'src/users/users.repository';
 
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
   constructor(
     private readonly firebaseAdmin: FirebaseAdminService,
-    private readonly userRepository: UserRepository,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -21,7 +21,7 @@ export class FirebaseAuthGuard implements CanActivate {
 
     const decoded = await this.firebaseAdmin.verifyToken(token);
     const uid = decoded.uid;
-    const user = await this.userRepository.findByProviderId(uid);
+    const user = await this.usersRepository.findByProviderId(uid);
     if (!user) throw new UnauthorizedException();
 
     request.user = { id: user.id };
