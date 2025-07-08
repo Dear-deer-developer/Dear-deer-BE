@@ -20,7 +20,7 @@ export class UsersController {
       example: {
         id: 1,
         providerId: '123456789',
-        nickname: '디어디어12',
+        nickname: '디어디어',
         zipCode: 10001,
         createdAt: '2025-07-01T00:00:00.000Z',
       },
