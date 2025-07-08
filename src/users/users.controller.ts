@@ -11,7 +11,7 @@ export class UsersController {
 
   @Patch('nickname')
   @UseGuards(FirebaseAuthGuard)
-  @ApiOperation({ summary: '사용자 닉네임 설정(최초 1회만 가능)' })
+  @ApiOperation({ summary: '사용자 닉네임 설정 및 수정' })
   @ApiBody({ type: UpdateNicknameDto })
   @ApiResponse({
     status: 200,
