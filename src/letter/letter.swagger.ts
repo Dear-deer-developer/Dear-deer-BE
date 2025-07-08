@@ -65,8 +65,7 @@ export const ApiLetters = {
         },
       }),
     ),
-
-  saveWriting: () =>
+  saveDraft: () =>
     applyDecorators(
       ApiOperation({ summary: '편지 임시 저장' }),
       ApiBody({ type: SaveWritingDto }),
@@ -78,7 +77,11 @@ export const ApiLetters = {
     ),
   findOne: () =>
     applyDecorators(
-      ApiOperation({ summary: '단일 편지 조회' }),
+      ApiOperation({
+        summary: '단일 편지를 조회',
+        description:
+          '수신자가 본인이고, status가 `sent` 라면 status는 `received` 상태로 변경됩니다.',
+      }),
       ApiResponse({
         status: 200,
         type: ResLetterDto,
@@ -109,6 +112,57 @@ export const ApiLetters = {
             },
           },
         },
+      }),
+    ),
+  findReceived: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '받은 편지함 조회',
+        description: '수신자가 나인 편지들만 조회합니다.',
+      }),
+      ApiResponse({
+        status: 200,
+        type: ResLetterDto,
+        isArray: true,
+        description: '내가 받은 편지함 목록',
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (토큰 없음 또는 유효하지 않음)',
+      }),
+    ),
+  findSent: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '보낸 편지함 조회',
+        description: '내가 발송한 편지들만 조회됩니다.',
+      }),
+      ApiResponse({
+        status: 200,
+        type: ResLetterDto,
+        isArray: true,
+        description: '내가 보낸 편지함 목록',
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (토큰 없음 또는 유효하지 않음)',
+      }),
+    ),
+  findDraft: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '임시 보관함 조회',
+        description: 'status가 `writing` 상태인 편지들만 조회됩니다.',
+      }),
+      ApiResponse({
+        status: 200,
+        type: ResLetterDto,
+        isArray: true,
+        description: '임시 저장된 편지함 목록',
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (토큰 없음 또는 유효하지 않음)',
       }),
     ),
   delete: () =>

@@ -11,7 +11,6 @@ export class FirebaseAdminService {
   ) {}
 
   async verifyToken(idToken: string): Promise<admin.auth.DecodedIdToken> {
-    console.log('idToken : ', idToken);
     return await admin.auth().verifyIdToken(idToken);
   }
 
@@ -30,7 +29,7 @@ export class FirebaseAdminService {
       returnSecureToken: true,
     });
 
-    console.log('✅ Firebase ID Token:', res.data.idToken);
+    // console.log('Firebase ID Token:', res.data.idToken);
 
     return res.data.idToken;
   }

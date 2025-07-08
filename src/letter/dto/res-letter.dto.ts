@@ -13,7 +13,7 @@ export class ResLetterDto {
   @ApiProperty({ example: '안녕하세요!' })
   content: string;
 
-  @ApiProperty({ example: 'https://image.url/image.jpg', nullable: true })
+  @ApiProperty({ example: 'letters/test-image.png', nullable: true })
   imageUrl: string | null;
 
   @ApiProperty({ example: 'sent' })

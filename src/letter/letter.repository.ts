@@ -37,30 +37,72 @@ export class LetterRepository {
     });
   }
 
+  /** letterId로 단일 편지 조회 */
   findLetterById(letterId: number) {
     return this.prisma.letter.findUnique({ where: { id: letterId } });
   }
 
+  /** userId로 편지들 조회 */
   findLettersById(userId: number) {
     return this.prisma.letter.findMany({ where: { senderId: userId } });
   }
 
-  deleteLetter(letterIds: number[]) {
-    return this.prisma.letter.deleteMany({
+  /** 내 사서함 조회 */
+  async findReceivedLetters(userId: number) {
+    return this.prisma.letter.findMany({
       where: {
-        id: { in: letterIds },
+        receiverId: userId,
+      },
+      orderBy: {
+        sentAt: 'desc',
+      },
+      include: {
+        sender: {
+          select: { id: true, nickname: true },
+        },
       },
     });
   }
 
-  // 유저 소유의 유효한 편지 목록 조회
+  /** 보낸 편지함 조회 */
+  async findSentLetters(userId: number) {
+    return this.prisma.letter.findMany({
+      where: {
+        senderId: userId,
+        status: LetterStatus.SENT,
+      },
+      orderBy: {
+        sentAt: 'desc',
+      },
+      include: {
+        receiver: {
+          select: { id: true, nickname: true },
+        },
+      },
+    });
+  }
+
+  /** 임시 보관함 조회 */
+  async findDraftLetters(userId: number) {
+    return this.prisma.letter.findMany({
+      where: {
+        senderId: userId,
+        status: LetterStatus.WRITING,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+  }
+
+  // 유저 소유의 유효한 편지 목록 조회 (현재 삭제시 사용)
   async findUserLettersByIds(letterIds: number[], userId: string) {
     return this.prisma.letter.findMany({
       where: {
         id: { in: letterIds },
         senderId: Number(userId), // 또는 senderId
       },
-      select: { id: true },
+      select: { id: true, imageUrl: true },
     });
   }
 
@@ -70,6 +112,14 @@ export class LetterRepository {
       where: {
         id: { in: letterIds },
       },
+    });
+  }
+
+  /** 편지 상태 변경 */
+  async updateLetterStatus(letterId: number, status: LetterStatus) {
+    return this.prisma.letter.update({
+      where: { id: letterId },
+      data: { status },
     });
   }
 }

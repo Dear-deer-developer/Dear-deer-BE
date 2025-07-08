@@ -16,13 +16,13 @@ import { ApiLetters } from './letter.swagger';
 import { DeleteLettersDto } from './dto/delete.letter.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 
-@ApiTags('letters')
 @Controller('letters')
+@ApiTags('letters')
 export class LetterController {
   constructor(private readonly letterService: LetterService) {}
 
   /** 편지 전송 */
-  @Post('send')
+  @Post()
   @UseGuards(FirebaseAuthGuard)
   @ApiLetters.send()
   async sendLetter(@Body() sendLetterDto: SendLetterDto, @Req() req: any) {
@@ -30,35 +30,70 @@ export class LetterController {
   }
 
   /** 임시 저장 */
-  @Post('writing')
+  @Post('draft')
   @UseGuards(FirebaseAuthGuard)
-  @ApiLetters.saveWriting()
+  @ApiLetters.saveDraft()
   async saveWriting(@Body() saveWritingDto: SaveWritingDto) {
     return this.letterService.saveWriting(saveWritingDto);
   }
 
-  /** 단일 편지 조회 */
-  @Get(':letterId')
-  @ApiLetters.findOne()
-  async findLetter(@Param('letterId') letterId: number) {
-    return this.letterService.findLetter(+letterId);
-  }
-
   /** 자신의 전체 편지 조회*/
   @Get()
-  @ApiLetters.findAll()
   @UseGuards(FirebaseAuthGuard)
+  @ApiLetters.findAll()
   async findLetters(@Req() req: any) {
     const userId = req.user.id;
+
     return this.letterService.findLetters(userId);
+  }
+
+  /** 내 사서함 확인 */
+  @Get('received')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiLetters.findReceived()
+  async findReceivedLetters(@Req() req: any) {
+    const userId = req.user.id;
+
+    return this.letterService.findReceivedLetters(userId);
+  }
+
+  /** 보낸 편지함 확인 */
+  @Get('sent')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiLetters.findSent()
+  async findSentLetters(@Req() req: any) {
+    const userId = req.user.id;
+
+    return this.letterService.findSentLetters(userId);
+  }
+
+  /** 임시 보관함 확인 */
+  @Get('draft')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiLetters.findDraft()
+  async findDraftLetters(@Req() req: any) {
+    const userId = req.user.id;
+
+    return this.letterService.findDraftLetters(userId);
+  }
+
+  /** 단일 편지 조회 */
+  @Get(':letterId')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiLetters.findOne()
+  async findLetter(@Param('letterId') letterId: number, @Req() req: any) {
+    const userId = req.user.id;
+
+    return this.letterService.findLetter(+letterId, userId);
   }
 
   /** 편지 삭제 */
   @Delete()
-  @ApiLetters.delete()
   @UseGuards(FirebaseAuthGuard)
+  @ApiLetters.delete()
   async deleteLetters(@Body() dto: DeleteLettersDto, @Req() req: any) {
     const userId = req.user.id;
+
     return this.letterService.deleteLetters(dto.letterIds, userId);
   }
 }
