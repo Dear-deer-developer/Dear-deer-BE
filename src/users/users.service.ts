@@ -1,10 +1,5 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './users.repository';
-import { zip } from 'rxjs';
 
 @Injectable()
 export class UsersService {

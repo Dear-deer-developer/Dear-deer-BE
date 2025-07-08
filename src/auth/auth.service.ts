@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { FirebaseAdminService } from '../firebase/firebase-admin.service';
 import { UsersService } from '../users/users.service';
 import { HttpService } from '@nestjs/axios';
