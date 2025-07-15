@@ -3,7 +3,7 @@ import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SendLetterDto } from './dtos/send-letter.dto';
 import { SaveWritingDto } from './dtos/save-writing.dto';
 import { ResLetterDto } from './dtos/res-letter.dto';
-import { DeleteLettersDto } from './dtos/delete.letter.dto';
+import { DeleteLettersDto } from './dtos/delete-letter.dto';
 
 export const ApiLetters = {
   send: () =>
