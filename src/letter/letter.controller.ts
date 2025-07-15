@@ -9,11 +9,11 @@ import {
   Req,
 } from '@nestjs/common';
 import { LetterService } from './letter.service';
-import { SendLetterDto } from './dto/send-letter.dto';
-import { SaveWritingDto } from './dto/save-writing.dto';
+import { SendLetterDto } from './dtos/send-letter.dto';
+import { SaveWritingDto } from './dtos/save-writing.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiLetters } from './letter.swagger';
-import { DeleteLettersDto } from './dto/delete.letter.dto';
+import { DeleteLettersDto } from './dtos/delete.letter.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 
 @Controller('letters')

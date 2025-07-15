@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { LetterRepository } from './letter.repository';
-import { SendLetterDto } from './dto/send-letter.dto';
+import { SendLetterDto } from './dtos/send-letter.dto';
 import { LetterStatus } from './enums/letter-status.enum';
-import { SaveWritingDto } from './dto/save-writing.dto';
+import { SaveWritingDto } from './dtos/save-writing.dto';
 import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
