@@ -41,3 +41,28 @@ export function SwaggerUpdateNickname() {
     ApiBearerAuth(),
   );
 }
+
+export function SwaggerDeleteMe() {
+  return applyDecorators(
+    ApiOperation({
+      summary: '회원 탈퇴',
+      description: '현재 로그인한 사용자를 DB에서 완전히 삭제합니다.',
+    }),
+    ApiResponse({
+      status: 204,
+      description: '회원 탈퇴 성공 (No Content)',
+    }),
+    ApiResponse({
+      status: 404,
+      description: '존재하지 않는 사용자입니다.',
+      schema: {
+        example: {
+          statusCode: 404,
+          message: '사용자를 찾을 수 없습니다.',
+          error: 'Not Found',
+        },
+      },
+    }),
+    ApiBearerAuth(),
+  );
+}

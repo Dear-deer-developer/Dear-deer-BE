@@ -31,4 +31,10 @@ export class UsersRepository {
       data: { nickname, zipCode },
     });
   }
+
+  async deleteUser(userId: number) {
+    return this.prisma.user.delete({
+      where: { id: userId },
+    });
+  }
 }

@@ -28,4 +28,14 @@ export class UsersService {
 
     return this.usersRepository.updateNickname(userId, nickname, zipCode);
   }
+
+  async deleteUser(userId: number): Promise<void> {
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    await this.usersRepository.deleteUser(userId);
+  }
 }
