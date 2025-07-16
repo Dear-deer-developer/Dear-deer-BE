@@ -66,3 +66,33 @@ export function SwaggerDeleteMe() {
     ApiBearerAuth(),
   );
 }
+
+export function SwaggerGetKakaoFriends() {
+  return applyDecorators(
+    ApiOperation({
+      summary: '카카오 친구 목록 조회',
+      description: 'Firebase 인증된 사용자의 카카오 친구 목록을 조회합니다.',
+    }),
+    ApiResponse({
+      status: 200,
+      description: '카카오 친구 목록 조회 성공',
+      schema: {
+        example: {
+          elements: [
+            {
+              uuid: 'deardeer123',
+              profile_nickname: '김철수',
+              profile_thumbnail_image: 'https://example.com/image.jpg',
+            },
+          ],
+          total_count: 1,
+        },
+      },
+    }),
+    ApiResponse({
+      status: 401,
+      description: '카카오 access token 누락 또는 유효하지 않은 경우',
+    }),
+    ApiBearerAuth(),
+  );
+}

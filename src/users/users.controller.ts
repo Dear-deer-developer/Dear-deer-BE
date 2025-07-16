@@ -2,6 +2,7 @@ import {
   Controller,
   Patch,
   Delete,
+  Get,
   Body,
   Req,
   UseGuards,
@@ -31,5 +32,13 @@ export class UsersController {
   @SwaggerDeleteMe()
   async deleteMe(@Req() req: any): Promise<void> {
     await this.usersService.deleteUser(req.user.id);
+  }
+
+  @Get('me/friends')
+  @UseGuards(FirebaseAuthGuard)
+  @SwaggerGetKakaoFriends()
+  async getKakaoFriends(@Req() req: any) {
+    const { kakaoAccessToken } = req.user;
+    return this.usersService.getKakaoFriends(kakaoAccessToken);
   }
 }

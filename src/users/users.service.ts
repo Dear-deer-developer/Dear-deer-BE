@@ -1,9 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly httpService: HttpService,
+  ) {}
 
   async findByProviderId(providerId: string) {
     return this.usersRepository.findByProviderId(providerId);
@@ -37,5 +42,19 @@ export class UsersService {
     }
 
     await this.usersRepository.deleteUser(userId);
+  }
+
+  async getKakaoFriends(accessToken: string) {
+    const url = 'https://kapi.kakao.com/v1/api/talk/friends';
+
+    const response = await firstValueFrom(
+      this.httpService.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
+
+    return response.data;
   }
 }
