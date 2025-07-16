@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { LetterModule } from './letter/letter.module';
 import { S3Module } from './s3/s3.module';
+import { ScheduleModule } from './schedule/schedule.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { S3Module } from './s3/s3.module';
     HttpModule,
     LetterModule,
     S3Module,
+    ScheduleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

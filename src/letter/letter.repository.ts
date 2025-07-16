@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, Letter } from '@prisma/client';
-import { LetterStatus } from './enums/letter-status.enum';
+import {
+  LetterStatus,
+  LetterStatusValue,
+} from 'src/common/enums/letter-status.enum';
 
 @Injectable()
 export class LetterRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 새 편지 전송 */
+  /** 편지 전송 */
   sendLetter(data: Prisma.LetterUncheckedCreateInput): Promise<Letter> {
     return this.prisma.letter.create({ data });
   }
@@ -25,14 +28,14 @@ export class LetterRepository {
         where: { id: sendLetterDto.letterId },
         data: {
           ...sendLetterDto,
-          status: LetterStatus.WRITING,
+          status: LetterStatusValue.WRITING,
         },
       });
     }
     return this.prisma.letter.create({
       data: {
         ...sendLetterDto,
-        status: LetterStatus.WRITING,
+        status: LetterStatusValue.WRITING,
       },
     });
   }
@@ -69,7 +72,7 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         senderId: userId,
-        status: LetterStatus.SENT,
+        status: LetterStatusValue.SENT,
       },
       orderBy: {
         sentAt: 'desc',
@@ -87,7 +90,7 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         senderId: userId,
-        status: LetterStatus.WRITING,
+        status: LetterStatusValue.WRITING,
       },
       orderBy: {
         updatedAt: 'desc',
