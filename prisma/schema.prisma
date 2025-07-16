@@ -14,9 +14,16 @@ datasource db {
 }
 
 enum LetterStatus {
-  writing
-  sent
-  received
+  WRITING
+  SENT
+  RECEIVED
+}
+
+enum ScheduleCategory {
+  APPOINTMENT
+  POPUP
+  RESERVATION
+  ETC
 }
 
 model User {
@@ -27,8 +34,9 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  sentLetters     Letter[] @relation("SentLetters")
-  receivedLetters Letter[] @relation("ReceivedLetters")
+  sentLetters     Letter[]   @relation("SentLetters")
+  receivedLetters Letter[]   @relation("ReceivedLetters")
+  schedule        Schedule[]
 
   @@map("users")
 }
@@ -48,4 +56,19 @@ model Letter {
   receiver User? @relation("ReceivedLetters", fields: [receiverId], references: [id])
 
   @@map("letters")
+}
+
+model Schedule {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  title     String
+  memo      String?
+  category  ScheduleCategory
+  date      DateTime
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("schedules")
 }
