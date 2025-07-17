@@ -23,7 +23,7 @@ export class FirebaseAuthGuard implements CanActivate {
     const uid = decoded.uid;
     const user = await this.usersRepository.findByProviderId(uid);
     if (!user) throw new UnauthorizedException();
-    const kakaoAccessToken = request.headers['x-kakao-access-token'];
+    const kakaoAccessToken = request.headers['x-kakao-access-token'] as string;
     if (!kakaoAccessToken) throw new UnauthorizedException('카카오토큰 없음');
 
     request.user = { id: user.id, kakaoAccessToken };
