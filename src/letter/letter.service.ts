@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { LetterRepository } from './letter.repository';
-import { SendLetterDto } from './dto/send-letter.dto';
-import { LetterStatus } from './enums/letter-status.enum';
-import { SaveWritingDto } from './dto/save-writing.dto';
+import { SendLetterDto } from './dtos/send-letter.dto';
+import { SaveWritingDto } from './dtos/save-writing.dto';
 import { S3Service } from 'src/s3/s3.service';
+import { LetterStatusValue } from 'src/common/enums/letter-status.enum';
 
 @Injectable()
 export class LetterService {
@@ -16,7 +16,7 @@ export class LetterService {
   async sendLetter(sendLetterDto: SendLetterDto) {
     return this.letterRepository.sendLetter({
       ...sendLetterDto,
-      status: LetterStatus.SENT,
+      status: LetterStatusValue.SENT,
       sentAt: new Date(),
     });
   }
@@ -34,10 +34,13 @@ export class LetterService {
     let updatedLetter = letter;
 
     // 내가 받은 편지이고, 상태가 SENT 라면
-    if (letter.receiverId === userId && letter.status === LetterStatus.SENT) {
+    if (
+      letter.receiverId === userId &&
+      letter.status === LetterStatusValue.SENT
+    ) {
       updatedLetter = await this.letterRepository.updateLetterStatus(
         letterId,
-        LetterStatus.RECEIVED,
+        LetterStatusValue.RECEIVED,
       );
     }
 

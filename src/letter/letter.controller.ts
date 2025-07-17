@@ -7,13 +7,14 @@ import {
   Delete,
   UseGuards,
   Req,
+  HttpCode,
 } from '@nestjs/common';
 import { LetterService } from './letter.service';
-import { SendLetterDto } from './dto/send-letter.dto';
-import { SaveWritingDto } from './dto/save-writing.dto';
+import { SendLetterDto } from './dtos/send-letter.dto';
+import { SaveWritingDto } from './dtos/save-writing.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiLetters } from './letter.swagger';
-import { DeleteLettersDto } from './dto/delete.letter.dto';
+import { DeleteLettersDto } from './dtos/delete-letter.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 
 @Controller('letters')
@@ -89,11 +90,12 @@ export class LetterController {
 
   /** 편지 삭제 */
   @Delete()
+  @HttpCode(204)
   @UseGuards(FirebaseAuthGuard)
   @ApiLetters.delete()
   async deleteLetters(@Body() dto: DeleteLettersDto, @Req() req: any) {
     const userId = req.user.id;
 
-    return this.letterService.deleteLetters(dto.letterIds, userId);
+    this.letterService.deleteLetters(dto.letterIds, userId);
   }
 }
