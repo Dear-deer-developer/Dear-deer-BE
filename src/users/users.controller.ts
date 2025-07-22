@@ -25,7 +25,7 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Patch('nickname')
+  @Patch('me/nickname')
   @UseGuards(FirebaseAuthGuard)
   @SwaggerUpdateNickname()
   async updateNickname(@Req() req: any, @Body() dto: UpdateNicknameDto) {
