@@ -37,7 +37,6 @@ export const ApiS3 = {
         description: '인증 실패',
       }),
     ),
-
   getImageUrl: () =>
     applyDecorators(
       ApiOperation({
