@@ -57,4 +57,25 @@ export class UsersService {
 
     return response.data;
   }
+
+  async logout(kakaoAccessToken: string): Promise<void> {
+    if (kakaoAccessToken) {
+      const logoutUrl = 'https://kapi.kakao.com/v1/user/logout';
+
+      try {
+        await firstValueFrom(
+          this.httpService.post(logoutUrl, null, {
+            headers: {
+              Authorization: `Bearer ${kakaoAccessToken}`,
+            },
+          }),
+        );
+      } catch (error) {
+        console.warn(
+          'Kakao 로그아웃 실패:',
+          error?.response?.data || error.message,
+        );
+      }
+    }
+  }
 }

@@ -3,6 +3,7 @@ import {
   Patch,
   Delete,
   Get,
+  Post,
   Body,
   Req,
   UseGuards,
@@ -16,6 +17,7 @@ import {
   SwaggerUpdateNickname,
   SwaggerDeleteMe,
   SwaggerGetKakaoFriends,
+  SwaggerLogout,
 } from './users.swagger';
 
 @ApiTags('users')
@@ -44,5 +46,15 @@ export class UsersController {
   async getKakaoFriends(@Req() req: any) {
     const { kakaoAccessToken } = req.user;
     return this.usersService.getKakaoFriends(kakaoAccessToken);
+  }
+
+  @Post('me/logout')
+  @UseGuards(FirebaseAuthGuard)
+  @HttpCode(204)
+  @SwaggerLogout()
+  async logout(@Req() req: any): Promise<void> {
+    const { kakaoAccessToken } = req.user;
+
+    await this.usersService.logout(kakaoAccessToken);
   }
 }

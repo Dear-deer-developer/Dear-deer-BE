@@ -96,3 +96,18 @@ export function SwaggerGetKakaoFriends() {
     ApiBearerAuth(),
   );
 }
+
+export function SwaggerLogout() {
+  return applyDecorators(
+    ApiOperation({
+      summary: '카카오 로그아웃',
+      description: '현재 로그인한 사용자의 카카오 계정에서 로그아웃합니다.',
+    }),
+    ApiResponse({
+      status: 204,
+      description: '로그아웃 성공 (No Content)',
+    }),
+
+    ApiBearerAuth(),
+  );
+}
