@@ -38,5 +38,6 @@ export class AuthController {
   @Post('grant-admin')
   async grantAdmin(@Body('uid') uid: string) {
     await this.firebaseAdminService.setAdminClaim(uid);
-    return { message: '관리자 권한이 부여되었습니다.'}
+    return { message: '관리자 권한이 부여되었습니다.' };
+  }
 }
