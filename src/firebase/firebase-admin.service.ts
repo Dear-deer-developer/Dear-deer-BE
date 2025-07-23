@@ -33,4 +33,8 @@ export class FirebaseAdminService {
 
     return res.data.idToken;
   }
+
+  async setAdminClaim(uid: string): Promise<void> {
+    await admin.auth().setCustomUserClaims(uid, { admin: true });
+  }
 }

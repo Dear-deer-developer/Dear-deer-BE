@@ -17,14 +17,14 @@ export class FirebaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    if (!token) throw new UnauthorizedException();
+    if (!token) throw new UnauthorizedException('Token not found');
 
     const decoded = await this.firebaseAdmin.verifyToken(token);
     const uid = decoded.uid;
     const user = await this.usersRepository.findByProviderId(uid);
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException('User not found');
 
-    request.user = { id: user.id };
+    request.user = { id: user.id, uid: uid, admin: decoded.admin || false };
     return true;
   }
 
