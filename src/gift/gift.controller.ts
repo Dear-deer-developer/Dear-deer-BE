@@ -17,7 +17,7 @@ import { GiftService } from './gift.service';
 import { CreateGiftDto } from './dtos/create-gift.dto';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
-@ApiTags('Gift')
+@ApiTags('gift')
 @Controller('gifts')
 export class GiftController {
   constructor(private readonly giftService: GiftService) {}
