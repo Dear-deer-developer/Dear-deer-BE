@@ -26,6 +26,14 @@ enum ScheduleCategory {
   ETC
 }
 
+enum GiftCategory {
+  ORNAMENT
+  STAR
+  ELECTRIC_BULB
+  INTERIOR
+  ANIMAL
+}
+
 model User {
   id         Int      @id @default(autoincrement())
   nickname   String   @unique
@@ -71,4 +79,13 @@ model Schedule {
   user User @relation(fields: [userId], references: [id])
 
   @@map("schedules")
+}
+
+model Gift {
+  id       Int          @id @default(autoincrement())
+  name     String
+  category GiftCategory
+  imageUrl String       @map("image_url")
+
+  @@map("gifts")
 }
