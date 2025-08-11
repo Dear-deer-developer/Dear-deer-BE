@@ -9,6 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
+import { S3Folder } from './constants/s3.constant';
 
 @Injectable()
 export class S3Service {
@@ -21,8 +22,18 @@ export class S3Service {
     },
   });
 
-  /** 이미지 저장용 presigned URL 생성 */
-  async generateUploadPresignedUrl(
+  private async generatePresignedUrl(key: string, contentType: string) {
+    const command = new PutObjectCommand({
+      Bucket: this.configService.get<string>('AWS_S3_BUCKET'),
+      Key: key,
+      ContentType: contentType,
+    });
+    const url = await getSignedUrl(this.s3Client, command, { expiresIn: 300 });
+    return { url, key };
+  }
+
+  /** 편지 이미지 업로드 url 생성 함수 */
+  async generateLetterImagePresignedUrl(
     userId: number,
     originalFileName: string,
     contentType: string,
@@ -37,16 +48,26 @@ export class S3Service {
     const uuid = uuidv4();
 
     // S3 image Key 생성
-    const key = `letters/${userId}/${uuid}${ext}`;
+    const key = `${S3Folder.LETTERS}/${userId}/${uuid}${ext}`;
 
-    const command = new PutObjectCommand({
-      Bucket: this.configService.get<string>('AWS_S3_BUCKET'),
-      Key: key,
-      ContentType: contentType,
-    });
+    return this.generatePresignedUrl(key, contentType);
+  }
 
-    const url = await getSignedUrl(this.s3Client, command, { expiresIn: 300 }); // 5분 유효
-    return { url, key };
+  /** 선물 이미지 업로드 url 생성 함수 */
+  async generateGiftImagePresignedUrl(
+    originalFileName: string,
+    contentType: string,
+  ): Promise<{ url: string; key: string }> {
+    const ext = path.extname(originalFileName);
+    if (!ext) {
+      throw new Error('Invalid file extension');
+    }
+
+    const uuid = uuidv4();
+
+    const key = `${S3Folder.GIFTS}/${uuid}${ext}`;
+
+    return this.generatePresignedUrl(key, contentType);
   }
 
   /** 이미지 열람용 presigned URL 생성 */
