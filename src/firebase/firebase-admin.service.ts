@@ -29,12 +29,10 @@ export class FirebaseAdminService {
       returnSecureToken: true,
     });
 
-    // console.log('Firebase ID Token:', res.data.idToken);
-
     return res.data.idToken;
   }
-
-  async setAdminClaim(uid: string): Promise<void> {
-    await admin.auth().setCustomUserClaims(uid, { admin: true });
+  /** 서버측 로그아웃(세션 무효화) */
+  async revokeUserSessions(uid: string): Promise<void> {
+    await admin.auth().revokeRefreshTokens(uid);
   }
 }
