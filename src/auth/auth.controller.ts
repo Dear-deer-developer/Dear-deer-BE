@@ -1,7 +1,16 @@
-import { Controller, Post, Body, Query, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Query,
+  Get,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FirebaseAdminService } from 'src/firebase/firebase-admin.service';
 import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { FirebaseAuthGuard } from './firebase-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -35,9 +44,23 @@ export class AuthController {
     return { idToken };
   }
 
-  @Post('grant-admin')
-  async grantAdmin(@Body('uid') uid: string) {
-    await this.firebaseAdminService.setAdminClaim(uid);
-    return { message: '관리자 권한이 부여되었습니다.' };
+  /** 내 상태 확인 (권한 포함) */
+  @UseGuards(FirebaseAuthGuard)
+  @Get('whoami')
+  async whoami(@Req() req: any) {
+    const admins = (process.env.ADMINS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const isAdmin = !!req.user && admins.includes(req.user.uid);
+    return { uid: req.user?.uid, userId: req.user?.id, isAdmin };
+  }
+
+  /** 로그아웃: 서버측 세션 무효화(선택 기능) */
+  @UseGuards(FirebaseAuthGuard)
+  @Post('logout')
+  async logout(@Req() req: any) {
+    await this.firebaseAdminService.revokeUserSessions(req.user.uid);
+    return { message: '로그아웃 처리되었습니다.' };
   }
 }
