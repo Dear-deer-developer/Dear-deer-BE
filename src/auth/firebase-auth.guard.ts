@@ -16,7 +16,6 @@ type RequestUser = {
 
 interface DecodedIdTokenWithAdmin {
   uid: string;
-  email?: string;
   admin?: boolean;
 }
 
@@ -30,34 +29,6 @@ export class FirebaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-
-    try {
-      const decoded: (await this.firebaseAdmin.verifyToken(token)) as DecodedIdTokenWithAdmin;
-      const uid = decoded.uid;
-
-      // DB에서 사용자 찾기
-      const user = await this.usersRepository.findByProviderId(uid);
-      if (!user) throw new UnauthorizedException('User not found');
-
-      request.user = {
-        id: user.id,
-        uid,
-        admin: Boolean(decoded.admin),
-      };
-
-      return true;
-    } catch(e: any) {
-      // Firebase 토큰 회수/만료 등 세분화
-      const code = e?.errorInfo?.code || e?.code;
-      if (code === 'auth/id-token-revoked') {
-        throw new UnauthorizedException('Token revoked. Please sign in again.');
-      }
-      if (code === 'auth/argument-error' || code === 'auth/invalid-id-token') {
-        throw new UnauthorizedException(e?.message || 'Unauthorized');
-      }
-    }
-
-
     if (!token) throw new UnauthorizedException('Token not found');
 
     const decoded = await this.firebaseAdmin.verifyToken(token);
@@ -69,7 +40,7 @@ export class FirebaseAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractToken(req: request): string | null {
+  private extractToken(req: any): string | null {
     const authHeader = req.headers['authorization'];
     if (!authHeader?.startsWith('Bearer ')) throw new UnauthorizedException();
     return authHeader.split(' ')[1];
