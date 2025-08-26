@@ -29,20 +29,36 @@ export class FirebaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    if (!token) throw new UnauthorizedException('Token not found');
 
-    const decoded = await this.firebaseAdmin.verifyToken(token);
-    const uid = decoded.uid;
-    const user = await this.usersRepository.findByProviderId(uid);
-    if (!user) throw new UnauthorizedException('User not found');
+    try {
+      //Firebase 토큰 검증 (revoke 여부까지 확인)
+      const decoded = (await this.firebaseAdmin.verifyToken(
+        token,
+      )) as DecodedIdTokenWithAdmin;
+      const uid = decoded.uid;
 
-    request.user = { id: user.id, uid: uid, admin: decoded.admin || false };
-    return true;
+      const user = await this.usersRepository.findByProviderId(uid);
+      if (!user) throw new UnauthorizedException('User not found');
+
+      //req.user 세팅
+      request.user = { id: user.id, uid, admin: Boolean(decoded.admin) };
+      return true;
+    } catch (e: any) {
+      const code = e?.errorInfo?.code || e?.code;
+
+      if (code === 'auth/id-token-revoked') {
+        throw new UnauthorizedException('Token revoked. Please sign in again.');
+      }
+
+      throw new UnauthorizedException('Invalid or expired Firebase token');
+    }
   }
 
-  private extractToken(req: any): string | null {
+  private extractToken(req: Request): string {
     const authHeader = req.headers['authorization'];
-    if (!authHeader?.startsWith('Bearer ')) throw new UnauthorizedException();
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Token not found');
+    }
     return authHeader.split(' ')[1];
   }
 }
