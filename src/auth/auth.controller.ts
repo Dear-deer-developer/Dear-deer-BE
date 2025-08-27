@@ -56,12 +56,7 @@ export class AuthController {
   @Get('whoami')
   @SwaggerWhoAmI()
   async whoami(@Req() req: any) {
-    const admins = (process.env.ADMINS || '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const isAdmin = !!req.user && admins.includes(req.user.uid);
-    return { uid: req.user?.uid, userId: req.user?.id, isAdmin };
+    return this.authService.getWhoAmI(req.user);
   }
 
   /** 로그아웃: 서버 측 세션 무효화(선택 기능) */

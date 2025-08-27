@@ -11,15 +11,20 @@ export class AdminGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const user = req.user;
 
-    const admins = (process.env.ADMINS || '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const raw = process.env.ADMINS || '';
+    const scrub = (s: string) =>
+      s
+        .trim()
+        .replace(/^['"]|['"]$/g, '')
+        .replace(/^kakao:/, '');
 
-    if (!user || !admins.includes(user.uid)) {
+    const admins = raw.split(',').map(scrub).filter(Boolean);
+    const uidRaw = String(user?.uid ?? '');
+    const uid = scrub(uidRaw);
+
+    if (!uid || !admins.includes(uid)) {
       throw new ForbiddenException('❌ 관리자 권한이 필요합니다.');
     }
-
     return true;
   }
 }
