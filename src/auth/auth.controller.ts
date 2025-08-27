@@ -17,7 +17,9 @@ import {
   SwaggerLogout,
 } from './auth.swagger';
 import { FirebaseAuthGuard } from './firebase-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
