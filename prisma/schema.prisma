@@ -45,6 +45,7 @@ model User {
   sentLetters     Letter[]   @relation("SentLetters")
   receivedLetters Letter[]   @relation("ReceivedLetters")
   schedule        Schedule[]
+  contents       Content[]
 
   @@map("users")
 }
@@ -88,4 +89,46 @@ model Gift {
   imageUrl String       @map("image_url")
 
   @@map("gifts")
+}
+
+model Content {
+  id Int @id @default(autoincrement())
+  title String
+  body String
+  imageUrl String? @map("image_url")
+  status ContentStatus @default(WRITING)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  subCategoryId Int
+  subCategory ContentSubCategory @relation(fields: [subCategoryId], references:[id])
+
+  @@map("contents")
+
+}
+
+model ContentMainCategory {
+  id Int @id @default(autoincrement())
+  name String
+  subs ContentSubCategory[]
+
+  @@map("content_main_categories")
+}
+
+model ContentSubCategory {
+  id Int @id @default(autoincrement())
+  name String
+  mainCategoryId Int
+  mainCategory ContentMainCategory @relation(fields: [mainCategoryId], references: [id])
+  contents Content[]
+  @@map("content_sub_categories")
+}
+
+enum ContentStatus {
+  WRITING
+  PUBLISHED
+  HIDDEN
 }
