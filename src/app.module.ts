@@ -11,6 +11,8 @@ import { LetterModule } from './letter/letter.module';
 import { S3Module } from './s3/s3.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { GiftModule } from './gift/gift.module';
+import { AlarmModule } from './alarm/alarm.module';
+import { FcmTokenModule } from './fcm-token/fcm-token.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { GiftModule } from './gift/gift.module';
     S3Module,
     ScheduleModule,
     GiftModule,
+    AlarmModule,
+    FcmTokenModule,
   ],
   controllers: [AppController],
   providers: [AppService],
