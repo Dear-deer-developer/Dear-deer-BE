@@ -33,4 +33,26 @@ export class FirebaseAdminService {
 
     return res.data.idToken;
   }
+
+  /** fcm 발송 메서드 */
+  async sendFcm(token: string, title: string, message: string) {
+    const payload = {
+      token,
+      notification: {
+        title,
+        body: message,
+      },
+      data: {
+        body: message,
+      },
+    };
+
+    try {
+      const response = await admin.messaging().send(payload);
+      return { sent: true, response };
+    } catch (error) {
+      console.error('FCM 전송 실패:', error.code);
+      return { sent: false, error: error.code };
+    }
+  }
 }
