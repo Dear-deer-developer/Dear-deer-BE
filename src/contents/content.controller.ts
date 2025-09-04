@@ -3,8 +3,8 @@ import { ContentService } from './content.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiContent } from './content.swagger';
 
-@ApiTags('content')
-@Controller('content')
+@ApiTags('contents')
+@Controller('contents')
 export class ContentController {
   constructor(private readonly contentService: ContentService) {}
 
