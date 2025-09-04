@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AlarmService } from './alarm.service';
-
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { CreateAlarmDto } from './dtos/create-alarm.dto';
