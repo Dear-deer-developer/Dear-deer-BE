@@ -59,7 +59,7 @@ export const ApiContent = {
               id: 5,
               name: '티켓팅/예약',
               mainCategory: {
-                id: 1,
+                id: 2,
                 name: '행사 알림',
               },
             },
