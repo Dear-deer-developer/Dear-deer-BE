@@ -6,7 +6,42 @@ import {
 } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { UpdateNicknameDto } from './dtos/update-nickname.dto';
+import { zip } from 'rxjs';
 
+export function SwaggerGetUser() {
+  return applyDecorators(
+    ApiOperation({
+      summary: '사용자 정보 조회',
+      description: '현재 로그인된 사용자의 상세 정보를 조회합니다.',
+    }),
+    ApiResponse({
+      status: 200,
+      description: '사용자 정보 조회 성공',
+      schema: {
+        example: {
+          id: 1,
+          nickname: '디어디어',
+          zipCode: 0,
+          providerId: '4000000000',
+          createdAt: '2025-08-27T04:31:11.043Z',
+          updatedAt: '2025-08-27T04:31:11.043Z',
+        },
+      },
+    }),
+    ApiResponse({
+      status: 404,
+      description: '사용자를 찾을 수 없습니다.',
+      schema: {
+        example: {
+          statusCode: 404,
+          message: '사용자를 찾을 수 없습니다.',
+          error: 'Not Found',
+        },
+      },
+    }),
+    ApiBearerAuth(),
+  );
+}
 export function SwaggerUpdateNickname() {
   return applyDecorators(
     ApiOperation({

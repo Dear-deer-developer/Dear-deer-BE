@@ -5,6 +5,8 @@ import { HttpService } from '@nestjs/axios';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 
+type ReqUser = { id: number; uid: string };
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -71,6 +73,33 @@ export class AuthService {
       );
       throw err;
     }
+  }
+
+  getWhoAmI(user: ReqUser) {
+    const isAdmin = this.isAdminUid(user.uid);
+    return { uid: user.uid, userId: user.id, isAdmin };
+  }
+
+  isAdminUid(uidRaw: string): boolean {
+    const admins = this.getAdminUidList();
+    const uid = this.normalizeUid(uidRaw);
+    return !!uid && admins.includes(uid);
+  }
+
+  private getAdminUidList(): string[] {
+    const raw = this.configService.get<string>('ADMINS') || '';
+    return raw
+      .split(',')
+      .map((s) => this.normalizeUid(s))
+      .filter(Boolean);
+  }
+
+  private normalizeUid(s?: string): string {
+    if (!s) return '';
+    return s
+      .trim()
+      .replace(/^['"]|['"]$/g, '')
+      .replace(/^kakao:/, '');
   }
 
   private async getKakaoUserInfo(accessToken: string) {
