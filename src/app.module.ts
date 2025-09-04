@@ -12,6 +12,7 @@ import { S3Module } from './s3/s3.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { GiftModule } from './gift/gift.module';
 import { AdminModule } from './admin/admin.module';
+import { ContentModule } from './contents/content.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminModule } from './admin/admin.module';
     ScheduleModule,
     GiftModule,
     AdminModule,
+    ContentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
