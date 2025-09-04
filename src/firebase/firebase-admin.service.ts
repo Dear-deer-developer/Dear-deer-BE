@@ -11,7 +11,7 @@ export class FirebaseAdminService {
   ) {}
 
   async verifyToken(idToken: string): Promise<admin.auth.DecodedIdToken> {
-    return await admin.auth().verifyIdToken(idToken);
+    return await admin.auth().verifyIdToken(idToken, true);
   }
 
   async createCustomToken(uid: string): Promise<string> {
@@ -29,9 +29,11 @@ export class FirebaseAdminService {
       returnSecureToken: true,
     });
 
-    // console.log('Firebase ID Token:', res.data.idToken);
-
     return res.data.idToken;
+  }
+  /** 서버측 로그아웃(세션 무효화) */
+  async revokeUserSessions(uid: string): Promise<void> {
+    await admin.auth().revokeRefreshTokens(uid);
   }
 
   /** fcm 발송 메서드 */

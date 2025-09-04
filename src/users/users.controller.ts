@@ -1,14 +1,23 @@
-import { Controller, Patch, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Patch, Body, Req, UseGuards, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { UpdateNicknameDto } from './dtos/update-nickname.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { SwaggerUpdateNickname } from './users.swagger';
+import { SwaggerGetUser } from './users.swagger';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('me')
+  @UseGuards(FirebaseAuthGuard)
+  @SwaggerGetUser()
+  async getUser(@Req() req: any) {
+    const uid = req.user.uid;
+    return this.usersService.getUserInfoByProviderId(uid);
+  }
 
   @Patch('nickname')
   @UseGuards(FirebaseAuthGuard)
