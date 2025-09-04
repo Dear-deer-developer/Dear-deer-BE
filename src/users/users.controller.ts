@@ -15,8 +15,8 @@ export class UsersController {
   @UseGuards(FirebaseAuthGuard)
   @SwaggerGetUser()
   async getUser(@Req() req: any) {
-    const providerId = req.user.providerId;
-    return this.usersService.getUserInfoByProviderId(providerId);
+    const uid = req.user.uid;
+    return this.usersService.getUserInfoByProviderId(uid);
   }
 
   @Patch('nickname')
