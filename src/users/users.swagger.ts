@@ -20,10 +20,11 @@ export function SwaggerGetUser() {
       schema: {
         example: {
           id: 1,
-          providerId: '123456789',
           nickname: '디어디어',
-          zipCode: 10001,
-          createdAt: '2025-07-01T00:00:00.000Z',
+          zipCode: 0,
+          providerId: '4000000000',
+          createdAt: '2025-08-27T04:31:11.043Z',
+          updatedAt: '2025-08-27T04:31:11.043Z',
         },
       },
     }),
