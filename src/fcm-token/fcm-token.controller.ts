@@ -53,4 +53,8 @@ export class FcmTokenController {
     const userId: number = req.user.id;
     return this.fcmTokenService.register(userId, dto.token, dto.platform);
   }
+
+  // 다시 보면서 생각하면 token 값을 path에서 빼야 좋아보이고,
+  // -> 다른 방식으로 토큰값을 넘기는게 좋아보임 (25.09.04)
+  // put API 는 필요없어 보임 (POST API와 같은 역할)
 }

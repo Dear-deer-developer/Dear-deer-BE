@@ -15,6 +15,7 @@ import { AdminModule } from './admin/admin.module';
 import { AlarmModule } from './alarm/alarm.module';
 import { FcmTokenModule } from './fcm-token/fcm-token.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ImagePresignModule } from './image/image-presign.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AdminModule,
     AlarmModule,
     FcmTokenModule,
+    ImagePresignModule,
   ],
   controllers: [AppController],
   providers: [AppService],

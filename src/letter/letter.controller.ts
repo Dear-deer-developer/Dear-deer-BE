@@ -22,6 +22,7 @@ import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 export class LetterController {
   constructor(private readonly letterService: LetterService) {}
 
+  // 편지 전송과 임시저장은 req에서 userId를 빼서 조회하도록 리팩토링 예정 (09.10)
   /** 편지 전송 */
   @Post()
   @UseGuards(FirebaseAuthGuard)
@@ -36,16 +37,6 @@ export class LetterController {
   @ApiLetters.saveDraft()
   async saveWriting(@Body() saveWritingDto: SaveWritingDto) {
     return this.letterService.saveWriting(saveWritingDto);
-  }
-
-  /** 자신의 전체 편지 조회*/
-  @Get()
-  @UseGuards(FirebaseAuthGuard)
-  @ApiLetters.findAll()
-  async findLetters(@Req() req: any) {
-    const userId = req.user.id;
-
-    return this.letterService.findLetters(userId);
   }
 
   /** 내 사서함 확인 */
