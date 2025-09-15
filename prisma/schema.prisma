@@ -46,6 +46,8 @@ model User {
   receivedLetters Letter[]   @relation("ReceivedLetters")
   schedule        Schedule[]
   contents       Content[]
+  scraps         Scrap[]
+  contentViews   ContentView[]
 
   @@map("users")
 }
@@ -105,6 +107,8 @@ model Content {
   subCategoryId Int
   subCategory ContentSubCategory @relation(fields: [subCategoryId], references:[id])
   images ContentImage[]
+  scraps Scrap[]
+  views ContentView[]
 
   @@map("contents")
 
@@ -142,4 +146,30 @@ enum ContentStatus {
   WRITING
   PUBLISHED
   HIDDEN
+}
+
+model Scrap {
+  id Int @id @default(autoincrement())
+  userId Int
+  contentId Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  content Content @relation(fields: [contentId], references: [id])
+  
+  @@unique([userId, contentId])
+  @@map("scraps")
+
+}
+
+model ContentView {
+  id Int @id @default(autoincrement())
+  userId Int
+  contentId Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@map("content_views")
 }
