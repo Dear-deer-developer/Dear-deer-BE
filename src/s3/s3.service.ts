@@ -74,6 +74,40 @@ export class S3Service {
     return this.generatePresignedUrl(key, contentType);
   }
 
+  /** 음악 표지 업로드 url 생성 함수 */
+  async generateCoverImagePresignedUrl(
+    originalFileName: string,
+    contentType: string,
+  ): Promise<{ url: string; key: string }> {
+    const ext = path.extname(originalFileName);
+    if (!ext) {
+      throw new Error('Invalid file extension');
+    }
+
+    const uuid = uuidv4();
+
+    const key = `${S3Folder.COVERS}/${uuid}${ext}`;
+
+    return this.generatePresignedUrl(key, contentType);
+  }
+
+  /** 음악(mp3) 업로드 url 생성 함수 */
+  async generateMusicPresignedUrl(
+    originalFileName: string,
+    contentType: string,
+  ): Promise<{ url: string; key: string }> {
+    const ext = path.extname(originalFileName);
+    if (!ext) {
+      throw new Error('Invalid file extension');
+    }
+
+    const uuid = uuidv4();
+
+    const key = `${S3Folder.MUSICS}/${uuid}${ext}`;
+
+    return this.generatePresignedUrl(key, contentType);
+  }
+
   /** 이미지 열람용 presigned URL 생성 */
   async generateGetObjectPresignedUrl(key: string): Promise<string> {
     const command = new GetObjectCommand({
