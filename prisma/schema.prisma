@@ -116,13 +116,25 @@ model DeviceToken {
 model Alarm {
   id          Int      @id @default(autoincrement())
   userId      Int      @unique @map("user_id")
-  scheduledAt DateTime @map("scheduled_at") // 알림 설정 시간(UTC 또는 KST 는 추후 정하고 주석 변경)
+  scheduledAt DateTime @map("scheduled_at") // 알림 설정 시간(KST 기준 설정)
   isFired     Boolean  @default(false) @map("is_fired") // 울렸는지 상태 체크
+  musicId     Int      @map("music_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  music Music @relation(fields: [musicId], references: [id]) // 여기는 Cascade를 일부러 안달았음. -> 음악을 지울때 주의 !
 
   @@index([isFired, scheduledAt])
   @@map("alarms")
+}
+
+model Music {
+  id        Int      @id @default(autoincrement())
+  title     String
+  artist    String
+  createdAt DateTime @default(now()) @map("created_at")
+  alarms    Alarm[]
+
+  @@map("musics")
 }
