@@ -62,7 +62,7 @@ export class LetterService {
       {
         keySelector: (r) => r.imageUrl,
         outProp: 'signedImageUrl', // 기본값이라 생략 가능
-        ttlSec: 300,
+        ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
       },
     );
 
@@ -82,7 +82,7 @@ export class LetterService {
       {
         keySelector: (r) => r.imageUrl,
         outProp: 'signedImageUrl', // 기본값이라 생략 가능
-        ttlSec: 300,
+        ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
       },
     );
 

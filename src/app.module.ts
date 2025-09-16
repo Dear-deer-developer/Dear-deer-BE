@@ -16,6 +16,7 @@ import { AlarmModule } from './alarm/alarm.module';
 import { FcmTokenModule } from './fcm-token/fcm-token.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ImagePresignModule } from './image/image-presign.module';
+import { MusicModule } from './music/music.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ImagePresignModule } from './image/image-presign.module';
     AlarmModule,
     FcmTokenModule,
     ImagePresignModule,
+    MusicModule,
   ],
   controllers: [AppController],
   providers: [AppService],

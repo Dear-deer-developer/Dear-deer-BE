@@ -15,8 +15,8 @@ import { RegisterFcmTokenDto } from './dtos/register-fcm-token.dto';
 import { TokenParamDto } from './dtos/token-param.dto';
 import { ApiTags } from '@nestjs/swagger';
 
-@Controller('fcm-token')
-@ApiTags('fcm-token')
+@Controller('fcm-tokens')
+@ApiTags('fcm-tokens')
 @ApiFcmToken.auth()
 @UseGuards(FirebaseAuthGuard)
 export class FcmTokenController {
@@ -57,4 +57,5 @@ export class FcmTokenController {
   // 다시 보면서 생각하면 token 값을 path에서 빼야 좋아보이고,
   // -> 다른 방식으로 토큰값을 넘기는게 좋아보임 (25.09.04)
   // put API 는 필요없어 보임 (POST API와 같은 역할)
+  // fcm 토큰은 그렇게 민감한 정보가 담기지 않아서 그냥 path로 넘기기로 결정 (09.13)
 }
