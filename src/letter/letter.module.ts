@@ -4,9 +4,10 @@ import { LetterService } from './letter.service';
 import { LetterRepository } from './letter.repository';
 import { UsersModule } from 'src/users/users.module';
 import { S3Module } from 'src/s3/s3.module';
+import { ImagePresignModule } from 'src/image/image-presign.module';
 
 @Module({
-  imports: [UsersModule, S3Module],
+  imports: [UsersModule, S3Module, ImagePresignModule],
   controllers: [LetterController],
   providers: [LetterService, LetterRepository],
   exports: [LetterService],

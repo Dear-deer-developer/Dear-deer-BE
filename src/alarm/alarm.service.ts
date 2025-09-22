@@ -10,6 +10,7 @@ import { UpdateAlarmDto } from './dtos/update-alarm.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FirebaseAdminService } from 'src/firebase/firebase-admin.service';
 import { nowKST } from 'src/common/functions/time.helper';
+import { AlarmFcmPayload } from './dtos/fcm-payload.dto';
 
 @Injectable()
 export class AlarmService {
@@ -54,30 +55,55 @@ export class AlarmService {
   @Cron(CronExpression.EVERY_MINUTE)
   async processAlarms() {
     const now = nowKST();
+    const from = new Date(now.getTime() - 60_000); // 1분 전 ~ 지금 사이
     // 12월 24일, 25일 Cron 작동하도록 수정하면 됨 -> 주석해제 하면 적용
     // const is24or25 = now.getMonth() === 12 && [24, 25].includes(now.getDate());
     // if (!is24or25) return;
 
     // 조건(현재 시간 && isFired === false)에 맞는 알람이 있는지 검사
-    const alarm = await this.alarmRepository.findAlarm(now);
+    const dueAlarms = await this.alarmRepository.findDueAlarms(from, now);
 
-    if (!alarm) return;
+    if (!dueAlarms.length) return;
 
-    // 하나의 알람에 여러 디바이스 토큰이 있는지 검사
-    const tokens =
-      alarm.user?.deviceTokens?.map((dt) => dt.token).filter(Boolean) ?? [];
+    // 여러 알람을 순회
+    for (const alarm of dueAlarms) {
+      const locked = await this.alarmRepository.tryMarkFiredOnce(alarm.id);
+      if (locked === 0) continue;
 
-    // 한 유저의 모든 디바이스로 알람 발송
-    for (const token of tokens) {
-      // 알림 내용은 여기서 수정하면 됨
-      await this.firebaseAdminService.sendFcm(
-        token,
-        '알람 도착!',
-        '지정된 시간에 도달했어요 ⏰',
-      );
+      // 유저가 가진 토큰들 조회
+      const tokens =
+        alarm.user?.deviceTokens?.map((dt) => dt.token).filter(Boolean) ?? [];
 
-      // 전송된 알람은 isFired 상태 false -> true 로 변경
-      await this.alarmRepository.markAsFired(alarm.id);
+      if (tokens.length === 0) {
+        // 토큰이 없으면 알림 보낼 곳이 없는 상태. 로그만 남겨도 OK.
+        continue;
+      }
+
+      // 전송 실패 시 재시도 큐는 추후 개발예정.....
+
+      const dataPayload: AlarmFcmPayload = {
+        type: 'ALARM',
+        alarmId: String(alarm.id),
+        musicId: String(alarm.musicId),
+        musicTitle: alarm.music?.title ?? '',
+        musicArtist: alarm.music?.artist ?? '',
+        scheduledAt: alarm.scheduledAt.toISOString(),
+      };
+
+      for (const token of tokens) {
+        await this.firebaseAdminService.sendFcm(
+          token,
+          '메리 크리스마스! 🌲',
+          '지정된 시간에 도달했어요.⏰ 메리메리 크리스마스 ~',
+          dataPayload,
+        );
+        console.log(
+          token,
+          '메리 크리스마스! 🌲',
+          '지정된 시간에 도달했어요.⏰ 메리메리 크리스마스 ~',
+          dataPayload,
+        );
+      }
     }
   }
 }

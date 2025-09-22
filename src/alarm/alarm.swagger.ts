@@ -107,12 +107,6 @@ export const ApiAlarm = {
       ApiOperation({ summary: '본인 알람 삭제' }),
       ApiOkResponse({
         description: '삭제 성공',
-        schema: {
-          example: {
-            deleted: true,
-            affected: 1,
-          },
-        },
       }),
       ApiNotFoundResponse({ description: '알람 없음' }),
     ),

@@ -7,6 +7,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { AlarmService } from './alarm.service';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -42,8 +43,9 @@ export class AlarmController {
   }
 
   @Delete('me')
+  @HttpCode(204)
   @ApiAlarm.delete()
   async remove(@Req() req) {
-    return await this.alarmService.delete(req.user.id);
+    await this.alarmService.delete(req.user.id);
   }
 }

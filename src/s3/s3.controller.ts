@@ -42,11 +42,43 @@ export class S3Controller {
   @UseGuards(FirebaseAuthGuard)
   @ApiS3.getPresignedUrl('gift')
   async getGiftPresignedUrl(
-    @Req() req: any,
     @Query('filename') filename: string,
     @Query('contentType') contentType: string,
   ) {
     const result = await this.s3Service.generateGiftImagePresignedUrl(
+      filename,
+      contentType,
+    );
+
+    return result;
+  }
+
+  // 음악 관련 메서드는 안 쓰일 것 같음.. (음악파일과 표지를 앱자체에 저장시키기로 함-09.14)
+  /** 음악 표지 업로드용 presigned URL 발급 */
+  @Get('cover-presigned-url')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiS3.getPresignedUrl('cover')
+  async getCoverPresignedUrl(
+    @Query('filename') filename: string,
+    @Query('contentType') contentType: string,
+  ) {
+    const result = await this.s3Service.generateCoverImagePresignedUrl(
+      filename,
+      contentType,
+    );
+
+    return result;
+  }
+
+  /** 음악(mp3) 업로드용 presigned URL 발급 */
+  @Get('music-presigned-url')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiS3.getPresignedUrl('music')
+  async getMusicPresignedUrl(
+    @Query('filename') filename: string,
+    @Query('contentType') contentType: string,
+  ) {
+    const result = await this.s3Service.generateMusicPresignedUrl(
       filename,
       contentType,
     );

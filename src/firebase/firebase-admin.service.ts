@@ -2,6 +2,7 @@ import * as admin from 'firebase-admin';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { AlarmFcmPayload } from 'src/alarm/dtos/fcm-payload.dto';
 
 @Injectable()
 export class FirebaseAdminService {
@@ -37,7 +38,12 @@ export class FirebaseAdminService {
   }
 
   /** fcm 발송 메서드 */
-  async sendFcm(token: string, title: string, message: string) {
+  async sendFcm(
+    token: string,
+    title: string,
+    message: string,
+    data?: AlarmFcmPayload,
+  ) {
     const payload = {
       token,
       notification: {
@@ -45,7 +51,14 @@ export class FirebaseAdminService {
         body: message,
       },
       data: {
+        ...data,
         body: message,
+      },
+      android: {
+        priority: 'high' as const,
+      },
+      apns: {
+        headers: { 'apns-priority': '10' },
       },
     };
 
