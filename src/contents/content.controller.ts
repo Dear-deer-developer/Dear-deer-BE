@@ -1,8 +1,20 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ContentService } from './content.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiContent } from './content.swagger';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
+import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
+import { AdminGuard } from 'src/admin/admin.guard';
 
 @ApiTags('contents')
 @Controller('contents')
