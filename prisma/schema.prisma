@@ -34,6 +34,12 @@ enum GiftCategory {
   ANIMAL
 }
 
+enum Platform {
+  IOS
+  ANDROID
+  OTHER
+}
+
 model User {
   id         Int      @id @default(autoincrement())
   nickname   String   @unique
@@ -42,9 +48,11 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  sentLetters     Letter[]   @relation("SentLetters")
-  receivedLetters Letter[]   @relation("ReceivedLetters")
+  sentLetters     Letter[]      @relation("SentLetters")
+  receivedLetters Letter[]      @relation("ReceivedLetters")
   schedule        Schedule[]
+  deviceTokens    DeviceToken[]
+  alarms          Alarm[]
   contents       Content[]
   scraps         Scrap[]
   contentViews   ContentView[]
@@ -92,6 +100,48 @@ model Gift {
 
   @@map("gifts")
 }
+
+model DeviceToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String   @unique // FCM 토큰
+  platform  Platform
+  isActive  Boolean  @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+model Alarm {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique @map("user_id")
+  scheduledAt DateTime @map("scheduled_at") // 알림 설정 시간(KST 기준 설정)
+  isFired     Boolean  @default(false) @map("is_fired") // 울렸는지 상태 체크
+  musicId     Int      @map("music_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  music Music @relation(fields: [musicId], references: [id]) // 여기는 Cascade를 일부러 안달았음. -> 음악을 지울때 주의 !
+
+  @@index([isFired, scheduledAt])
+  @@map("alarms")
+}
+
+model Music {
+  id        Int      @id @default(autoincrement())
+  title     String
+  artist    String
+  createdAt DateTime @default(now()) @map("created_at")
+  alarms    Alarm[]
+
+  @@map("musics")
+}
+
 
 model Content {
   id Int @id @default(autoincrement())

@@ -10,4 +10,4 @@ import { ScheduleRepository } from './schedule.repository';
   providers: [ScheduleService, ScheduleRepository],
   exports: [],
 })
-export class ScheduleModule {}
+export class CalendarModule {}

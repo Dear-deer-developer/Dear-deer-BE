@@ -9,14 +9,20 @@ import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { LetterModule } from './letter/letter.module';
 import { S3Module } from './s3/s3.module';
-import { ScheduleModule } from './schedule/schedule.module';
+import { CalendarModule } from './schedule/schedule.module';
 import { GiftModule } from './gift/gift.module';
 import { AdminModule } from './admin/admin.module';
 import { ContentModule } from './contents/content.module';
+import { AlarmModule } from './alarm/alarm.module';
+import { FcmTokenModule } from './fcm-token/fcm-token.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ImagePresignModule } from './image/image-presign.module';
+import { MusicModule } from './music/music.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     FirebaseAdminModule,
     UsersModule,
     AuthModule,
@@ -24,10 +30,9 @@ import { ContentModule } from './contents/content.module';
     HttpModule,
     LetterModule,
     S3Module,
-    ScheduleModule,
+    CalendarModule,
     GiftModule,
     AdminModule,
-    ContentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

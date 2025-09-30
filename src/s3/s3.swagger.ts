@@ -2,7 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 export const ApiS3 = {
-  getPresignedUrl: (label: 'letter' | 'gift') =>
+  getPresignedUrl: (label: 'letter' | 'gift' | 'cover' | 'music') =>
     applyDecorators(
       ApiOperation({
         summary: `${label} 이미지 업로드용 Presigned URL 발급`,
@@ -18,7 +18,7 @@ export const ApiS3 = {
         name: 'contentType',
         required: true,
         description: '업로드할 파일의 Content-Type',
-        example: 'image/jpeg',
+        example: 'image/jpg',
       }),
       ApiResponse({
         status: 200,

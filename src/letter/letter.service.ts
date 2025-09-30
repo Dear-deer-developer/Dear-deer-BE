@@ -4,12 +4,14 @@ import { SendLetterDto } from './dtos/send-letter.dto';
 import { SaveWritingDto } from './dtos/save-writing.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { LetterStatusValue } from 'src/common/enums/letter-status.enum';
+import { ImagePresignService } from 'src/image/image-presign.service';
 
 @Injectable()
 export class LetterService {
   constructor(
     private readonly letterRepository: LetterRepository,
     private readonly s3Service: S3Service,
+    private readonly imagePresignService: ImagePresignService,
   ) {}
 
   /** 실제 전송, status: sent, sentAt 기록 */
@@ -33,7 +35,7 @@ export class LetterService {
 
     let updatedLetter = letter;
 
-    // 내가 받은 편지이고, 상태가 SENT 라면
+    // 내가 받은 편지이고, 상태가 SENT 라면 -> RECEIVED로 변경
     if (
       letter.receiverId === userId &&
       letter.status === LetterStatusValue.SENT
@@ -51,11 +53,20 @@ export class LetterService {
     return { updatedLetter, presignedUrl };
   }
 
-  /** 전체 조회 */
+  /** 보낸 편지 전체 조회 */
   async findLetters(userId: number) {
+    // senderId가 자신인 편지들 조회
     const letters = await this.letterRepository.findLettersById(userId);
+    const lettersWithPresign = await this.imagePresignService.attachSignedUrls(
+      letters,
+      {
+        keySelector: (r) => r.imageUrl,
+        outProp: 'signedImageUrl', // 기본값이라 생략 가능
+        ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
+      },
+    );
 
-    return letters;
+    return { lettersWithPresign };
   }
 
   /** 내 사서함 확인 */
@@ -65,7 +76,17 @@ export class LetterService {
 
   /** 보낸 편지함 확인 */
   async findSentLetters(userId: number) {
-    return this.letterRepository.findSentLetters(userId);
+    const letters = await this.letterRepository.findSentLetters(userId);
+    const lettersWithPresign = await this.imagePresignService.attachSignedUrls(
+      letters,
+      {
+        keySelector: (r) => r.imageUrl,
+        outProp: 'signedImageUrl', // 기본값이라 생략 가능
+        ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
+      },
+    );
+
+    return { lettersWithPresign };
   }
 
   /** 임시 보관함 확인 */

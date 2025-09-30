@@ -45,7 +45,7 @@ export class LetterRepository {
     return this.prisma.letter.findUnique({ where: { id: letterId } });
   }
 
-  /** userId로 편지들 조회 */
+  /** userId로 보낸 편지들 조회 */
   findLettersById(userId: number) {
     return this.prisma.letter.findMany({ where: { senderId: userId } });
   }

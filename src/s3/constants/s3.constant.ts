@@ -1,5 +1,6 @@
 export const S3Folder = {
   LETTERS: 'letters',
   GIFTS: 'gifts',
-  CONTENTS: 'contents',
+  COVERS: 'covers',
+  MUSICS: 'musics',
 } as const;
