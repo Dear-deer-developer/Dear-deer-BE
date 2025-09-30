@@ -12,6 +12,7 @@ import { S3Module } from './s3/s3.module';
 import { CalendarModule } from './schedule/schedule.module';
 import { GiftModule } from './gift/gift.module';
 import { AdminModule } from './admin/admin.module';
+import { ContentModule } from './contents/content.module';
 import { AlarmModule } from './alarm/alarm.module';
 import { FcmTokenModule } from './fcm-token/fcm-token.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -32,10 +33,6 @@ import { MusicModule } from './music/music.module';
     CalendarModule,
     GiftModule,
     AdminModule,
-    AlarmModule,
-    FcmTokenModule,
-    ImagePresignModule,
-    MusicModule,
   ],
   controllers: [AppController],
   providers: [AppService],

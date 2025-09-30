@@ -53,6 +53,9 @@ model User {
   schedule        Schedule[]
   deviceTokens    DeviceToken[]
   alarms          Alarm[]
+  contents       Content[]
+  scraps         Scrap[]
+  contentViews   ContentView[]
 
   @@map("users")
 }
@@ -137,4 +140,86 @@ model Music {
   alarms    Alarm[]
 
   @@map("musics")
+}
+
+
+model Content {
+  id Int @id @default(autoincrement())
+  title String
+  body String
+  status ContentStatus @default(WRITING)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  subCategoryId Int
+  subCategory ContentSubCategory @relation(fields: [subCategoryId], references:[id])
+  images ContentImage[]
+  scraps Scrap[]
+  views ContentView[]
+
+  @@map("contents")
+
+}
+
+model ContentImage {
+  id Int @id @default(autoincrement())
+  contentId Int @map("content_id")
+  url String @map("url")
+  content Content @relation(fields:[contentId], references:[id])
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@map("content_images")
+}
+
+model ContentMainCategory {
+  id Int @id @default(autoincrement())
+  name String
+  subs ContentSubCategory[]
+
+  @@map("content_main_categories")
+}
+
+model ContentSubCategory {
+  id Int @id @default(autoincrement())
+  name String
+  mainCategoryId Int
+  mainCategory ContentMainCategory @relation(fields: [mainCategoryId], references: [id])
+  contents Content[]
+
+  @@map("content_sub_categories")
+}
+
+enum ContentStatus {
+  WRITING
+  PUBLISHED
+  HIDDEN
+}
+
+model Scrap {
+  id Int @id @default(autoincrement())
+  userId Int
+  contentId Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  content Content @relation(fields: [contentId], references: [id])
+  
+  @@unique([userId, contentId])
+  @@map("scraps")
+
+}
+
+model ContentView {
+  id Int @id @default(autoincrement())
+  userId Int
+  contentId Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@map("content_views")
 }
