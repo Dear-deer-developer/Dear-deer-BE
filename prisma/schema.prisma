@@ -52,14 +52,16 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  sentLetters     Letter[]      @relation("SentLetters")
-  receivedLetters Letter[]      @relation("ReceivedLetters")
+  sentLetters     Letter[]        @relation("SentLetters")
+  receivedLetters Letter[]        @relation("ReceivedLetters")
   schedule        Schedule[]
   deviceTokens    DeviceToken[]
   alarms          Alarm[]
   contents        Content[]
   scraps          Scrap[]
   contentViews    ContentView[]
+  userGifts       UserGift[]
+  userEquipSlots  UserEquipSlot[]
 
   @@map("users")
 }
@@ -98,11 +100,27 @@ model Schedule {
 
 model Gift {
   id       Int          @id @default(autoincrement())
-  name     String
+  name     String       @unique
   category GiftCategory
-  imageUrl String       @map("image_url")
 
+  userGifts     UserGift[]
+  equippedSlots UserEquipSlot[]
+
+  @@index([category])
   @@map("gifts")
+}
+
+model UserGift {
+  userId     Int
+  giftId     Int
+  obtainedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@id([userId, giftId])
+  @@index([userId])
+  @@map("user_gifts")
 }
 
 model DeviceToken {
@@ -223,4 +241,40 @@ model ContentView {
   content Content @relation(fields: [contentId], references: [id])
 
   @@map("content_views")
+}
+
+// 카테고리 별 장착 가능한 용량 (capacity)
+model EquipCategoryRule {
+  category GiftCategory @id
+  capacity Int
+
+  @@map("equip_category_rules")
+}
+
+// 장착 가능한 슬롯 집합
+model EquipCategorySlot {
+  category      GiftCategory
+  slot          Int
+  UserEquipSlot UserEquipSlot[]
+
+  @@id([category, slot]) // ornament 카테고리는 12개라서 필요함. 
+  @@map("equip_category_slots")
+}
+
+// 장착 상태 (1슬롯 = 1행)
+model UserEquipSlot {
+  userId   Int
+  category GiftCategory
+  slot     Int // 1..capacity  (EquipGroupSlot FK로 강제)
+  giftId   Int
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupSlot EquipCategorySlot @relation(fields: [category, slot], references: [category, slot], onDelete: Restrict)
+  gift      Gift              @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@id([userId, category, slot]) // "한 슬롯엔 하나"
+  @@unique([userId, giftId]) // 같은 선물 중복 장착 금지
+  @@index([userId, category]) // 그룹별 조회
+  @@index([userId])
+  @@map("user_equip_slots")
 }
