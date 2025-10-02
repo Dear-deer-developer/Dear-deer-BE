@@ -1,6 +1,14 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Content } from '@prisma/client';
+import { CreateContentDto } from './dtos/create-content.dto';
 
 export const ApiContent = {
   findAll: () =>
@@ -69,6 +77,42 @@ export const ApiContent = {
       ApiResponse({
         status: 404,
         description: '게시된 콘텐츠를 찾을 수 없음',
+      }),
+    ),
+
+  create: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '관리자용 콘텐츠 등록',
+        description:
+          '**Firebase Admin SDK로 로그인한 관리자만 접근 가능합니다.** 콘텐츠 정보와 이미지 파일 정보를 받아 DB에 저장하고, S3 업로드를 위한 Presigned URL 목록을 반환합니다. (이미지: 최소 1장, 최대 10장)',
+      }),
+      ApiBearerAuth(),
+      ApiBody({ type: CreateContentDto }),
+      ApiResponse({
+        status: 201, // POST 요청은 201 Created를 사용합니다.
+        description: '콘텐츠가 성공적으로 등록되고 S3 업로드 URL이 반환됨',
+        schema: {
+          example: {
+            contentId: 10,
+            presignedUrls: [
+              {
+                url: 'https://s3-bucket-url.com/signed-url-for-upload-1',
+                key: 'contents/1/uuid1.jpg',
+              },
+              {
+                url: 'https://s3-bucket-url.com/signed-url-for-upload-2',
+                key: 'contents/1/uuid2.png',
+              },
+            ],
+          },
+        },
+      }),
+      ApiUnauthorizedResponse({
+        description: '유효하지 않은 토큰',
+      }),
+      ApiForbiddenResponse({
+        description: '관리자 권한이 필요합니다.',
       }),
     ),
 };

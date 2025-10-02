@@ -3,4 +3,5 @@ export const S3Folder = {
   GIFTS: 'gifts',
   COVERS: 'covers',
   MUSICS: 'musics',
+  CONTENTS: 'contents',
 } as const;

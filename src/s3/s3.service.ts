@@ -119,6 +119,31 @@ export class S3Service {
     return url;
   }
 
+  // Content 이미지 업로드 url 생성 함수 (다중파일용)
+  async generateContentImagePresignedUrls(
+    userId: number,
+    imageFiles: { originalFileName: string; contentType: string }[],
+  ): Promise<{ url: string; key: string }[]> {
+    const results = [];
+    for (const file of imageFiles) {
+      //확장자 추출
+      const ext = path.extname(file.originalFileName);
+      if (!ext) {
+        throw new Error('Invalid file extension');
+      }
+
+      //UUID 생성
+      const uuid = uuidv4();
+
+      //S3 image Key 생성
+      const key = `${S3Folder.CONTENTS}/${userId}/${uuid}${ext}`;
+
+      const result = await this.generatePresignedUrl(key, file.contentType);
+      results.push(result);
+    }
+    return results;
+  }
+
   /** 여러 이미지 열람용 presigned URL 배치 생성 */
   async generateGetObjectPresignedUrls(
     keys: string[],

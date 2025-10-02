@@ -8,6 +8,8 @@ import {
   ParseIntPipe,
   Query,
   UseGuards,
+  Body,
+  Req,
 } from '@nestjs/common';
 import { ContentService } from './content.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -15,6 +17,7 @@ import { ApiContent } from './content.swagger';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AdminGuard } from 'src/admin/admin.guard';
+import { CreateContentDto } from './dtos/create-content.dto';
 
 @ApiTags('contents')
 @Controller('contents')
@@ -34,4 +37,13 @@ export class ContentController {
   async findOne(@Param('contentId', ParseIntPipe) contentId: number) {
     return this.contentService.findOnePublishedContent(contentId);
   }
+
+  @Post()
+  @UseGuards(FirebaseAuthGuard, AdminGuard)
+  @ApiContent.create()
+  async createContent(@Body() dto: CreateContentDto, @Req() req: any) {
+    // req.user.id는 FirebaseAuthGuard에서 설정됩니다.
+    const authorId = req.user.id;
+
+    return this.contentService.createContent(authorId, dto);
 }

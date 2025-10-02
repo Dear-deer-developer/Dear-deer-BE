@@ -109,4 +109,30 @@ export class ContentRepository {
       },
     });
   }
+
+  async createContent(data: {
+    authorId: number;
+    subCategoryId: number;
+    title: string;
+    body: string;
+    images: { url: string }[];
+  }) {
+    const { images, ...contentData } = data;
+
+    return this.prisma.content.create({
+      data: {
+        ...contentData,
+        status: ContentStatus.PUBLISHED, // 관리자 등록 시 바로 게시
+        // ContentImage 모델에 연결하여 여러 장 저장
+        images: {
+          createMany: {
+            data: images.map((img) => ({ url: img.url })),
+          },
+        },
+      },
+      include: {
+        images: true, // 생성된 이미지 목록을 포함하여 반환
+      },
+    });
+  }
 }
