@@ -1,6 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateGiftDto } from './dtos/update-gift.dto';
-import { CreateGiftDto } from './dtos/create-gift.dto';
+import { Injectable } from '@nestjs/common';
 import { GiftRepository } from './gift.repository';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
 

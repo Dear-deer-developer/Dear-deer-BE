@@ -1,22 +1,8 @@
 import { ApiTags } from '@nestjs/swagger';
 import { ApiGifts } from './gift.swagger';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
-import { UpdateGiftDto } from './dtos/update-gift.dto';
 import { GiftService } from './gift.service';
-import { CreateGiftDto } from './dtos/create-gift.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 
 /** 추후 관리자 토큰 가드 추가 예정 */

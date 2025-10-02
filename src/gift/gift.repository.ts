@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
 import { ResGiftDto } from './dtos/res-gift.dto';
-import { UpdateGiftDto } from './dtos/update-gift.dto';
 
 @Injectable()
 export class GiftRepository {
