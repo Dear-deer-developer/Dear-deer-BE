@@ -1,18 +1,6 @@
 import { ApiTags } from '@nestjs/swagger';
 import { ApiGifts } from './gift.swagger';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
 import { GiftService } from './gift.service';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
