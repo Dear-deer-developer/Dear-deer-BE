@@ -18,6 +18,7 @@ import { FcmTokenModule } from './fcm-token/fcm-token.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ImagePresignModule } from './image/image-presign.module';
 import { MusicModule } from './music/music.module';
+import { CalendarRewardModule } from './calendar-reward/calendar-reward.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { MusicModule } from './music/music.module';
     FcmTokenModule,
     ImagePresignModule,
     MusicModule,
+    CalendarRewardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
