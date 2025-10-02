@@ -18,6 +18,7 @@ import { ContentsQueryDto } from './dtos/contents-query.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AdminGuard } from 'src/admin/admin.guard';
 import { CreateContentDto } from './dtos/create-content.dto';
+import { UpdateContentDto } from './dtos/update-content.dto';
 
 @ApiTags('contents')
 @Controller('contents')
@@ -38,6 +39,7 @@ export class ContentController {
     return this.contentService.findOnePublishedContent(contentId);
   }
 
+  /** 콘텐츠 등록 */
   @Post()
   @UseGuards(FirebaseAuthGuard, AdminGuard)
   @ApiContent.create()
@@ -46,4 +48,19 @@ export class ContentController {
     const authorId = req.user.id;
 
     return this.contentService.createContent(authorId, dto);
+  }
+
+  /** 콘텐츠 수정 */
+  @Put(':contentId')
+  @UseGuards(FirebaseAuthGuard, AdminGuard)
+  @ApiContent.update()
+  async updateContent(
+    @Param('contentId', ParseIntPipe) contentId: number,
+    @Body() dto: UpdateContentDto,
+    @Req() req: any,
+  ) {
+    const authorId = req.user.id;
+
+    return this.contentService.updateContent(contentId, authorId, dto);
+  }
 }

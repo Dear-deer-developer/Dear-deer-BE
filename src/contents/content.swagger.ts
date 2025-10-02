@@ -9,6 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { Content } from '@prisma/client';
 import { CreateContentDto } from './dtos/create-content.dto';
+import { UpdateContentDto } from './dtos/update-content.dto';
 
 export const ApiContent = {
   findAll: () =>
@@ -113,6 +114,47 @@ export const ApiContent = {
       }),
       ApiForbiddenResponse({
         description: '관리자 권한이 필요합니다.',
+      }),
+    ),
+
+  update: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '관리자용 콘텐츠 수정',
+        description:
+          '**Firebase Admin SDK로 로그인한 관리자만 접근 가능합니다.** 콘텐츠를 수정하고, 새로 업로드할 이미지가 있다면 S3 Presigned URL 목록을 반환합니다. **(중요)** `currentImageKeys`에는 수정 후 **최종적으로 남길 모든 이미지의 S3 Key**를 포함해야 합니다.',
+      }),
+      ApiBearerAuth(),
+      ApiBody({ type: UpdateContentDto }),
+      ApiResponse({
+        status: 200,
+        description: '콘텐츠 수정이 성공적으로 요청됨',
+        schema: {
+          example: {
+            contentId: 10,
+            presignedUrls: [
+              // 새로 업로드할 이미지가 있을 경우에만 이 목록이 채워집니다.
+              {
+                url: 'https://s3-bucket-url.com/signed-url-for-upload-new-1',
+                key: 'contents/1/uuid-new-1.jpg',
+              },
+            ],
+          },
+        },
+      }),
+      ApiUnauthorizedResponse({
+        description: '유효하지 않은 토큰',
+      }),
+      ApiForbiddenResponse({
+        description: '수정 권한이 없거나 관리자 권한이 필요합니다.',
+      }),
+      ApiResponse({
+        status: 400,
+        description: '유효성 검사 실패 (이미지 개수 1~10장 위반 등)',
+      }),
+      ApiResponse({
+        status: 404,
+        description: '콘텐츠를 찾을 수 없음',
       }),
     ),
 };

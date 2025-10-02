@@ -3,6 +3,8 @@ import { ContentRepository } from './content.repository';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { CreateContentDto } from './dtos/create-content.dto';
+import { UpdateContentDto } from './dtos/update-content.dto';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class ContentService {
@@ -90,6 +92,91 @@ export class ContentService {
     // 4. Content ID와 Presigned URL 목록 반환
     return {
       contentId: createdContent.id,
+      presignedUrls: presignedUrls,
+    };
+  }
+
+  /** 콘텐츠 수정 (관리자 전용) */
+
+  async updateContent(
+    contentId: number,
+    authorId: number,
+    dto: UpdateContentDto,
+  ): Promise<{
+    contentId: number;
+    presignedUrls: { url: string; key: string }[];
+  }> {
+    const { title, content, subCategoryId, currentImageKeys, newImages } = dto;
+
+    // 1. 콘텐츠 존재 및 권한 확인 (등록한 관리자만 수정 가능하다고 가정)
+    const existingContent =
+      await this.contentRepository.findContentByIdWithImages(contentId);
+
+    if (!existingContent) {
+      throw new NotFoundException('수정할 콘텐츠를 찾을 수 없습니다.');
+    }
+    if (existingContent.authorId !== authorId) {
+      // 보안상 ForbiddenException 대신 NotFound/Unauthorized를 고려할 수 있지만, 관리자 등록이므로 Forbidden도 적절
+      throw new ForbiddenException('수정 권한이 없습니다.');
+    }
+
+    // 2. 최종 이미지 개수 유효성 검사
+    const totalImageCount = currentImageKeys.length + newImages.length;
+    if (totalImageCount < 1 || totalImageCount > 10) {
+      throw new BadRequestException(
+        `이미지는 최소 1장, 최대 10장까지 등록할 수 있습니다. (현재: ${totalImageCount}장)`,
+      );
+    }
+
+    // 3. S3 이미지 삭제 및 업로드 키 준비
+    const existingKeys = existingContent.images.map((img) => img.url);
+
+    // DB에서 삭제할 키 목록 (기존 키 중 currentImageKeys에 없는 것)
+    const imageKeysToDeleteFromS3 = existingKeys.filter(
+      (key) => !currentImageKeys.includes(key),
+    );
+
+    // 4. S3 업로드용 Presigned URL 생성 (새 이미지에 대해서만)
+    const s3Files = newImages.map((img) => ({
+      originalFileName: img.filename,
+      contentType: img.contentType,
+    }));
+
+    const presignedUrls =
+      await this.s3Service.generateContentImagePresignedUrls(authorId, s3Files);
+
+    // 5. DB 트랜잭션 처리 (삭제할 이미지와 새로 추가할 이미지 목록 전달)
+    const contentUpdateData = {
+      ...(subCategoryId !== undefined && { subCategoryId }),
+      ...(title !== undefined && { title }),
+      ...(content !== undefined && { body: content }),
+    };
+
+    // 카테고리 유효성 검사 (Optional)
+    if (
+      subCategoryId !== undefined &&
+      !(await this.contentRepository.existSubCategory(subCategoryId))
+    ) {
+      throw new NotFoundException(
+        `존재하지 않는 서브 카테고리 ID입니다: ${subCategoryId}`,
+      );
+    }
+
+    const updatedContent = await this.contentRepository.updateContent(
+      contentId,
+      contentUpdateData, // 필터링된 객체 전달
+      presignedUrls.map((res) => res.key),
+      imageKeysToDeleteFromS3,
+    );
+
+    // 6. 실제 S3 이미지 삭제 (DB 트랜잭션 성공 후)
+    if (imageKeysToDeleteFromS3.length > 0) {
+      await this.s3Service.deleteObjects(imageKeysToDeleteFromS3);
+    }
+
+    // 7. 결과 반환 (새로 업로드할 이미지가 있다면 Presigned URL 반환)
+    return {
+      contentId: updatedContent.id,
       presignedUrls: presignedUrls,
     };
   }
