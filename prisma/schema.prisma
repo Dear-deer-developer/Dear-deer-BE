@@ -105,6 +105,8 @@ model Gift {
 
   userGifts     UserGift[]
   equippedSlots UserEquipSlot[]
+  rewardPlan    CalendarRewardPlan[]
+  rewardRecord  CalendarRewardRecord[]
 
   @@index([category])
   @@map("gifts")
@@ -113,7 +115,7 @@ model Gift {
 model UserGift {
   userId     Int
   giftId     Int
-  obtainedAt DateTime @default(now())
+  obtainedAt DateTime @default(now()) @map("user_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
@@ -277,4 +279,29 @@ model UserEquipSlot {
   @@index([userId, category]) // 그룹별 조회
   @@index([userId])
   @@map("user_equip_slots")
+}
+
+// 날짜별 지급 계획
+model CalendarRewardPlan {
+  localDate DateTime @unique @db.Date
+  giftId    Int
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@index([giftId])
+  @@map("calendar_reward_plans")
+}
+
+// 유저의 일별 수령 기록 (하루 1회)
+model CalendarRewardRecord {
+  userId     Int
+  localDate  DateTime @db.Date
+  giftId     Int
+  receivedAt DateTime @default(now())
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@id([userId, localDate])
+  @@index([giftId])
+  @@map("calendar_reward_records")
 }
