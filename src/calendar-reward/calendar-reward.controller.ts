@@ -11,11 +11,9 @@ import { CalendarRewardService } from './calendar-reward.service';
 import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCalendarReward } from './calendar-reward.swagger';
-import { AuthGuard } from '@nestjs/passport';
-import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 
 @ApiTags('calendar-rewards')
-@UseGuards(AuthGuard('accessToken'))
+@UseGuards(FirebaseAuthGuard)
 @Controller('calendar-rewards')
 export class CalendarRewardController {
   constructor(private readonly calendarRewardService: CalendarRewardService) {}
@@ -23,7 +21,8 @@ export class CalendarRewardController {
   // 선물 받았는지 확인
   @Post('enter')
   @ApiCalendarReward.enter()
-  async enter(@GetUserId() userId: number) {
+  async enter(@Req() req: any) {
+    const userId: number = req.user.id;
     return this.calendarRewardService.enterAndMaybeGrant(userId);
   }
 
@@ -31,9 +30,10 @@ export class CalendarRewardController {
   @Delete(':giftId')
   @ApiCalendarReward.deleteGift()
   async deleteMyGift(
-    @GetUserId() userId: number,
+    @Req() req,
     @Param('giftId', ParseIntPipe) giftId: number,
   ) {
+    const userId = req.user.id;
     return this.calendarRewardService.deleteGiftAndRecord(userId, giftId);
   }
 }
