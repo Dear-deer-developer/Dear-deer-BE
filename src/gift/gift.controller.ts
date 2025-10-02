@@ -1,20 +1,9 @@
 import { ApiTags } from '@nestjs/swagger';
 import { ApiGifts } from './gift.swagger';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
-import { UpdateGiftDto } from './dtos/update-gift.dto';
 import { GiftService } from './gift.service';
-import { CreateGiftDto } from './dtos/create-gift.dto';
+import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
 @ApiTags('gift')
@@ -22,10 +11,13 @@ import { CreateGiftDto } from './dtos/create-gift.dto';
 export class GiftController {
   constructor(private readonly giftService: GiftService) {}
 
-  @Post()
-  @ApiGifts.create()
-  create(@Body() dto: CreateGiftDto) {
-    return this.giftService.createGift(dto);
+  // 나의 gifts 조회 (필요없는 값은 수정해서 성능 향상해야됨 10.03)
+  @Get('me')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiGifts.findMine()
+  async getMyGifts(@Req() req) {
+    const userId = req.user.id;
+    return this.giftService.findUserGifts(userId);
   }
 
   @Get()
@@ -34,31 +26,9 @@ export class GiftController {
     return this.giftService.getAllGifts();
   }
 
-  @Get(':giftId')
-  @ApiGifts.findOne()
-  findOne(@Param('giftId', ParseIntPipe) giftId: number) {
-    return this.giftService.getGiftById(giftId);
-  }
-
   @Get('category/:category')
   @ApiGifts.findByCategory()
   findByCategory(@Param('category') category: GiftCategory) {
     return this.giftService.getGiftsByCategory(category);
-  }
-
-  @Put(':giftId')
-  @ApiGifts.update()
-  update(
-    @Param('giftId', ParseIntPipe) giftId: number,
-    @Body() dto: UpdateGiftDto,
-  ) {
-    return this.giftService.updateGift(giftId, dto);
-  }
-
-  @Delete(':giftId')
-  @HttpCode(204)
-  @ApiGifts.remove()
-  async remove(@Param('giftId', ParseIntPipe) giftId: number) {
-    await this.giftService.deleteGift(giftId);
   }
 }

@@ -30,7 +30,11 @@ enum GiftCategory {
   ORNAMENT
   STAR
   ELECTRIC_BULB
-  INTERIOR
+  WALLPAPER
+  GARLAND
+  CARPET
+  TRAIN
+  GIFTBOX
   ANIMAL
 }
 
@@ -48,14 +52,16 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  sentLetters     Letter[]      @relation("SentLetters")
-  receivedLetters Letter[]      @relation("ReceivedLetters")
+  sentLetters     Letter[]        @relation("SentLetters")
+  receivedLetters Letter[]        @relation("ReceivedLetters")
   schedule        Schedule[]
   deviceTokens    DeviceToken[]
   alarms          Alarm[]
-  contents       Content[]
-  scraps         Scrap[]
-  contentViews   ContentView[]
+  contents        Content[]
+  scraps          Scrap[]
+  contentViews    ContentView[]
+  userGifts       UserGift[]
+  userEquipSlots  UserEquipSlot[]
 
   @@map("users")
 }
@@ -94,11 +100,29 @@ model Schedule {
 
 model Gift {
   id       Int          @id @default(autoincrement())
-  name     String
+  name     String       @unique
   category GiftCategory
-  imageUrl String       @map("image_url")
 
+  userGifts     UserGift[]
+  equippedSlots UserEquipSlot[]
+  rewardPlan    CalendarRewardPlan[]
+  rewardRecord  CalendarRewardRecord[]
+
+  @@index([category])
   @@map("gifts")
+}
+
+model UserGift {
+  userId     Int
+  giftId     Int
+  obtainedAt DateTime @default(now()) @map("user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@id([userId, giftId])
+  @@index([userId])
+  @@map("user_gifts")
 }
 
 model DeviceToken {
@@ -142,40 +166,38 @@ model Music {
   @@map("musics")
 }
 
-
 model Content {
-  id Int @id @default(autoincrement())
-  title String
-  body String
-  status ContentStatus @default(WRITING)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        Int           @id @default(autoincrement())
+  title     String
+  body      String
+  status    ContentStatus @default(WRITING)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
 
   // Relations
-  authorId Int
-  author User @relation(fields: [authorId], references: [id])
+  authorId      Int
+  author        User               @relation(fields: [authorId], references: [id])
   subCategoryId Int
-  subCategory ContentSubCategory @relation(fields: [subCategoryId], references:[id])
-  images ContentImage[]
-  scraps Scrap[]
-  views ContentView[]
+  subCategory   ContentSubCategory @relation(fields: [subCategoryId], references: [id])
+  images        ContentImage[]
+  scraps        Scrap[]
+  views         ContentView[]
 
   @@map("contents")
-
 }
 
 model ContentImage {
-  id Int @id @default(autoincrement())
-  contentId Int @map("content_id")
-  url String @map("url")
-  content Content @relation(fields:[contentId], references:[id])
+  id        Int      @id @default(autoincrement())
+  contentId Int      @map("content_id")
+  url       String   @map("url")
+  content   Content  @relation(fields: [contentId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
-  
+
   @@map("content_images")
 }
 
 model ContentMainCategory {
-  id Int @id @default(autoincrement())
+  id   Int                  @id @default(autoincrement())
   name String
   subs ContentSubCategory[]
 
@@ -183,11 +205,11 @@ model ContentMainCategory {
 }
 
 model ContentSubCategory {
-  id Int @id @default(autoincrement())
-  name String
+  id             Int                 @id @default(autoincrement())
+  name           String
   mainCategoryId Int
-  mainCategory ContentMainCategory @relation(fields: [mainCategoryId], references: [id])
-  contents Content[]
+  mainCategory   ContentMainCategory @relation(fields: [mainCategoryId], references: [id])
+  contents       Content[]
 
   @@map("content_sub_categories")
 }
@@ -199,27 +221,87 @@ enum ContentStatus {
 }
 
 model Scrap {
-  id Int @id @default(autoincrement())
-  userId Int
+  id        Int      @id @default(autoincrement())
+  userId    Int
   contentId Int
   createdAt DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
   content Content @relation(fields: [contentId], references: [id])
-  
+
   @@unique([userId, contentId])
   @@map("scraps")
-
 }
 
 model ContentView {
-  id Int @id @default(autoincrement())
-  userId Int
+  id        Int      @id @default(autoincrement())
+  userId    Int
   contentId Int
   createdAt DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
   content Content @relation(fields: [contentId], references: [id])
 
   @@map("content_views")
+}
+
+// 카테고리 별 장착 가능한 용량 (capacity)
+model EquipCategoryRule {
+  category GiftCategory @id
+  capacity Int
+
+  @@map("equip_category_rules")
+}
+
+// 장착 가능한 슬롯 집합
+model EquipCategorySlot {
+  category      GiftCategory
+  slot          Int
+  UserEquipSlot UserEquipSlot[]
+
+  @@id([category, slot]) // ornament 카테고리는 12개라서 필요함. 
+  @@map("equip_category_slots")
+}
+
+// 장착 상태 (1슬롯 = 1행)
+model UserEquipSlot {
+  userId   Int
+  category GiftCategory
+  slot     Int // 1..capacity  (EquipGroupSlot FK로 강제)
+  giftId   Int
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupSlot EquipCategorySlot @relation(fields: [category, slot], references: [category, slot], onDelete: Restrict)
+  gift      Gift              @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@id([userId, category, slot]) // "한 슬롯엔 하나"
+  @@unique([userId, giftId]) // 같은 선물 중복 장착 금지
+  @@index([userId, category]) // 그룹별 조회
+  @@index([userId])
+  @@map("user_equip_slots")
+}
+
+// 날짜별 지급 계획
+model CalendarRewardPlan {
+  localDate DateTime @unique @db.Date
+  giftId    Int
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@index([giftId])
+  @@map("calendar_reward_plans")
+}
+
+// 유저의 일별 수령 기록 (하루 1회)
+model CalendarRewardRecord {
+  userId     Int
+  localDate  DateTime @db.Date
+  giftId     Int
+  receivedAt DateTime @default(now())
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
+
+  @@id([userId, localDate])
+  @@index([giftId])
+  @@map("calendar_reward_records")
 }
