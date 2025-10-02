@@ -33,7 +33,6 @@ export class CalendarRewardService {
   async enterAndMaybeGrant(userId: number) {
     const todayYmd = this.todayYmd();
     const todayDate = this.dateYmdToDateObject(todayYmd);
-    console.log(new Date(todayYmd));
 
     const plan = await this.calendarRewardRepository.findPlanByDate(todayDate);
     if (!plan) {
