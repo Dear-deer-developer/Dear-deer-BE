@@ -2,34 +2,21 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { GiftCategoryValue } from 'src/common/enums/gift-category.enum';
 import { ResGiftDto } from './dtos/res-gift.dto';
-import { CreateGiftDto } from './dtos/create-gift.dto';
-import { UpdateGiftDto } from './dtos/update-gift.dto';
 
 export const ApiGifts = {
-  create: () =>
+  findMine: () =>
     applyDecorators(
-      ApiOperation({ summary: '새 gift 추가' }),
-      ApiBody({
-        description: '선물 데이터 생성에 필요한 정보',
-        type: CreateGiftDto,
-      }),
+      ApiOperation({ summary: '내가 가진 gifts 조회' }),
       ApiResponse({
-        status: 201,
-        description: 'gift 생성 성공',
-        type: ResGiftDto,
+        status: 200,
+        type: [ResGiftDto],
+        description: '현재 로그인한 사용자가 보유한 gift 목록',
       }),
     ),
   findAll: () =>
     applyDecorators(
       ApiOperation({ summary: '전체 gift 조회' }),
       ApiResponse({ status: 200, type: [ResGiftDto] }),
-    ),
-
-  findOne: () =>
-    applyDecorators(
-      ApiOperation({ summary: 'gift 단일 조회' }),
-      ApiParam({ name: 'id', type: Number, example: 1 }),
-      ApiResponse({ status: 200, type: ResGiftDto }),
     ),
 
   findByCategory: () =>
@@ -41,23 +28,5 @@ export const ApiGifts = {
         example: 'ORNAMENT',
       }),
       ApiResponse({ status: 200, type: [ResGiftDto] }),
-    ),
-
-  update: () =>
-    applyDecorators(
-      ApiOperation({ summary: 'gift 수정' }),
-      ApiParam({ name: 'id', type: Number, example: 1 }),
-      ApiBody({
-        description: '선물 데이터 수정에 필요한 정보',
-        type: UpdateGiftDto,
-      }),
-      ApiResponse({ status: 200, type: ResGiftDto }),
-    ),
-
-  remove: () =>
-    applyDecorators(
-      ApiOperation({ summary: 'gift 삭제' }),
-      ApiParam({ name: 'id', type: Number, example: 1 }),
-      ApiResponse({ status: 204, description: '삭제 성공' }),
     ),
 };

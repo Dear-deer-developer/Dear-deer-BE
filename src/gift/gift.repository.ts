@@ -8,37 +8,22 @@ import { UpdateGiftDto } from './dtos/update-gift.dto';
 export class GiftRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // 반환 타입 dto 추가해야함 .
-  /** gift 생성 */
-  async create(data: {
-    name: string;
-    category: GiftCategory;
-    imageUrl: string;
-  }): Promise<ResGiftDto> {
-    return this.prisma.gift.create({ data });
+  // 나의 gifts 조회
+  async findUserGifts(userId: number) {
+    const myGifts = this.prisma.userGift.findMany({
+      where: { userId },
+      select: { gift: { select: { id: true, name: true, category: true } } },
+    });
+    return myGifts;
   }
 
+  // 반환 타입 dto 추가해야함 .
   /** gift 전체 조회 */
   async findAll(): Promise<ResGiftDto[]> {
     return this.prisma.gift.findMany();
   }
 
-  async findById(id: number): Promise<ResGiftDto> {
-    return this.prisma.gift.findUnique({ where: { id } });
-  }
-
   async findByCategory(category: GiftCategory): Promise<ResGiftDto[]> {
     return this.prisma.gift.findMany({ where: { category } });
-  }
-
-  async update(id: number, data: UpdateGiftDto): Promise<ResGiftDto> {
-    return this.prisma.gift.update({
-      where: { id },
-      data,
-    });
-  }
-
-  async delete(id: number): Promise<void> {
-    await this.prisma.gift.delete({ where: { id } });
   }
 }

@@ -13,7 +13,4 @@ export class ResGiftDto {
 
   @ApiProperty({ enum: GiftCategoryValue, example: 'ORNAMENT' })
   category: GiftCategory;
-
-  @ApiProperty({ example: 'https://s3.amazonaws.com/bucket/gifts/uuid.jpg' })
-  imageUrl: string;
 }
