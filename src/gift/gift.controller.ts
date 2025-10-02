@@ -1,11 +1,21 @@
 import { ApiTags } from '@nestjs/swagger';
 import { ApiGifts } from './gift.swagger';
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
 import { GiftService } from './gift.service';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
 @ApiTags('gift')
@@ -15,9 +25,10 @@ export class GiftController {
 
   // 나의 gifts 조회 (필요없는 값은 수정해서 성능 향상해야됨 10.03)
   @Get('me')
-  @UseGuards(AuthGuard('accessToken'))
+  @UseGuards(FirebaseAuthGuard)
   @ApiGifts.findMine()
-  async getMyGifts(@GetUserId() userId: number) {
+  async getMyGifts(@Req() req) {
+    const userId = req.user.id;
     return this.giftService.findUserGifts(userId);
   }
 
@@ -28,7 +39,6 @@ export class GiftController {
     return this.giftService.getAllGifts();
   }
 
-  // 개발용(일 것 같아요)
   @Get('category/:category')
   @ApiGifts.findByCategory()
   findByCategory(@Param('category') category: GiftCategory) {
