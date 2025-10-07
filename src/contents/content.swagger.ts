@@ -157,4 +157,28 @@ export const ApiContent = {
         description: '콘텐츠를 찾을 수 없음',
       }),
     ),
+
+  delete: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '관리자용 콘텐츠 삭제',
+        description:
+          '**Firebase Admin SDK로 로그인한 관리자만 접근 가능합니다.** 지정된 콘텐츠와 관련된 DB 레코드 및 S3 파일들을 모두 삭제합니다. (작성자 본인만 삭제 가능)',
+      }),
+      ApiBearerAuth(),
+      ApiResponse({
+        status: 204,
+        description: '콘텐츠 삭제 성공 (No Content)',
+      }),
+      ApiUnauthorizedResponse({
+        description: '유효하지 않은 토큰',
+      }),
+      ApiForbiddenResponse({
+        description: '삭제 권한이 없거나 관리자 권한이 필요합니다.',
+      }),
+      ApiResponse({
+        status: 404,
+        description: '삭제할 콘텐츠를 찾을 수 없음',
+      }),
+    ),
 };

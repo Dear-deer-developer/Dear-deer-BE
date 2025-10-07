@@ -10,6 +10,7 @@ import {
   UseGuards,
   Body,
   Req,
+  HttpCode,
 } from '@nestjs/common';
 import { ContentService } from './content.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -62,5 +63,18 @@ export class ContentController {
     const authorId = req.user.id;
 
     return this.contentService.updateContent(contentId, authorId, dto);
+  }
+
+  /** 콘텐츠 삭제 */
+  @Delete(':contentId')
+  @HttpCode(204)
+  @UseGuards(FirebaseAuthGuard, AdminGuard)
+  @ApiContent.delete()
+  async deleteContent(
+    @Param('contentId', ParseIntPipe) contentId: number,
+    @Req() req: any,
+  ) {
+    const authorId = req.user.id;
+    await this.contentService.deleteContent(contentId, authorId);
   }
 }

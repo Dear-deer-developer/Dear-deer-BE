@@ -180,4 +180,30 @@ export class ContentService {
       presignedUrls: presignedUrls,
     };
   }
+
+  /** 콘텐츠 삭제 (관리자 전용) */
+  async deleteContent(contentId: number, authorId: number): Promise<void> {
+    // 1. 콘텐츠 존재 및 권한 확인 (등록된 관리자만 삭제 가능)
+    const existingContent =
+      await this.contentRepository.findContentByIdWithImages(contentId);
+
+    if (!existingContent) {
+      throw new NotFoundException('삭제할 콘텐츠를 찾을 수 없습니다.');
+    }
+    if (existingContent.authorId !== authorId) {
+      // 등록 관리자가 아니면 권한 없음
+      throw new ForbiddenException('삭제 권한이 없습니다.');
+    }
+
+    // 2. S3에서 삭제할 이미지 키 목록 추출
+    const imageKeysToDelete = existingContent.images.map((img) => img.url);
+
+    // 3. DB 트랜잭션을 통해 콘텐츠 및 이미지 레코드 삭제
+    await this.contentRepository.deleteContent(contentId);
+
+    // 4. S3 실제 파일 삭제 (DB 삭제가 성공했으므로)
+    if (imageKeysToDelete.length > 0) {
+      await this.s3Service.deleteObjects(imageKeysToDelete);
+    }
+  }
 }
