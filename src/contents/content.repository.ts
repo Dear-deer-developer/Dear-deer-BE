@@ -2,8 +2,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Content, ContentStatus } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import { Content, ContentStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ContentRepository {
@@ -183,13 +182,30 @@ export class ContentRepository {
     });
   }
 
-  /** contentId로 콘텐츠 조회 (수정 로직에서 사용) */
+  /** contentId로 콘텐츠 조회 (수정, 삭제 로직에서 사용) */
   async findContentByIdWithImages(contentId: number) {
     return this.prisma.content.findUnique({
       where: { id: contentId },
       include: {
         images: true,
       },
+    });
+  }
+
+  /** 콘텐츠 및 관련 이미지 레코드 삭제 트랜잭션 */
+  async deleteContent(contentId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. ContentImage 레코드 삭제
+      await tx.contentImage.deleteMany({
+        where: { contentId: contentId },
+      });
+
+      // 2. Content 레코드 삭제
+      const deletedContent = await tx.content.delete({
+        where: { id: contentId },
+      });
+
+      return deletedContent;
     });
   }
 }
