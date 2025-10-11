@@ -119,7 +119,7 @@ export class S3Service {
     return url;
   }
 
-  // Content 이미지 업로드 url 생성 함수 (다중파일용)
+  /** Content 이미지 업로드 url 생성 함수 (다중파일용) */
   async generateContentImagePresignedUrls(
     userId: number,
     imageFiles: { originalFileName: string; contentType: string }[],
