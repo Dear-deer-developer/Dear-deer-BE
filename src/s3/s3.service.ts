@@ -123,20 +123,24 @@ export class S3Service {
   async generateContentImagePresignedUrls(
     userId: number,
     imageFiles: { originalFileName: string; contentType: string }[],
+    contentId?: number,
   ): Promise<{ url: string; key: string }[]> {
     const results = [];
+
+    const folderId = contentId ? String(contentId) : uuidv4();
+
     for (const file of imageFiles) {
-      //확장자 추출
+      //확장자 추출 및 UUID 생성
       const ext = path.extname(file.originalFileName);
       if (!ext) {
         throw new Error('Invalid file extension');
       }
 
       //UUID 생성
-      const uuid = uuidv4();
+      const fileUuid = uuidv4();
 
       //S3 image Key 생성
-      const key = `${S3Folder.CONTENTS}/${userId}/${uuid}${ext}`;
+      const key = `${S3Folder.CONTENTS}/${userId}/${folderId}/${fileUuid}${ext}`;
 
       const result = await this.generatePresignedUrl(key, file.contentType);
       results.push(result);

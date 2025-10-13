@@ -143,7 +143,11 @@ export class ContentService {
     }));
 
     const presignedUrls =
-      await this.s3Service.generateContentImagePresignedUrls(authorId, s3Files);
+      await this.s3Service.generateContentImagePresignedUrls(
+        authorId,
+        s3Files,
+        contentId,
+      );
 
     // 5. DB 트랜잭션 처리 (삭제할 이미지와 새로 추가할 이미지 목록 전달)
     const contentUpdateData = {
