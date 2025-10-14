@@ -38,7 +38,7 @@ import { CalendarRewardModule } from './calendar-reward/calendar-reward.module';
     FcmTokenModule,
     ImagePresignModule,
     MusicModule,
-    CalendarRewardModule,
+    ContentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
