@@ -10,6 +10,7 @@ import { applyDecorators } from '@nestjs/common';
 import { TokenResponseDto } from './dtos/token-res.dto';
 import { AuthLoginDto } from './dtos/auth-login.dto';
 import { AuthRegisterDto } from './dtos/auth-register.dto';
+import { TokenRefreshDto } from './dtos/token-refresh.dto';
 
 export function SwaggerKakaoLogin() {
   return applyDecorators(
@@ -155,7 +156,7 @@ export const ApiAuthNative = {
         {
           name: 'refresh-token',
           required: true,
-          description: '로그인 시 발급받은 Refresh Token',
+          description: '로그인 시 발급받은 Refresh Token 값',
         },
       ]),
       ApiResponse({
@@ -183,8 +184,8 @@ export const ApiAuthNative = {
     applyDecorators(
       ApiOperation({
         summary: '[네이티브] 로그아웃',
-        description:
-          '서버에 저장된 Refresh Token을 삭제하여 현재 기기에서의 세션을 무효화합니다.',
+        description: `서버에 저장된 Refresh Token을 삭제하여 현재 기기에서의 세션을 무효화합니다.
+          header로 accessToken 을 담아서 요청하면 됨`,
       }),
       ApiBearerAuth('accessToken'), // Bearer Access Token 필요
       ApiResponse({
