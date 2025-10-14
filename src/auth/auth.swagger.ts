@@ -3,8 +3,13 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiHeaders,
+  ApiTags,
 } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
+import { TokenResponseDto } from './dtos/token-res.dto';
+import { AuthLoginDto } from './dtos/auth-login.dto';
+import { AuthRegisterDto } from './dtos/auth-register.dto';
 
 export function SwaggerKakaoLogin() {
   return applyDecorators(
@@ -74,3 +79,119 @@ export function SwaggerLogout() {
     }),
   );
 }
+
+export const ApiAuthNative = {
+  /**
+   * @summary 네이티브 계정 회원가입 Swagger 데코레이터
+   */
+  register: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[네이티브] 회원가입',
+        description:
+          '이메일, 비밀번호, 닉네임으로 서비스에 가입하고 토큰을 발급받습니다.',
+      }),
+      ApiBody({ type: AuthRegisterDto }),
+      ApiResponse({
+        status: 201,
+        description: '회원가입 성공',
+        type: TokenResponseDto,
+      }),
+      ApiResponse({
+        status: 409,
+        description: '이미 사용 중인 이메일 또는 닉네임',
+        schema: {
+          example: {
+            message: '이미 사용 중인 이메일입니다.',
+            error: 'Conflict',
+            statusCode: 409,
+          },
+        },
+      }),
+    ),
+
+  /**
+   * @summary 네이티브 계정 로그인 Swagger 데코레이터
+   */
+  login: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[네이티브] 로그인',
+        description:
+          '이메일과 비밀번호로 로그인하고 새로운 Access/Refresh 토큰을 발급받습니다.',
+      }),
+      ApiBody({ type: AuthLoginDto }),
+      ApiResponse({
+        status: 200,
+        description: '로그인 성공',
+        type: TokenResponseDto,
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (이메일 또는 비밀번호 불일치)',
+        schema: {
+          example: {
+            message: '유효하지 않은 이메일 또는 비밀번호입니다.',
+            error: 'Unauthorized',
+            statusCode: 401,
+          },
+        },
+      }),
+    ),
+
+  /**
+   * @summary Access Token 갱신 Swagger 데코레이터
+   */
+  refresh: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[네이티브] Access Token 갱신',
+        description:
+          '만료된 Access Token을 Refresh Token을 이용해 재발급받습니다.',
+      }),
+      ApiHeaders([
+        {
+          name: 'refresh-token',
+          required: true,
+          description: '로그인 시 발급받은 Refresh Token',
+        },
+      ]),
+      ApiResponse({
+        status: 200,
+        description: '토큰 갱신 성공',
+        type: TokenResponseDto,
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (유효하지 않은 Refresh Token)',
+        schema: {
+          example: {
+            message: '갱신 토큰이 만료되었거나 이미 사용되었습니다.',
+            error: 'Unauthorized',
+            statusCode: 401,
+          },
+        },
+      }),
+    ),
+
+  /**
+   * @summary 네이티브 계정 로그아웃 Swagger 데코레이터
+   */
+  logout: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[네이티브] 로그아웃',
+        description:
+          '서버에 저장된 Refresh Token을 삭제하여 현재 기기에서의 세션을 무효화합니다.',
+      }),
+      ApiBearerAuth('accessToken'), // Bearer Access Token 필요
+      ApiResponse({
+        status: 200,
+        description: '로그아웃 성공',
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (유효하지 않은 Access Token)',
+      }),
+    ),
+};
