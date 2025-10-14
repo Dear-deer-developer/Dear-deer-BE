@@ -13,10 +13,6 @@ import { Type } from 'class-transformer';
 import { ContentImageUploadDto } from './content-image-upload.dto';
 
 export class CreateContentDto {
-  @ApiProperty({ example: 1, description: '콘텐츠를 등록하는 관리자의 ID' })
-  @IsInt()
-  authorId: number;
-
   @ApiProperty({
     example: 1,
     description: '콘텐츠가 속할 서브 카테고리 ID',
