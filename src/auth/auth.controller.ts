@@ -27,7 +27,6 @@ import { AuthLoginDto } from './dtos/auth-login.dto';
 import { TokenResponseDto } from './dtos/token-res.dto';
 import { GetUserId } from './decorators/get-user-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
-import { CheckNicknameDto } from './dtos/check-nickname-dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -57,6 +56,10 @@ export class AuthController {
   async refresh(
     @Headers('refresh-token') refreshToken: string,
   ): Promise<TokenResponseDto> {
+<<<<<<< HEAD
+=======
+    // 갱신 토큰을 Body로 받아 서비스로 전달하여 검증 및 재발급 처리
+>>>>>>> 8bb9ec4 (feat/#44/자체로그인(native) 기능 추가)
     return this.authService.refreshTokens(refreshToken);
   }
 
@@ -66,16 +69,6 @@ export class AuthController {
   @UseGuards(AuthGuard('accessToken'))
   async logout(@GetUserId() userId: number): Promise<void> {
     await this.authService.logout(userId);
-  }
-
-  // Guard 달지 않아도 됩니다! 회원가입시 닉네임 중복 체크용
-  @Get('native/check-nickname')
-  @ApiAuthNative.checkNickname()
-  @HttpCode(HttpStatus.OK)
-  async checkNickname(
-    @Query() dto: CheckNicknameDto,
-  ): Promise<{ isAvailable: boolean }> {
-    return await this.authService.checkNicknameAvailability(dto.nickname);
   }
 
   /////////// 아래는 소셜로그인 ///////////

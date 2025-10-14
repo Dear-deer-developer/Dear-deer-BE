@@ -28,21 +28,9 @@ export class AuthRepository {
     });
   }
 
-  // 회원가입 전 zipCode로 사용자 찾기
-  async findUserByZipCode(zipCode: number): Promise<User | null> {
-    return this.prisma.user.findFirst({
-      where: {
-        zipCode,
-      },
-    });
-  }
-
   // 신규 사용자 생성 (자체 로그인)
   async createUser(
-    data: Omit<AuthRegisterDto, 'password'> & {
-      hashedPassword: string;
-      zipCode: number;
-    },
+    data: Omit<AuthRegisterDto, 'password'> & { hashedPassword: string },
   ): Promise<User> {
     const { email, nickname, zipCode, hashedPassword } = data;
     return this.prisma.user.create({
