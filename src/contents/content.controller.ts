@@ -20,6 +20,7 @@ import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AdminGuard } from 'src/admin/admin.guard';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
+import { GetUser } from 'src/auth/get-user.decorator';
 
 @ApiTags('contents')
 @Controller('contents')
@@ -44,10 +45,10 @@ export class ContentController {
   @Post()
   @UseGuards(FirebaseAuthGuard, AdminGuard)
   @ApiContent.create()
-  async createContent(@Body() dto: CreateContentDto, @Req() req: any) {
-    // req.user.id는 FirebaseAuthGuard에서 설정됩니다.
-    const authorId = req.user.id;
-
+  async createContent(
+    @GetUser('id') authorId: number,
+    @Body() dto: CreateContentDto,
+  ) {
     return this.contentService.createContent(authorId, dto);
   }
 
