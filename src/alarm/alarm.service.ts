@@ -97,12 +97,6 @@ export class AlarmService {
           '지정된 시간에 도달했어요.⏰ 메리메리 크리스마스 ~',
           dataPayload,
         );
-        console.log(
-          token,
-          '메리 크리스마스! 🌲',
-          '지정된 시간에 도달했어요.⏰ 메리메리 크리스마스 ~',
-          dataPayload,
-        );
       }
     }
   }

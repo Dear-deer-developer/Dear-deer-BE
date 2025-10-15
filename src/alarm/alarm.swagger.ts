@@ -31,6 +31,7 @@ export const ApiAlarm = {
             summary: '예시',
             value: {
               scheduledAt: '2025-12-24T08:10:00Z',
+              musicId: 1,
             },
           },
         },

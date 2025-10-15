@@ -44,14 +44,24 @@ enum Platform {
   OTHER
 }
 
-model User {
-  id         Int      @id @default(autoincrement())
-  nickname   String   @unique
-  zipCode    Int      @map("zip_code")
-  providerId String   @unique @map("provider_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+enum LoginType {
+  NATIVE // 자체 로그인 (이메일/비밀번호)
+  SOCIAL // 소셜 로그인 (Firebase)
+}
 
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String?   @unique // (10.13 자체로그인시에만 저장)
+  hashedPassword String?   @map("hashed_password") // 자체로그인시 저장
+  nickname       String    @unique
+  zipCode        Int       @map("zip_code")
+  loginType      LoginType @default(NATIVE) @map("login_type")
+  providerId     String?   @unique @map("provider_id") // 소셜로그인시 저장
+  isAdmin        Boolean   @default(false) @map("is_admin")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  refreshToken    RefreshToken?
   sentLetters     Letter[]        @relation("SentLetters")
   receivedLetters Letter[]        @relation("ReceivedLetters")
   schedule        Schedule[]
@@ -64,6 +74,20 @@ model User {
   userEquipSlots  UserEquipSlot[]
 
   @@map("users")
+}
+
+// refreshToken 저장 테이블
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id") // User와 1:1 관계
+  token     String // 실제 토큰 값
+  expiresAt DateTime @map("expires_at") // 토큰 만료 시간
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
 
 model Letter {
