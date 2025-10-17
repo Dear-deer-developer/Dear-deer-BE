@@ -10,8 +10,6 @@ import {
 import { SwaggerGetUser } from './users.swagger';
 import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
-import { FindUserZipcodeDto } from './dtos/find-user-zipcode.dto';
-import { FoundUserDto } from './dtos/res-user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -33,16 +31,6 @@ export class UsersController {
   //   const uid = req.user.uid;
   //   return this.usersService.getUserInfoByProviderId(uid);
   // }
-
-  @Get('zipcode')
-  @UseGuards(AuthGuard('accessToken'))
-  @SwaggerFindUserByZipcode()
-  async findUsersByZipCode(
-    @Query() query: FindUserZipcodeDto,
-    @GetUserId() userId: number,
-  ): Promise<FoundUserDto> {
-    return this.usersService.findUserByZipCode(query.zipCode, userId);
-  }
 
   @Patch('nickname')
   @UseGuards(AuthGuard('accessToken'))
