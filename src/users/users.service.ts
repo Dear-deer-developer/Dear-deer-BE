@@ -36,4 +36,13 @@ export class UsersService {
     }
     return user;
   }
+
+  async getUserInfoByUserId(userId: number) {
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+    return user;
+  }
 }
