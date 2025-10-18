@@ -90,6 +90,18 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model AuthCode {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  code         String
+  isVerified   Boolean  @default(false) @map("is_verified") // 인증 완료 상태
+  attemptCount Int      @default(0) @map("attempt_count") // 시도 횟수 카운트
+  expiredAt    DateTime @map("expired_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("auth_codes")
+}
+
 model Letter {
   id         Int          @id @default(autoincrement())
   senderId   Int          @map("sender_id")
