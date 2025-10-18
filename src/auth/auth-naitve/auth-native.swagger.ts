@@ -216,12 +216,41 @@ export const ApiAuthNative = {
     ),
 
   /**
-   * @summary [네이티브] 이메일 인증코드 발송
+   * @summary [회원가입용] 이메일 인증코드 발송
    */
-  sendEmailCode: () =>
+  sendRegisterCode: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[네이티브] 이메일 인증코드 발송',
+        summary: '[회원가입용] 이메일 인증코드 발송',
+        description:
+          '회원가입에 사용할 6자리 인증코드를 이메일로 발송합니다. **이미 가입된 이메일인 경우 에러를 반환합니다.**',
+      }),
+      ApiBody({ type: AuthEmailDto }),
+      ApiResponse({
+        status: 200,
+        description: '이메일 발송 요청 성공',
+        schema: { example: { message: '인증 코드를 이메일로 발송했습니다.' } },
+      }),
+      ApiResponse({
+        status: 409,
+        description: '이미 가입된 이메일',
+        schema: {
+          example: {
+            message: '이미 가입된 이메일입니다.',
+            error: 'Conflict',
+            statusCode: 409,
+          },
+        },
+      }),
+    ),
+
+  /**
+   * @summary [비밀번호 찾기용] 이메일 인증코드 발송
+   */
+  sendResetPasswordCode: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[비밀번호 찾기용] 이메일 인증코드 발송',
         description: `회원가입 또는 비밀번호 찾기에 사용할 6자리 인증코드를 이메일로 발송합니다.
         **계정 존재 여부를 숨기기 위해, 성공/실패와 무관하게 항상 동일한 성공 메시지를 반환합니다.**`,
       }),
@@ -236,12 +265,12 @@ export const ApiAuthNative = {
     ),
 
   /**
-   * @summary [네이티브-회원가입용] 이메일 인증코드 검증
+   * @summary [회원가입용] 이메일 인증코드 검증
    */
   verifyRegisterCode: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[네이티브-회원가입용] 이메일 인증코드 검증',
+        summary: '[회원가입용] 이메일 인증코드 검증',
         description: `회원가입 과정에서 이메일 주소의 소유권을 확인합니다.
         성공 시, 서버에 '인증 완료' 상태가 기록됩니다.`,
       }),
@@ -271,12 +300,12 @@ export const ApiAuthNative = {
     ),
 
   /**
-   * @summary [네이티브-비밀번호 찾기용] 이메일 인증코드 검증
+   * @summary [비밀번호 찾기용] 이메일 인증코드 검증
    */
   verifyPasswordCode: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[네이티브-비밀번호 찾기용] 이메일 인증코드 검증',
+        summary: '[비밀번호 찾기용] 이메일 인증코드 검증',
         description:
           '비밀번호를 잊은 사용자가 본인임을 확인하고, 즉시 로그인할 수 있는 토큰을 발급받습니다.',
       }),

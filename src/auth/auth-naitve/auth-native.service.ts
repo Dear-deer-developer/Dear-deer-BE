@@ -211,7 +211,33 @@ export class AuthNativeService {
     await this.authNativeRepository.deleteRefreshToken(userId);
   }
 
-  // 비밀번호 찾기 화면에서 이메일 입력시 (이메일 인증코드 발송 + DB에 코드 저장)
+  // 회원가입할 때 인증코드 발송 (이메일 인증코드 발송 + DB에 코드 저장)
+  async sendRegisterCode(email: string): Promise<{ message: string }> {
+    // 1. [핵심] 이미 가입된 이메일인지 먼저 확인합니다.
+    const emailExists = await this.authNativeRepository.findByEmail(email);
+    if (emailExists) {
+      // 이미 유저가 있다면, 에러를 발생시켜 가입을 막습니다.
+      throw new ConflictException('이미 가입된 이메일입니다.');
+    }
+
+    // 2. 가입되지 않은 이메일이라면, 코드 생성 및 발송 로직을 수행합니다.
+    const code = create6DigitCode();
+    const expiryMinutes = this.configService.get<number>('CODE_EXPIRY_MINUTES');
+    const expiredAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
+    try {
+      await this.authNativeRepository.upsertAuthCode(email, code, expiredAt);
+      await this.emailService.sendAuthCode(email, code);
+      return { message: '인증 코드를 이메일로 발송했습니다.' };
+    } catch (dbError) {
+      console.error('DB Error on saving auth code:', dbError);
+      throw new InternalServerErrorException(
+        '인증 코드 생성 중 서버 오류가 발생했습니다.',
+      );
+    }
+  }
+
+  // 비밀번호 찾을 때 인증코드 발송 (이메일 인증코드 발송 + DB에 코드 저장)
   async sendPasswordResetCode(email: string): Promise<{ message: string }> {
     // 1. 유효성 검사: 이메일이 등록된 사용자인지 확인
     const user = await this.authNativeRepository.findByEmail(email);
@@ -228,12 +254,8 @@ export class AuthNativeService {
 
     try {
       // 4. 기존 코드 삭제 후 새 코드 저장 (UPSERT)
-      const result = await this.authNativeRepository.upsertAuthCode(
-        email,
-        code,
-        expiredAt,
-      );
-      console.log(result);
+      await this.authNativeRepository.upsertAuthCode(email, code, expiredAt);
+
       // 5. 이메일 발송
       await this.emailService.sendAuthCode(email, code);
 

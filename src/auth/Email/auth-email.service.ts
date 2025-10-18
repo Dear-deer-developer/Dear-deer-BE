@@ -41,7 +41,6 @@ export class EmailService {
 
     try {
       await sgMail.send(msg);
-      console.log(`Email sent successfully to ${toEmail}`);
     } catch (error) {
       // SendGrid API 오류 시 상세 응답을 콘솔에 출력합니다.
       console.error('SendGrid Error:', error.response.body.errors);

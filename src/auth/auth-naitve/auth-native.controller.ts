@@ -83,11 +83,20 @@ export class AuthNativeController {
     await this.authNativeService.logout(userId);
   }
 
-  // 이메일 인증코드 요청 (이메일로 인증코드를 발송)
-  @Post('native/email-verify')
-  @ApiAuthNative.sendEmailCode()
+  // 이메일 인증코드 요청 (회원가입 할 때 이메일로 인증코드를 발송)
+  @Post('native/register/auth-code')
+  @ApiAuthNative.sendRegisterCode()
   @HttpCode(HttpStatus.OK)
-  async sendResetCode(@Body() dto: AuthEmailDto) {
+  async sendRegisterCode(@Body() dto: AuthEmailDto) {
+    // 계정 존재 여부 노출 방지를 위해 성공/실패와 무관하게 동일 메시지 반환
+    return this.authNativeService.sendRegisterCode(dto.email);
+  }
+
+  // 이메일 인증코드 요청 (비밀번호 찾을 때 이메일로 인증코드를 발송)
+  @Post('native/password/auth-code')
+  @ApiAuthNative.sendResetPasswordCode()
+  @HttpCode(HttpStatus.OK)
+  async sendResetPasswordCode(@Body() dto: AuthEmailDto) {
     // 계정 존재 여부 노출 방지를 위해 성공/실패와 무관하게 동일 메시지 반환
     return this.authNativeService.sendPasswordResetCode(dto.email);
   }
@@ -105,7 +114,7 @@ export class AuthNativeController {
     );
   }
 
-  // 이메일 인증 코드 검사 (비밀번호찾기 할 때 사용)
+  // 이메일 인증 코드 검사 (비밀번호 찾을 때 사용)
   @Post('native/password/verify-code')
   @ApiAuthNative.verifyPasswordCode()
   @HttpCode(HttpStatus.OK)
