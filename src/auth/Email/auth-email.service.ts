@@ -88,8 +88,8 @@ export class EmailService {
                   <td align="center" style="padding-top: 30px; border-top: 1px solid #eeeeee; font-size: 12px; color: #999999;">
                     <p style="margin: 0 0 5px 0;">본인이 요청하지 않았다면 이 메일을 무시해주세요.</p>
                     <p style="margin: 0 0 10px 0;">
-                      <a href="#" style="color: #999; text-decoration: none;">이용약관</a> | 
-                      <a href="#" style="color: #999; text-decoration: none;">개인정보 처리방침</a>
+                      <a href="https://gwgw123.notion.site/deardeer-terms-of-use" style="color: #999; text-decoration: none;">이용약관</a> | 
+                      <a href="https://gwgw123.notion.site/deardeer-privacy-policy" style="color: #999; text-decoration: none;">개인정보 처리방침</a>
                     </p>
                     <p style="margin: 0 0 5px 0;"><strong>${projectTeamName}</strong></p>
                     <p style="margin: 0 0 10px 0;">문의: <a href="mailto:${contactEmail}" style="color: #999;">${contactEmail}</a></p>
