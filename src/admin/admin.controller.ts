@@ -3,13 +3,11 @@ import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AdminGuard } from 'src/admin/admin.guard';
 import { SwaggerAdminDashboard } from './admin.swagger';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
-  // @UseGuards(FirebaseAuthGuard, AdminGuard)
-  @UseGuards(AuthGuard('jwtAdmin'))
+  @UseGuards(FirebaseAuthGuard, AdminGuard)
   @Get('dashboard')
   @SwaggerAdminDashboard()
   getAdminDashboard() {
