@@ -15,17 +15,18 @@ export class LetterService {
   ) {}
 
   /** 실제 전송, status: sent, sentAt 기록 */
-  async sendLetter(sendLetterDto: SendLetterDto) {
+  async sendLetter(userId: number, sendLetterDto: SendLetterDto) {
     return this.letterRepository.sendLetter({
       ...sendLetterDto,
+      senderId: userId,
       status: LetterStatusValue.SENT,
       sentAt: new Date(),
     });
   }
 
   /** 임시 저장, status: writing */
-  async saveWriting(saveWritingDto: SaveWritingDto) {
-    return this.letterRepository.upsertWriting(saveWritingDto);
+  async saveWriting(senderId: number, saveWritingDto: SaveWritingDto) {
+    return this.letterRepository.upsertWriting(senderId, saveWritingDto);
   }
 
   /** 단일 조회 */
@@ -95,7 +96,7 @@ export class LetterService {
   }
 
   /** 삭제 */
-  async deleteLetters(letterIds: number[], userId: string) {
+  async deleteLetters(letterIds: number[], userId: number) {
     // 1. 유효한 편지 조회 (user 소유)
     const existingLetters = await this.letterRepository.findUserLettersByIds(
       letterIds,

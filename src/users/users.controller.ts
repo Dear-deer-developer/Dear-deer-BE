@@ -30,9 +30,12 @@ export class UsersController {
   // }
 
   @Patch('nickname')
-  @UseGuards(FirebaseAuthGuard)
+  @UseGuards(AuthGuard('accessToken'))
   @SwaggerUpdateNickname()
-  async updateNickname(@Req() req: any, @Body() dto: UpdateNicknameDto) {
-    return this.usersService.updateNickname(req.user.id, dto.nickname);
+  async updateNickname(
+    @GetUserId() userId: number,
+    @Body() dto: UpdateNicknameDto,
+  ) {
+    return this.usersService.updateNickname(userId, dto.nickname);
   }
 }
