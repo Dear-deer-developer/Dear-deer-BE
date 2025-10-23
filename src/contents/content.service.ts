@@ -39,7 +39,6 @@ export class ContentService {
       mainCategoryId,
       subCategoryId,
     );
-    return this.contentRepository.findAllPublished();
   }
 
   /** 특정 공개된 콘텐츠 상세 조회 */
