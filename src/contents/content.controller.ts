@@ -13,10 +13,10 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { ContentService } from './content.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiContent } from './content.swagger';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
-import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { AdminGuard } from 'src/admin/admin.guard';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
@@ -29,6 +29,7 @@ export class ContentController {
 
   /** 콘텐츠 리스트 조회 (카테고리별 필터링) */
   @Get()
+  // @UseGuards(...) 제거: 이 API는 공개 API
   @ApiContent.findAll()
   async findAll(@Query() query: ContentsQueryDto) {
     return this.contentService.findAllPublishedContents(query);
@@ -36,6 +37,7 @@ export class ContentController {
 
   /** 특정 콘텐츠 상세 조회 */
   @Get(':contentId')
+  // @UseGuards(...) 제거: 이 API는 공개 API
   @ApiContent.findOne()
   async findOne(@Param('contentId', ParseIntPipe) contentId: number) {
     return this.contentService.findOnePublishedContent(contentId);
@@ -43,7 +45,8 @@ export class ContentController {
 
   /** 콘텐츠 등록 */
   @Post()
-  @UseGuards(FirebaseAuthGuard, AdminGuard)
+  @ApiBearerAuth('accessToken')
+  @UseGuards(AuthGuard('accessToken'), AdminGuard)
   @ApiContent.create()
   async createContent(
     @GetUser('id') authorId: number,
@@ -54,28 +57,27 @@ export class ContentController {
 
   /** 콘텐츠 수정 */
   @Put(':contentId')
-  @UseGuards(FirebaseAuthGuard, AdminGuard)
+  @ApiBearerAuth('accessToken')
+  @UseGuards(AuthGuard('accessToken'), AdminGuard)
   @ApiContent.update()
   async updateContent(
     @Param('contentId', ParseIntPipe) contentId: number,
     @Body() dto: UpdateContentDto,
-    @Req() req: any,
+    @GetUser('id') authorId: number,
   ) {
-    const authorId = req.user.id;
-
     return this.contentService.updateContent(contentId, authorId, dto);
   }
 
   /** 콘텐츠 삭제 */
   @Delete(':contentId')
   @HttpCode(204)
-  @UseGuards(FirebaseAuthGuard, AdminGuard)
+  @ApiBearerAuth('accessToken')
+  @UseGuards(AuthGuard('accessToken'), AdminGuard)
   @ApiContent.delete()
   async deleteContent(
     @Param('contentId', ParseIntPipe) contentId: number,
-    @Req() req: any,
+    @GetUser('id') authorId: number,
   ) {
-    const authorId = req.user.id;
     await this.contentService.deleteContent(contentId, authorId);
   }
 }
