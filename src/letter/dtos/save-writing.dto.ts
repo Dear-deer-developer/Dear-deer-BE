@@ -13,13 +13,6 @@ export class SaveWritingDto extends PartialType(SendLetterDto) {
   letterId?: number;
 
   @ApiProperty({
-    example: 1,
-    description: '보내는 사람 ID',
-  })
-  @IsInt()
-  senderId: number;
-
-  @ApiProperty({
     example: '이건 저장 중인 편지 내용',
     description: '편지 본문 내용 ',
   })

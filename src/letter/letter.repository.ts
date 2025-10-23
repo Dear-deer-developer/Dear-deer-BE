@@ -16,13 +16,15 @@ export class LetterRepository {
   }
 
   /** writing이 이미 있으면 업데이트, 없으면 생성 */
-  upsertWriting(sendLetterDto: {
-    letterId?: number;
-    senderId: number;
-    receiverId?: number | null;
-    content: string;
-    imageUrl?: string | null;
-  }) {
+  upsertWriting(
+    senderId: number,
+    sendLetterDto: {
+      letterId?: number;
+      receiverId?: number | null;
+      content: string;
+      imageUrl?: string | null;
+    },
+  ) {
     if (sendLetterDto.letterId) {
       return this.prisma.letter.update({
         where: { id: sendLetterDto.letterId },
@@ -34,6 +36,7 @@ export class LetterRepository {
     }
     return this.prisma.letter.create({
       data: {
+        senderId,
         ...sendLetterDto,
         status: LetterStatusValue.WRITING,
       },
@@ -99,11 +102,11 @@ export class LetterRepository {
   }
 
   // 유저 소유의 유효한 편지 목록 조회 (현재 삭제시 사용)
-  async findUserLettersByIds(letterIds: number[], userId: string) {
+  async findUserLettersByIds(letterIds: number[], userId: number) {
     return this.prisma.letter.findMany({
       where: {
         id: { in: letterIds },
-        senderId: Number(userId), // 또는 senderId
+        senderId: userId, // 또는 senderId
       },
       select: { id: true, imageUrl: true },
     });
