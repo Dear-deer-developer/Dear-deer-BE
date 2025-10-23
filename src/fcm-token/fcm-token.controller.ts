@@ -19,7 +19,6 @@ import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 
 @Controller('fcm-tokens')
 @ApiTags('fcm-tokens')
-@ApiFcmToken.auth()
 @UseGuards(AuthGuard('accessToken'))
 export class FcmTokenController {
   constructor(private readonly fcmTokenService: FcmTokenService) {}
