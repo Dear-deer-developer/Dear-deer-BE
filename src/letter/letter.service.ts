@@ -25,10 +25,7 @@ export class LetterService {
   ) {}
 
   /** 실제 전송, status: sent, sentAt 기록 */
-  async sendLetter(
-    userId: number,
-    sendLetterDto: SendLetterDto,
-  ): Promise<ResSendLetterDto> {
+  async sendLetter(userId: number, sendLetterDto: SendLetterDto) {
     return this.letterRepository.sendLetter({
       ...sendLetterDto,
       senderId: userId,
@@ -38,10 +35,7 @@ export class LetterService {
   }
 
   /** 임시 저장, status: writing */
-  async saveWriting(
-    senderId: number,
-    saveWritingDto: SaveWritingDto,
-  ): Promise<ResDraftLetterDto> {
+  async saveWriting(senderId: number, saveWritingDto: SaveWritingDto) {
     return this.letterRepository.upsertWriting(senderId, saveWritingDto);
   }
 

@@ -39,18 +39,34 @@ export class LetterRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /** 편지 전송 */
-  sendLetter(
-    data: Prisma.LetterUncheckedCreateInput,
-  ): Promise<ResSendLetterDto> {
+  sendLetter(data: Prisma.LetterUncheckedCreateInput): Promise<Letter> {
+    return this.prisma.letter.create({ data });
+  }
+
+  /** writing이 이미 있으면 업데이트, 없으면 생성 */
+  upsertWriting(
+    senderId: number,
+    sendLetterDto: {
+      letterId?: number;
+      receiverId?: number | null;
+      content: string;
+      imageUrl?: string | null;
+    },
+  ) {
+    if (sendLetterDto.letterId) {
+      return this.prisma.letter.update({
+        where: { id: sendLetterDto.letterId },
+        data: {
+          ...sendLetterDto,
+          status: LetterStatusValue.WRITING,
+        },
+      });
+    }
     return this.prisma.letter.create({
-      data,
-      select: {
-        id: true,
-        paperId: true,
-        senderId: true,
-        receiverId: true,
-        status: true,
-        sentAt: true,
+      data: {
+        senderId,
+        ...sendLetterDto,
+        status: LetterStatusValue.WRITING,
       },
     });
   }

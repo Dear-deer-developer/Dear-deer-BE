@@ -18,13 +18,6 @@ import { DeleteLettersDto } from './dtos/delete-letter.dto';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
-import { ResSendLetterDto } from './dtos/res-send-letter.dto';
-import { ResDraftLetterDto } from './dtos/res-draft-letter.dto';
-import { ResReceivedLetterDto } from './dtos/res-received-letter.dto';
-import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
-import { ResSentLetterDto } from './dtos/res-sent-letter.dto';
-import { ResLetterDto } from './dtos/res-letter.dto';
-import { ResDeleteLettersDto } from './dtos/res-delete-letter.dto';
 
 @Controller('letters')
 @UseGuards(AuthGuard('accessToken'))
@@ -38,8 +31,8 @@ export class LetterController {
   async sendLetter(
     @Body() sendLetterDto: SendLetterDto,
     @GetUserId() userId: number,
-  ): Promise<ResSendLetterDto> {
-    return await this.letterService.sendLetter(userId, sendLetterDto);
+  ) {
+    return this.letterService.sendLetter(userId, sendLetterDto);
   }
 
   /** 임시 저장 */
@@ -48,35 +41,29 @@ export class LetterController {
   async saveWriting(
     @Body() saveWritingDto: SaveWritingDto,
     @GetUserId() userId: number,
-  ): Promise<ResDraftLetterDto> {
-    return await this.letterService.saveWriting(userId, saveWritingDto);
+  ) {
+    return this.letterService.saveWriting(userId, saveWritingDto);
   }
 
   /** 내 사서함 조회 */
   @Get('received')
   @ApiLetters.findReceived()
-  async findReceivedLetters(
-    @GetUserId() userId: number,
-  ): Promise<ResReceivedLetterDto[]> {
-    return await this.letterService.findReceivedLetters(userId);
+  async findReceivedLetters(@GetUserId() userId: number) {
+    return this.letterService.findReceivedLetters(userId);
   }
 
   /** 보낸 편지함 조회 */
   @Get('sent')
   @ApiLetters.findSent()
-  async findSentLetters(
-    @GetUserId() userId: number,
-  ): Promise<ResSentLetterDto[]> {
-    return await this.letterService.findSentLetters(userId);
+  async findSentLetters(@GetUserId() userId: number) {
+    return this.letterService.findSentLetters(userId);
   }
 
   /** 임시 보관함 조회 */
   @Get('draft')
   @ApiLetters.findDraft()
-  async findDraftLetters(
-    @GetUserId() userId: number,
-  ): Promise<ResDraftLetterItemDto[]> {
-    return await this.letterService.findDraftLetters(userId);
+  async findDraftLetters(@GetUserId() userId: number) {
+    return this.letterService.findDraftLetters(userId);
   }
 
   /** 단일 편지 조회 */
@@ -85,18 +72,18 @@ export class LetterController {
   async findLetter(
     @Param('letterId', ParseIntPipe) letterId: number,
     @GetUserId() userId: number,
-  ): Promise<ResLetterDto> {
-    return await this.letterService.findLetter(letterId, userId);
+  ) {
+    return this.letterService.findLetter(letterId, userId);
   }
 
   /** 편지 삭제 */
   @Delete()
-  @HttpCode(200)
+  @HttpCode(204)
   @ApiLetters.delete()
   async deleteLetters(
     @Body() dto: DeleteLettersDto,
     @GetUserId() userId: number,
-  ): Promise<ResDeleteLettersDto> {
-    return await this.letterService.deleteLetters(dto.letterIds, userId);
+  ) {
+    this.letterService.deleteLetters(dto.letterIds, userId);
   }
 }
