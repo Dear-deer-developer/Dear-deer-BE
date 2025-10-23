@@ -1,11 +1,26 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { SendLetterDto } from './dtos/send-letter.dto';
 import { SaveWritingDto } from './dtos/save-writing.dto';
 import { ResLetterDto } from './dtos/res-letter.dto';
 import { DeleteLettersDto } from './dtos/delete-letter.dto';
 
+// 모든 API에 공통으로 적용될 401 Unauthorized 응답
+const ApiUnauthorizedResponse = ApiResponse({
+  status: 401,
+  description: '인증 실패 (유효하지 않은 토큰 또는 토큰 없음)',
+  content: {
+    'application/json': {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+      },
+    },
+  },
+});
+
 export const ApiLetters = {
+  /** POST /letters */
   send: () =>
     applyDecorators(
       ApiOperation({
@@ -19,101 +34,37 @@ export const ApiLetters = {
       ApiResponse({
         status: 201,
         description: '편지가 성공적으로 전송되었습니다.',
-        content: {
-          'application/json': {
-            example: {
-              id: 42,
-              senderId: 17,
-              receiverId: 2,
-              content: '안녕하세요!',
-              imageUrl: 'https://image.url/image.jpg',
-              status: 'sent',
-              sentAt: '2025-05-26T11:15:00.000Z',
-              createdAt: '2025-05-26T11:15:00.000Z',
-              updatedAt: '2025-05-26T11:15:00.000Z',
-            },
-          },
-        },
+        type: ResLetterDto, // ResLetterDto를 type으로 사용하면 예시를 별도로 명시할 필요가 줄어듭니다.
       }),
       ApiResponse({
         status: 400,
         description: '요청이 잘못되었거나, 유효하지 않은 값이 포함됨',
-        content: {
-          'application/json': {
-            example: {
-              message: [
-                'content must be a string',
-                'senderId must be an integer',
-              ],
-              error: 'Bad Request',
-              statusCode: 400,
-            },
-          },
-        },
       }),
       ApiResponse({
         status: 409,
         description: '중복되거나 유효하지 않은 요청',
-        content: {
-          'application/json': {
-            example: {
-              message: '이미 전송된 편지입니다.',
-              error: 'Conflict',
-              statusCode: 409,
-            },
-          },
-        },
       }),
+      ApiUnauthorizedResponse,
     ),
+
+  /** POST /letters/draft */
   saveDraft: () =>
     applyDecorators(
       ApiOperation({ summary: '편지 임시 저장' }),
       ApiBody({ type: SaveWritingDto }),
-      ApiResponse({ status: 201, description: '임시 저장 완료' }),
+      ApiResponse({
+        status: 201,
+        description: '임시 저장 완료',
+        type: ResLetterDto,
+      }),
       ApiResponse({
         status: 400,
         description: '잘못된 입력 값',
       }),
+      ApiUnauthorizedResponse,
     ),
-  findOne: () =>
-    applyDecorators(
-      ApiOperation({
-        summary: '단일 편지 조회',
-        description:
-          '수신자가 본인이고, status가 `sent` 라면 status는 `received` 상태로 변경됩니다.',
-      }),
-      ApiResponse({
-        status: 200,
-        type: ResLetterDto,
-        description: '편지 조회 성공',
-      }),
-      ApiResponse({
-        status: 404,
-        description: '해당 ID의 편지가 존재하지 않음',
-      }),
-    ),
-  findAll: () =>
-    applyDecorators(
-      ApiOperation({ summary: '자신의 전체 편지 조회' }),
-      ApiResponse({
-        status: 200,
-        type: ResLetterDto,
-        isArray: true,
-        description: '인증된 사용자의 모든 편지 목록을 반환합니다.',
-      }),
-      ApiResponse({
-        status: 401,
-        description: '인증 실패 (토큰 없음 또는 잘못됨)',
-        content: {
-          'application/json': {
-            example: {
-              statusCode: 401,
-              message: 'Unauthorized',
-            },
-          },
-        },
-      }),
-    ),
+
+  /** GET /letters/received */
   findReceived: () =>
     applyDecorators(
       ApiOperation({
@@ -126,11 +77,10 @@ export const ApiLetters = {
         isArray: true,
         description: '내가 받은 편지함 목록',
       }),
-      ApiResponse({
-        status: 401,
-        description: '인증 실패 (토큰 없음 또는 유효하지 않음)',
-      }),
+      ApiUnauthorizedResponse,
     ),
+
+  /** GET /letters/sent */
   findSent: () =>
     applyDecorators(
       ApiOperation({
@@ -143,11 +93,10 @@ export const ApiLetters = {
         isArray: true,
         description: '내가 보낸 편지함 목록',
       }),
-      ApiResponse({
-        status: 401,
-        description: '인증 실패 (토큰 없음 또는 유효하지 않음)',
-      }),
+      ApiUnauthorizedResponse,
     ),
+
+  /** GET /letters/draft */
   findDraft: () =>
     applyDecorators(
       ApiOperation({
@@ -160,14 +109,44 @@ export const ApiLetters = {
         isArray: true,
         description: '임시 저장된 편지함 목록',
       }),
-      ApiResponse({
-        status: 401,
-        description: '인증 실패 (토큰 없음 또는 유효하지 않음)',
-      }),
+      ApiUnauthorizedResponse,
     ),
+
+  /** GET /letters/:letterId */
+  findOne: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '단일 편지 조회',
+        description:
+          '수신자가 본인이고, status가 `sent` 라면 status는 `received` 상태로 변경됩니다.',
+      }),
+      // 경로 매개변수 추가
+      ApiParam({
+        name: 'letterId',
+        description: '조회할 편지의 ID',
+        type: Number,
+        example: 42,
+      }),
+      ApiResponse({
+        status: 200,
+        type: ResLetterDto,
+        description: '편지 조회 성공',
+      }),
+      ApiResponse({
+        status: 404,
+        description: '해당 ID의 편지가 존재하지 않거나 접근 권한이 없음',
+      }),
+      ApiUnauthorizedResponse,
+    ),
+
+  /** DELETE /letters */
   delete: () =>
     applyDecorators(
-      ApiOperation({ summary: '선택한 편지들 삭제' }),
+      ApiOperation({
+        summary: '선택한 편지들 삭제',
+        description:
+          '요청 본문에 포함된 ID 목록에 해당하는 편지들을 삭제합니다.',
+      }),
       ApiBody({
         description: '삭제할 편지 ID 목록',
         type: DeleteLettersDto,
@@ -178,33 +157,13 @@ export const ApiLetters = {
       }),
       ApiResponse({
         status: 400,
-        description: '잘못된 요청. letterIds는 정수 배열이어야 함.',
-        content: {
-          'application/json': {
-            example: {
-              statusCode: 400,
-              message: ['letterIds must be an array of integers'],
-              error: 'Bad Request',
-            },
-          },
-        },
-      }),
-      ApiResponse({
-        status: 401,
-        description: '인증되지 않은 사용자',
+        description: '잘못된 요청 (letterIds 필드 오류 등)',
       }),
       ApiResponse({
         status: 404,
-        description: '존재하지 않는 편지 ID 포함',
-        content: {
-          'application/json': {
-            example: {
-              statusCode: 404,
-              message: '일치하는 편지가 없습니다.',
-              error: 'Not Found',
-            },
-          },
-        },
+        description:
+          '삭제하려는 편지 ID 중 존재하지 않거나 권한이 없는 ID 포함',
       }),
+      ApiUnauthorizedResponse,
     ),
 };
