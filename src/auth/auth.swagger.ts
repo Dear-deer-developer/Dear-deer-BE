@@ -51,7 +51,9 @@ export function SwaggerDevGetIdToken() {
 
 export function SwaggerWhoAmI() {
   return applyDecorators(
-    ApiOperation({ summary: '내 권한 상태 확인 (관리자 여부)' }),
+    ApiOperation({
+      summary: '내 권한 상태 확인 (관리자 여부)- 파베토큰 검증용 API 입니다!',
+    }),
     ApiBearerAuth(), // Bearer ID Token 필요
     ApiResponse({
       status: 200,
