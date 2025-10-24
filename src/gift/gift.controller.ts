@@ -1,11 +1,22 @@
 import { ApiTags } from '@nestjs/swagger';
 import { ApiGifts } from './gift.swagger';
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { GiftCategory } from 'src/common/enums/gift-category.enum';
 import { GiftService } from './gift.service';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
+import { EquippedGiftDto } from './dtos/equipped-gift.dto';
+import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
 @ApiTags('gift')
@@ -19,6 +30,27 @@ export class GiftController {
   @ApiGifts.findMine()
   async getMyGifts(@GetUserId() userId: number) {
     return this.giftService.findUserGifts(userId);
+  }
+
+  // 장착된 선물들 조회
+  @Get('equipments')
+  @UseGuards(AuthGuard('accessToken'))
+  async getEquippedGifts(
+    @GetUserId() userId: number,
+  ): Promise<EquippedGiftDto[]> {
+    return this.giftService.getEquippedGifts(userId);
+  }
+
+  // 최종 장착 상태로 업데이트
+  @Put('equipments')
+  @UseGuards(AuthGuard('accessToken'))
+  @HttpCode(200)
+  async updateEquippedGifts(
+    @GetUserId() userId: number,
+    @Body() dto: UpdateEquippedDto,
+  ): Promise<EquippedGiftDto[]> {
+    // 성공 시 클라이언트가 상태를 동기화할 수 있도록 업데이트된 목록 반환
+    return this.giftService.updateEquippedGifts(userId, dto);
   }
 
   // 개발용
