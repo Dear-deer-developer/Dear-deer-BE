@@ -17,7 +17,6 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiContent } from './content.swagger';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { AdminGuard } from 'src/admin/admin.guard';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
@@ -29,7 +28,6 @@ export class ContentController {
 
   /** 콘텐츠 리스트 조회 (카테고리별 필터링) */
   @Get()
-  // @UseGuards(...) 제거: 이 API는 공개 API
   @ApiContent.findAll()
   async findAll(@Query() query: ContentsQueryDto) {
     return this.contentService.findAllPublishedContents(query);
@@ -37,7 +35,6 @@ export class ContentController {
 
   /** 특정 콘텐츠 상세 조회 */
   @Get(':contentId')
-  // @UseGuards(...) 제거: 이 API는 공개 API
   @ApiContent.findOne()
   async findOne(@Param('contentId', ParseIntPipe) contentId: number) {
     return this.contentService.findOnePublishedContent(contentId);
@@ -46,7 +43,7 @@ export class ContentController {
   /** 콘텐츠 등록 */
   @Post()
   @ApiBearerAuth('accessToken')
-  @UseGuards(AuthGuard('accessToken'), AdminGuard)
+  @UseGuards(AuthGuard('jwtAdmin'))
   @ApiContent.create()
   async createContent(
     @GetUser('id') authorId: number,
@@ -58,7 +55,7 @@ export class ContentController {
   /** 콘텐츠 수정 */
   @Put(':contentId')
   @ApiBearerAuth('accessToken')
-  @UseGuards(AuthGuard('accessToken'), AdminGuard)
+  @UseGuards(AuthGuard('jwtAdmin'))
   @ApiContent.update()
   async updateContent(
     @Param('contentId', ParseIntPipe) contentId: number,
@@ -72,7 +69,7 @@ export class ContentController {
   @Delete(':contentId')
   @HttpCode(204)
   @ApiBearerAuth('accessToken')
-  @UseGuards(AuthGuard('accessToken'), AdminGuard)
+  @UseGuards(AuthGuard('jwtAdmin'))
   @ApiContent.delete()
   async deleteContent(
     @Param('contentId', ParseIntPipe) contentId: number,
