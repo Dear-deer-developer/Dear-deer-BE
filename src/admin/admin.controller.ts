@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
-import { AdminGuard } from 'src/admin/admin.guard';
+// import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
+// import { AdminGuard } from 'src/admin/admin.guard';
 import { SwaggerAdminDashboard } from './admin.swagger';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
