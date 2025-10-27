@@ -1,7 +1,13 @@
 import { IsArray, ArrayNotEmpty, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class DeleteLettersDto {
+  @ApiProperty({
+    description: '삭제할 편지 ID의 배열',
+    type: [Number],
+    example: [1, 2, 4],
+  })
   @IsArray()
   @ArrayNotEmpty()
   @Type(() => Number) // (string → number)

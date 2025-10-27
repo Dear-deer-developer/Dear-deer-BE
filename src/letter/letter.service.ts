@@ -5,6 +5,12 @@ import { SaveWritingDto } from './dtos/save-writing.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { LetterStatusValue } from 'src/common/enums/letter-status.enum';
 import { ImagePresignService } from 'src/image/image-presign.service';
+import { ResSendLetterDto } from './dtos/res-send-letter.dto';
+import { ResDraftLetterDto } from './dtos/res-draft-letter.dto';
+import { ResReceivedLetterDto } from './dtos/res-received-letter.dto';
+import { ResSentLetterDto } from './dtos/res-sent-letter.dto';
+import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
+import { ResLetterDto } from './dtos/res-letter.dto';
 
 @Injectable()
 export class LetterService {
@@ -15,7 +21,10 @@ export class LetterService {
   ) {}
 
   /** 실제 전송, status: sent, sentAt 기록 */
-  async sendLetter(userId: number, sendLetterDto: SendLetterDto) {
+  async sendLetter(
+    userId: number,
+    sendLetterDto: SendLetterDto,
+  ): Promise<ResSendLetterDto> {
     return this.letterRepository.sendLetter({
       ...sendLetterDto,
       senderId: userId,
@@ -25,73 +34,67 @@ export class LetterService {
   }
 
   /** 임시 저장, status: writing */
-  async saveWriting(senderId: number, saveWritingDto: SaveWritingDto) {
+  async saveWriting(
+    senderId: number,
+    saveWritingDto: SaveWritingDto,
+  ): Promise<ResDraftLetterDto> {
     return this.letterRepository.upsertWriting(senderId, saveWritingDto);
   }
 
   /** 단일 조회 */
-  async findLetter(letterId: number, userId: number) {
+  async findLetter(letterId: number, userId: number): Promise<ResLetterDto> {
+    // 일단 편지 데이터를 조회
     const letter = await this.letterRepository.findLetterById(letterId);
     if (!letter) throw new NotFoundException('Letter not found');
 
-    let updatedLetter = letter;
+    let letterData = letter;
 
     // 내가 받은 편지이고, 상태가 SENT 라면 -> RECEIVED로 변경
     if (
-      letter.receiverId === userId &&
-      letter.status === LetterStatusValue.SENT
+      letterData.receiverId === userId &&
+      letterData.status === LetterStatusValue.SENT
     ) {
-      updatedLetter = await this.letterRepository.updateLetterStatus(
+      letterData = await this.letterRepository.updateLetterStatus(
         letterId,
         LetterStatusValue.RECEIVED,
       );
     }
 
-    const presignedUrl = await this.s3Service.generateGetObjectPresignedUrl(
-      letter.imageUrl,
+    let presignedUrl: string | null = null;
+    presignedUrl = await this.s3Service.generateGetObjectPresignedUrl(
+      letterData.imageUrl,
     );
 
-    return { updatedLetter, presignedUrl };
-  }
+    const { imageUrl, receiverId, ...restOfLetterData } = letterData;
 
-  /** 보낸 편지 전체 조회 */
-  async findLetters(userId: number) {
-    // senderId가 자신인 편지들 조회
-    const letters = await this.letterRepository.findLettersById(userId);
-    const lettersWithPresign = await this.imagePresignService.attachSignedUrls(
-      letters,
-      {
-        keySelector: (r) => r.imageUrl,
-        outProp: 'signedImageUrl', // 기본값이라 생략 가능
-        ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
-      },
-    );
-
-    return { lettersWithPresign };
+    return { ...restOfLetterData, presignedUrl };
   }
 
   /** 내 사서함 확인 */
-  async findReceivedLetters(userId: number) {
+  async findReceivedLetters(userId: number): Promise<ResReceivedLetterDto[]> {
     return this.letterRepository.findReceivedLetters(userId);
   }
 
   /** 보낸 편지함 확인 */
-  async findSentLetters(userId: number) {
+  async findSentLetters(userId: number): Promise<ResSentLetterDto[]> {
     const letters = await this.letterRepository.findSentLetters(userId);
-    const lettersWithPresign = await this.imagePresignService.attachSignedUrls(
-      letters,
-      {
-        keySelector: (r) => r.imageUrl,
-        outProp: 'signedImageUrl', // 기본값이라 생략 가능
-        ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
-      },
-    );
 
-    return { lettersWithPresign };
+    // 편지함 확인시 이미지까지 불러오는게 아니라 이미지는 단일조회시만 호출.
+    // 이 코드는 잘 못 만들었던 코드같은데 일단 남겨두고 나중에 삭제할게요 (10.27)
+    // const lettersWithPresign = await this.imagePresignService.attachSignedUrls(
+    //   letters,
+    //   {
+    //     keySelector: (r) => r.imageUrl,
+    //     outProp: 'signedImageUrl', // 기본값이라 생략 가능
+    //     ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
+    //   },
+    // );
+
+    return letters;
   }
 
   /** 임시 보관함 확인 */
-  async findDraftLetters(userId: number) {
+  async findDraftLetters(userId: number): Promise<ResDraftLetterItemDto[]> {
     return this.letterRepository.findDraftLetters(userId);
   }
 
