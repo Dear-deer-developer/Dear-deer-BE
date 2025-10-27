@@ -66,7 +66,7 @@ export const ApiS3 = {
   deleteImages: () =>
     applyDecorators(
       ApiOperation({
-        summary: 'S3 이미지 삭제 (admin만 가능))',
+        summary: 'S3 이미지 삭제 (개발용/관리자용)',
         description: '여러 개의 S3 이미지 파일을 한 번에 삭제합니다.',
       }),
       ApiBody({

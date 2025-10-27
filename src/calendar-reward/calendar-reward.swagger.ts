@@ -23,7 +23,7 @@ export const ApiCalendarReward = {
 
   deleteGift: () =>
     applyDecorators(
-      ApiOperation({ summary: '내가 받은 gift 삭제 (개발용)' }),
+      ApiOperation({ summary: '내가 받은 gift 삭제 (개발용/관리자용)' }),
       ApiParam({ name: 'giftId', type: Number, example: 1 }),
       ApiResponse({
         status: 200,

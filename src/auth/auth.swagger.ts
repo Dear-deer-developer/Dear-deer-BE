@@ -39,7 +39,7 @@ export function SwaggerKakaoCallback() {
 
 export function SwaggerDevGetIdToken() {
   return applyDecorators(
-    ApiOperation({ summary: '[개발용] Custom Token → ID Token 발급' }),
+    ApiOperation({ summary: 'Custom Token → ID Token 발급 (개발용)' }),
     ApiBody({ schema: { example: { customToken: 'FIREBASE_CUSTOM_TOKEN' } } }),
     ApiResponse({
       status: 200,
