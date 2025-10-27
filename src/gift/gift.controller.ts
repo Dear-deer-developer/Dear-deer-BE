@@ -32,7 +32,6 @@ export class GiftController {
 
   // 나의 gifts 조회 (필요없는 값은 수정해서 성능 향상해야됨 10.03)
   @Get('me')
-  @UseGuards(AuthGuard('accessToken'))
   @ApiGifts.findMine()
   async getMyGifts(@GetUserId() userId: number) {
     return this.giftService.findUserGifts(userId);
@@ -40,7 +39,6 @@ export class GiftController {
 
   // 장착된 선물들 조회
   @Get('equipments')
-  @UseGuards(AuthGuard('accessToken'))
   @HttpCode(200)
   @ApiGifts.getEquipped()
   async getEquippedGifts(
@@ -51,7 +49,6 @@ export class GiftController {
 
   // 최종 장착 상태로 업데이트
   @Put('equipments')
-  @UseGuards(AuthGuard('accessToken'))
   @HttpCode(200)
   @ApiGifts.updateEquipped()
   async updateEquippedGifts(
@@ -72,7 +69,7 @@ export class GiftController {
   }
 
   // 카테고리별 선물 조회
-  @Get('category/:category')
+  @Get(':category')
   @UseGuards(AuthGuard('jwtAdmin'))
   @ApiGifts.findByCategory()
   findByCategory(@Param('category') category: GiftCategory) {
