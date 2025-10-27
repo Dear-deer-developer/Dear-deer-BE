@@ -125,7 +125,7 @@ export class GiftRepository {
   }
 
   // 내가 가진 선물 생성
-  async createMyGift(userId: number, giftId: number): Promise<UserGift> {
+  async createMyGift(userId: number, giftId: number): Promise<any> {
     return this.prisma.userGift.create({
       data: {
         userId,

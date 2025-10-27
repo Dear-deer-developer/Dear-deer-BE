@@ -10,7 +10,6 @@ import {
 } from 'src/common/enums/gift-category.enum';
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 import { EquippedGiftDto } from './dtos/equipped-gift.dto';
-import { UserGift } from '@prisma/client';
 
 @Injectable()
 export class GiftService {
@@ -67,7 +66,7 @@ export class GiftService {
   }
 
   // 내가 가진 선물 추가
-  async createMyGift(userId: number, giftId: number): Promise<UserGift> {
+  async createMyGift(userId: number, giftId: number): Promise<any> {
     // 이미 가지고 있는지 확인
     const existing = await this.giftRepository.findMyGiftByGiftId(giftId);
     if (existing) {
