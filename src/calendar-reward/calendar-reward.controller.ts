@@ -30,6 +30,7 @@ export class CalendarRewardController {
   // 받은 선물 삭제 (개발용)
   @Delete(':giftId')
   @ApiCalendarReward.deleteGift()
+  @UseGuards(AuthGuard('jwtAdmin'))
   async deleteMyGift(
     @GetUserId() userId: number,
     @Param('giftId', ParseIntPipe) giftId: number,

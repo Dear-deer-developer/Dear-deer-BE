@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { GiftRepository } from './gift.repository';
 import {
   categoryRankMap,
@@ -6,6 +10,7 @@ import {
 } from 'src/common/enums/gift-category.enum';
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 import { EquippedGiftDto } from './dtos/equipped-gift.dto';
+import { UserGift } from '@prisma/client';
 
 @Injectable()
 export class GiftService {
@@ -59,5 +64,39 @@ export class GiftService {
 
   async getGiftsByCategory(category: GiftCategory) {
     return this.giftRepository.findByCategory(category);
+  }
+
+  // 내가 가진 선물 추가
+  async createMyGift(userId: number, giftId: number): Promise<UserGift> {
+    // 이미 가지고 있는지 확인
+    const existing = await this.giftRepository.findMyGiftByGiftId(giftId);
+    if (existing) {
+      throw new ConflictException('이미 가지고 있는 선물입니다.');
+    }
+
+    // 생성
+    return this.giftRepository.createMyGift(userId, giftId);
+  }
+
+  // 내가 가진 선물 삭제
+  async deleteMyGift(userId: number, giftId: number): Promise<void> {
+    // 선물이 존재하는지 확인
+    const gift = await this.giftRepository.findMyGiftByGiftId(giftId);
+    if (!gift) {
+      throw new NotFoundException(`ID가 ${giftId}인 선물을 찾을 수 없습니다.`);
+    }
+
+    // 삭제
+    try {
+      await this.giftRepository.deleteMyGift(userId, giftId);
+    } catch (error) {
+      // P2003: Foreign key constraint failed
+      if (error.code === 'P2003') {
+        throw new ConflictException(
+          '이 선물은 이미 유저가 보유/장착 중이라 삭제할 수 없습니다.',
+        );
+      }
+      throw error; // 기타 에러
+    }
   }
 }

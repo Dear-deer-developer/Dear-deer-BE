@@ -4,6 +4,8 @@ import { GiftCategory } from 'src/common/enums/gift-category.enum';
 import { ResGiftDto } from './dtos/res-gift.dto';
 import { EquipmentGiftDto } from './dtos/update-equipped.dto';
 import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
+import { CreateGiftDto } from './dtos/dev-add-my-gift.dto';
+import { UserGift } from '@prisma/client';
 
 @Injectable()
 export class GiftRepository {
@@ -103,12 +105,39 @@ export class GiftRepository {
 
   ///////// 아래는 개발시 사용 /////////
 
-  /** gift 전체 조회 */
+  // 선물이 있는지 확인
+  async findMyGiftByGiftId(giftId: number) {
+    const myGift = await this.prisma.userGift.findFirst({
+      where: { giftId },
+      select: { gift: { select: { id: true, name: true, category: true } } },
+    });
+    return myGift;
+  }
+
+  // gift 전체 조회
   async findAll(): Promise<ResGiftDto[]> {
     return this.prisma.gift.findMany();
   }
 
+  // 카테고리 별 조회
   async findByCategory(category: GiftCategory): Promise<ResGiftDto[]> {
     return this.prisma.gift.findMany({ where: { category } });
+  }
+
+  // 내가 가진 선물 생성
+  async createMyGift(userId: number, giftId: number): Promise<UserGift> {
+    return this.prisma.userGift.create({
+      data: {
+        userId,
+        giftId,
+      },
+    });
+  }
+
+  // 내가 가진 선물 삭제
+  async deleteMyGift(userId: number, giftId: number): Promise<void> {
+    await this.prisma.userGift.deleteMany({
+      where: { userId, giftId },
+    });
   }
 }

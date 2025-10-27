@@ -3,9 +3,12 @@ import { ApiGifts } from './gift.swagger';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
+  ParseIntPipe,
+  Post,
   Put,
   Req,
   UseGuards,
@@ -17,10 +20,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { EquippedGiftDto } from './dtos/equipped-gift.dto';
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
+import { CreateGiftDto } from './dtos/dev-add-my-gift.dto';
+import { ResGiftDto } from './dtos/res-gift.dto';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
 @ApiTags('gift')
 @Controller('gifts')
+@UseGuards(AuthGuard('accessToken'))
 export class GiftController {
   constructor(private readonly giftService: GiftService) {}
 
@@ -35,6 +41,8 @@ export class GiftController {
   // 장착된 선물들 조회
   @Get('equipments')
   @UseGuards(AuthGuard('accessToken'))
+  @HttpCode(200)
+  @ApiGifts.getEquipped()
   async getEquippedGifts(
     @GetUserId() userId: number,
   ): Promise<EquippedGiftDto[]> {
@@ -45,6 +53,7 @@ export class GiftController {
   @Put('equipments')
   @UseGuards(AuthGuard('accessToken'))
   @HttpCode(200)
+  @ApiGifts.updateEquipped()
   async updateEquippedGifts(
     @GetUserId() userId: number,
     @Body() dto: UpdateEquippedDto,
@@ -53,17 +62,44 @@ export class GiftController {
     return this.giftService.updateEquippedGifts(userId, dto);
   }
 
-  // 개발용
+  ///////// 아래는 개발시 사용 /////////
+  // 전체 선물 조회
   @Get()
+  @UseGuards(AuthGuard('jwtAdmin'))
   @ApiGifts.findAll()
   findAll() {
     return this.giftService.getAllGifts();
   }
 
-  // 개발용(일 것 같아요)
+  // 카테고리별 선물 조회
   @Get('category/:category')
+  @UseGuards(AuthGuard('jwtAdmin'))
   @ApiGifts.findByCategory()
   findByCategory(@Param('category') category: GiftCategory) {
     return this.giftService.getGiftsByCategory(category);
+  }
+
+  // 내가 가진 선물 추가
+  @Post('me')
+  @UseGuards(AuthGuard('jwtAdmin'))
+  @HttpCode(201)
+  @ApiGifts.addMyGift()
+  async createGift(
+    @GetUserId() userId: number,
+    @Body() dto: CreateGiftDto,
+  ): Promise<any> {
+    return this.giftService.createMyGift(userId, dto.giftId);
+  }
+
+  // 내가 가진 선물 삭제
+  @Delete('me/:giftId')
+  @UseGuards(AuthGuard('jwtAdmin'))
+  @HttpCode(204)
+  @ApiGifts.deleteMyGift()
+  async deleteGift(
+    @Param('giftId', ParseIntPipe) giftId: number,
+    @GetUserId() userId: number,
+  ): Promise<void> {
+    await this.giftService.deleteMyGift(userId, giftId);
   }
 }
