@@ -9,7 +9,8 @@ import {
   GiftCategory,
 } from 'src/common/enums/gift-category.enum';
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
-import { EquippedGiftDto } from './dtos/equipped-gift.dto';
+import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
+import { ResGiftDto } from './dtos/res-gift.dto';
 
 @Injectable()
 export class GiftService {
@@ -36,7 +37,7 @@ export class GiftService {
     return gifts;
   }
 
-  async getEquippedGifts(userId: number): Promise<EquippedGiftDto[]> {
+  async getEquippedGifts(userId: number): Promise<ResEquippedGiftDto[]> {
     const gifts = await this.giftRepository.findEquippedGifts(userId);
 
     // 2. 반환하기 전에 'categoryRankMap' 기준으로 정렬합니다.
@@ -52,16 +53,16 @@ export class GiftService {
   async updateEquippedGifts(
     userId: number,
     dto: UpdateEquippedDto,
-  ): Promise<EquippedGiftDto[]> {
+  ): Promise<ResEquippedGiftDto[]> {
     return this.giftRepository.updateEquippedGifts(userId, dto.equipment);
   }
 
   ///////// 아래는 개발시 사용 /////////
-  async getAllGifts() {
+  async getAllGifts(): Promise<ResGiftDto[]> {
     return this.giftRepository.findAll();
   }
 
-  async getGiftsByCategory(category: GiftCategory) {
+  async getGiftsByCategory(category: GiftCategory): Promise<ResGiftDto[]> {
     return this.giftRepository.findByCategory(category);
   }
 

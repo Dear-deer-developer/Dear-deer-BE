@@ -4,8 +4,6 @@ import { GiftCategory } from 'src/common/enums/gift-category.enum';
 import { ResGiftDto } from './dtos/res-gift.dto';
 import { EquipmentGiftDto } from './dtos/update-equipped.dto';
 import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
-import { CreateGiftDto } from './dtos/dev-add-my-gift.dto';
-import { UserGift } from '@prisma/client';
 
 @Injectable()
 export class GiftRepository {

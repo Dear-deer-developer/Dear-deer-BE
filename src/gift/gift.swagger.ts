@@ -2,9 +2,9 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { GiftCategoryValue } from 'src/common/enums/gift-category.enum';
 import { ResGiftDto } from './dtos/res-gift.dto';
-import { EquippedGiftDto } from './dtos/equipped-gift.dto';
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 import { CreateGiftDto } from './dtos/dev-add-my-gift.dto';
+import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
 
 export const ApiGifts = {
   findMine: () =>
@@ -22,7 +22,7 @@ export const ApiGifts = {
       ApiOperation({ summary: '장착된 선물들 조회' }),
       ApiResponse({
         status: 200,
-        type: [EquippedGiftDto],
+        type: [ResEquippedGiftDto],
         description: '현재 로그인한 사용자가 장착한 gift 목록',
       }),
     ),
@@ -33,7 +33,7 @@ export const ApiGifts = {
       ApiBody({ type: UpdateEquippedDto }),
       ApiResponse({
         status: 200,
-        type: [EquippedGiftDto],
+        type: [ResEquippedGiftDto],
         description: '성공적으로 업데이트된 후의 최종 장착 목록',
       }),
     ),

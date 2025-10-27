@@ -18,9 +18,9 @@ import { GiftService } from './gift.service';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
-import { EquippedGiftDto } from './dtos/equipped-gift.dto';
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 import { CreateGiftDto } from './dtos/dev-add-my-gift.dto';
+import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
 import { ResGiftDto } from './dtos/res-gift.dto';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
@@ -43,7 +43,7 @@ export class GiftController {
   @ApiGifts.getEquipped()
   async getEquippedGifts(
     @GetUserId() userId: number,
-  ): Promise<EquippedGiftDto[]> {
+  ): Promise<ResEquippedGiftDto[]> {
     return this.giftService.getEquippedGifts(userId);
   }
 
@@ -54,7 +54,7 @@ export class GiftController {
   async updateEquippedGifts(
     @GetUserId() userId: number,
     @Body() dto: UpdateEquippedDto,
-  ): Promise<EquippedGiftDto[]> {
+  ): Promise<ResEquippedGiftDto[]> {
     // 성공 시 클라이언트가 상태를 동기화할 수 있도록 업데이트된 목록 반환
     return this.giftService.updateEquippedGifts(userId, dto);
   }
@@ -64,7 +64,7 @@ export class GiftController {
   @Get()
   @UseGuards(AuthGuard('jwtAdmin'))
   @ApiGifts.findAll()
-  findAll() {
+  findAll(): Promise<ResGiftDto[]> {
     return this.giftService.getAllGifts();
   }
 
@@ -72,7 +72,9 @@ export class GiftController {
   @Get(':category')
   @UseGuards(AuthGuard('jwtAdmin'))
   @ApiGifts.findByCategory()
-  findByCategory(@Param('category') category: GiftCategory) {
+  findByCategory(
+    @Param('category') category: GiftCategory,
+  ): Promise<ResGiftDto[]> {
     return this.giftService.getGiftsByCategory(category);
   }
 
