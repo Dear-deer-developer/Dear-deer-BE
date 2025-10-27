@@ -86,12 +86,12 @@ export const ApiContent = {
       ApiOperation({
         summary: '관리자용 콘텐츠 등록',
         description:
-          '**Firebase Admin SDK로 로그인한 관리자만 접근 가능합니다.** 콘텐츠 정보와 이미지 파일 정보를 받아 DB에 저장하고, S3 업로드를 위한 Presigned URL 목록을 반환합니다. (이미지: 최소 1장, 최대 10장)',
+          '**관리자만 접근 가능합니다.**콘텐츠 정보와 이미지 파일 정보를 받아 DB에 저장하고, S3 업로드를 위한 Presigned URL 목록을 반환합니다. (이미지: 최소 1장, 최대 10장)',
       }),
       ApiBearerAuth(),
       ApiBody({ type: CreateContentDto }),
       ApiResponse({
-        status: 201, // POST 요청은 201 Created를 사용합니다.
+        status: 201,
         description: '콘텐츠가 성공적으로 등록되고 S3 업로드 URL이 반환됨',
         schema: {
           example: {
@@ -122,7 +122,7 @@ export const ApiContent = {
       ApiOperation({
         summary: '관리자용 콘텐츠 수정',
         description:
-          '**Firebase Admin SDK로 로그인한 관리자만 접근 가능합니다.** 콘텐츠를 수정하고, 새로 업로드할 이미지가 있다면 S3 Presigned URL 목록을 반환합니다. **(중요)** `currentImageKeys`에는 수정 후 **최종적으로 남길 모든 이미지의 S3 Key**를 포함해야 합니다.',
+          '**관리자만 접근 가능합니다.** 콘텐츠를 수정하고, 새로 업로드할 이미지가 있다면 S3 Presigned URL 목록을 반환합니다. **(중요)** `currentImageKeys`에는 수정 후 **최종적으로 남길 모든 이미지의 S3 Key**를 포함해야 합니다.',
       }),
       ApiBearerAuth(),
       ApiBody({ type: UpdateContentDto }),
@@ -163,7 +163,7 @@ export const ApiContent = {
       ApiOperation({
         summary: '관리자용 콘텐츠 삭제',
         description:
-          '**Firebase Admin SDK로 로그인한 관리자만 접근 가능합니다.** 지정된 콘텐츠와 관련된 DB 레코드 및 S3 파일들을 모두 삭제합니다. (작성자 본인만 삭제 가능)',
+          '**관리자만 접근 가능합니다.** 지정된 콘텐츠와 관련된 DB 레코드 및 S3 파일들을 모두 삭제합니다. (작성자 본인만 삭제 가능)',
       }),
       ApiBearerAuth(),
       ApiResponse({
