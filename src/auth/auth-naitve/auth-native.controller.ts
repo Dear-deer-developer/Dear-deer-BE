@@ -86,6 +86,7 @@ export class AuthNativeController {
     await this.authNativeService.logout(userId);
   }
 
+  /*
   // 이메일 인증코드 요청 (회원가입 할 때 이메일로 인증코드를 발송)
   @Post('native/register/auth-code')
   @ApiAuthNative.sendRegisterCode()
@@ -129,6 +130,7 @@ export class AuthNativeController {
       verifyCodeDto.code,
     );
   }
+  */
 
   // 새 비밀번호 설정
   @Patch('native/password')

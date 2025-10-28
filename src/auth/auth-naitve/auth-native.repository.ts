@@ -39,7 +39,7 @@ export class AuthNativeRepository {
         hashedPassword,
         nickname,
         zipCode,
-        isAgreed,
+        //isAgreed, 주석 풀기 !!!
         loginType: LoginType.NATIVE, // 자체 로그인으로 설정
       },
     });
@@ -86,6 +86,7 @@ export class AuthNativeRepository {
     });
   }
 
+  /* auth 코드 테이블 생기면 다시 풀기!
   // 인증코드 upsert
   async upsertAuthCode(email: string, code: string, expiredAt: Date) {
     return this.prisma.authCode.upsert({
@@ -145,6 +146,7 @@ export class AuthNativeRepository {
       },
     });
   }
+    */
 
   // 새 비밀번호 설정
   async updatePassword(userId: number, newHashedPassword: string) {

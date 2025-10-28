@@ -75,12 +75,12 @@ export class AuthNativeService {
   // 회원가입
   async register(dto: AuthRegisterDto): Promise<TokenResponseDto> {
     // 0. 이메일 인증 확인
-    const authCode = await this.authNativeRepository.findAuthCodeByEmail(
-      dto.email,
-    );
-    if (!authCode || !authCode.isVerified) {
-      throw new UnauthorizedException('이메일 인증이 완료되지 않았습니다.');
-    }
+    // const authCode = await this.authNativeRepository.findAuthCodeByEmail(
+    //   dto.email,
+    // );
+    // if (!authCode || !authCode.isVerified) {
+    //   throw new UnauthorizedException('이메일 인증이 완료되지 않았습니다.');
+    // }
 
     // 1. 이메일, 닉네임 중복 확인
     const emailExists = await this.authNativeRepository.findByEmail(dto.email);
@@ -211,6 +211,7 @@ export class AuthNativeService {
     await this.authNativeRepository.deleteRefreshToken(userId);
   }
 
+  /*
   // 회원가입할 때 인증코드 발송 (이메일 인증코드 발송 + DB에 코드 저장)
   async sendRegisterCode(email: string): Promise<{ message: string }> {
     // 1. [핵심] 이미 가입된 이메일인지 먼저 확인합니다.
@@ -344,6 +345,7 @@ export class AuthNativeService {
 
     return this.getTokens(user);
   }
+  */
 
   // 새 비밀번호 설정
   async setNewPassword(
