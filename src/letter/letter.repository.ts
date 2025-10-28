@@ -16,6 +16,7 @@ const letterSelect = {
   id: true,
   content: true,
   imageUrl: true,
+  paperId: true,
   status: true,
   sentAt: true,
   receiverId: true,
@@ -45,6 +46,7 @@ export class LetterRepository {
       data,
       select: {
         id: true,
+        paperId: true,
         senderId: true,
         receiverId: true,
         status: true,
@@ -62,6 +64,7 @@ export class LetterRepository {
       content: dto.content,
       imageUrl: dto.imageUrl ?? null,
       receiverId: dto.receiverId ?? null,
+      paperId: dto.paperId,
       status: LetterStatusValue.WRITING,
     };
 
@@ -71,6 +74,7 @@ export class LetterRepository {
       receiverId: true,
       content: true,
       imageUrl: true,
+      paperId: true,
       status: true,
       sentAt: true,
     };
@@ -163,7 +167,7 @@ export class LetterRepository {
         id: { in: letterIds },
         senderId: userId, // 또는 senderId
       },
-      select: { id: true, imageUrl: true, status: true },
+      select: { id: true, imageUrl: true, status: true, paperId: true },
     });
   }
 

@@ -96,15 +96,28 @@ model Letter {
   receiverId Int?         @map("receiver_id")
   content    String
   imageUrl   String?      @map("image_url")
+  paperId    Int          @map("paper_id")
   status     LetterStatus
   sentAt     DateTime?    @map("sent_at") // 전송 시각, 전송 전엔 NULL
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
 
-  sender   User  @relation("SentLetters", fields: [senderId], references: [id])
-  receiver User? @relation("ReceivedLetters", fields: [receiverId], references: [id])
+  sender   User        @relation("SentLetters", fields: [senderId], references: [id])
+  receiver User?       @relation("ReceivedLetters", fields: [receiverId], references: [id])
+  paper    LetterPaper @relation(fields: [paperId], references: [id], onDelete: Restrict)
 
   @@map("letters")
+}
+
+model LetterPaper {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Letter와의 관계 설정 (Letter 쪽에서 참조)
+  letters Letter[]
+
+  @@map("letter_papers")
 }
 
 model Schedule {

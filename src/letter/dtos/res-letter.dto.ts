@@ -13,6 +13,9 @@ export class ResLetterDto {
   @ApiProperty({ example: 44, description: '편지 ID' })
   id: number;
 
+  @ApiProperty({ example: 1, description: '선택된 편지지 ID' })
+  paperId: number;
+
   @ApiProperty({
     example: '안녕하세요, 편지 내용입니다...',
     description: '편지 본문',
