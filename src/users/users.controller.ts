@@ -38,8 +38,8 @@ export class UsersController {
   @UseGuards(AuthGuard('accessToken'))
   @SwaggerFindUserByZipcode()
   async findUsersByZipCode(
-    @Query() query: FindUserZipcodeDto, // 👈 @Query()와 DTO 이름 적용
-    @GetUserId() userId: number, // 👈 본인 ID (검색 제외용)
+    @Query() query: FindUserZipcodeDto,
+    @GetUserId() userId: number,
   ): Promise<FoundUserDto> {
     return this.usersService.findUserByZipCode(query.zipCode, userId);
   }
