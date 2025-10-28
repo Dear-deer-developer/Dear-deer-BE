@@ -1,5 +1,11 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { SendLetterDto } from './dtos/send-letter.dto';
 import { SaveWritingDto } from './dtos/save-writing.dto';
 import { ResSendLetterDto } from './dtos/res-send-letter.dto';
@@ -37,6 +43,7 @@ export const ApiLetters = {
         description: '편지 전송에 필요한 정보',
         type: SendLetterDto,
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 201,
         description: '편지가 성공적으로 전송되었습니다.',
@@ -58,6 +65,7 @@ export const ApiLetters = {
     applyDecorators(
       ApiOperation({ summary: '편지 임시 저장' }),
       ApiBody({ type: SaveWritingDto }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 201,
         description: '임시 저장 완료',
@@ -77,6 +85,7 @@ export const ApiLetters = {
         summary: '내 사서함 조회',
         description: '수신자가 나인 편지들만 조회합니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
         type: ResReceivedLetterDto,
@@ -93,6 +102,7 @@ export const ApiLetters = {
         summary: '보낸 편지함 조회',
         description: '내가 발송한 편지들만 조회됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
         type: ResSentLetterDto,
@@ -109,6 +119,7 @@ export const ApiLetters = {
         summary: '임시 보관함 조회',
         description: 'status가 `writing` 상태인 편지들만 조회됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
         type: ResDraftLetterItemDto,
@@ -126,6 +137,7 @@ export const ApiLetters = {
         description:
           '수신자가 본인이고, status가 `sent` 라면 status는 `received` 상태로 변경됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       // 경로 매개변수 추가
       ApiParam({
         name: 'letterId',
@@ -157,6 +169,7 @@ export const ApiLetters = {
         description: '삭제할 편지 ID 목록',
         type: DeleteLettersDto,
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200, // ⬅️ 200 OK
         description: '삭제 처리 결과 (성공, 실패 목록)',

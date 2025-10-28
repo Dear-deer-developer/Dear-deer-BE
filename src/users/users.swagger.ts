@@ -6,7 +6,7 @@ import {
 } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { UpdateNicknameDto } from './dtos/update-nickname.dto';
-import { zip } from 'rxjs';
+import { FoundUserDto } from './dtos/res-user.dto';
 
 export function SwaggerGetUser() {
   return applyDecorators(
@@ -69,6 +69,46 @@ export function SwaggerUpdateNickname() {
         example: {
           statusCode: 404,
           message: '사용자를 찾을 수 없습니다.',
+          error: 'Not Found',
+        },
+      },
+    }),
+    ApiBearerAuth(),
+  );
+}
+
+export function SwaggerFindUserByZipcode() {
+  return applyDecorators(
+    ApiOperation({
+      summary: '우편번호로 사용자 검색',
+      description: '우편번호로 특정 사용자 1명을 검색합니다. (본인 제외)',
+    }),
+
+    ApiResponse({
+      status: 200,
+      description: '사용자 검색 성공',
+      type: FoundUserDto,
+    }),
+
+    ApiResponse({
+      status: 400,
+      description: '유효하지 않은 우편번호 (Validation Error)',
+      schema: {
+        example: {
+          statusCode: 400,
+          message: ['유효하지 않은 5자리 우편번호입니다.'],
+          error: 'Bad Request',
+        },
+      },
+    }),
+
+    ApiResponse({
+      status: 404,
+      description: '해당 우편번호를 가진 사용자를 찾을 수 없습니다.',
+      schema: {
+        example: {
+          statusCode: 404,
+          message: '해당 우편번호를 가진 사용자를 찾을 수 없습니다.',
           error: 'Not Found',
         },
       },
