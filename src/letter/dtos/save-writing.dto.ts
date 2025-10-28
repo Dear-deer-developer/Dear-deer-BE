@@ -12,10 +12,26 @@ export class SaveWritingDto extends PartialType(SendLetterDto) {
   @IsInt()
   letterId?: number;
 
+  @ApiPropertyOptional({
+    example: 2,
+    description: '받는 사람 ID (없을 수도 있음)',
+  })
+  @IsOptional()
+  @IsInt()
+  receiverId?: number;
+
   @ApiProperty({
     example: '이건 저장 중인 편지 내용',
     description: '편지 본문 내용 ',
   })
   @IsString()
   content: string;
+
+  @ApiPropertyOptional({
+    example: 'letters/test-image.png',
+    description: '이미지 URL',
+  })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
