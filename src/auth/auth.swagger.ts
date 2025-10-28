@@ -4,13 +4,11 @@ import {
   ApiBody,
   ApiBearerAuth,
   ApiHeaders,
-  ApiTags,
 } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 import { TokenResponseDto } from './dtos/token-res.dto';
 import { AuthLoginDto } from './dtos/auth-login.dto';
 import { AuthRegisterDto } from './dtos/auth-register.dto';
-import { TokenRefreshDto } from './dtos/token-refresh.dto';
 
 export function SwaggerKakaoLogin() {
   return applyDecorators(

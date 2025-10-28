@@ -1,12 +1,17 @@
-import { Controller, Patch, Body, Req, UseGuards, Get } from '@nestjs/common';
+import { Controller, Patch, Body, UseGuards, Get, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { UpdateNicknameDto } from './dtos/update-nickname.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { SwaggerUpdateNickname } from './users.swagger';
+import {
+  SwaggerFindUserByZipcode,
+  SwaggerUpdateNickname,
+} from './users.swagger';
 import { SwaggerGetUser } from './users.swagger';
 import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { FindUserZipcodeDto } from './dtos/find-user-zipcode.dto';
+import { FoundUserDto } from './dtos/res-user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -28,6 +33,16 @@ export class UsersController {
   //   const uid = req.user.uid;
   //   return this.usersService.getUserInfoByProviderId(uid);
   // }
+
+  @Get('zipCode')
+  @UseGuards(AuthGuard('accessToken'))
+  @SwaggerFindUserByZipcode()
+  async findUsersByZipCode(
+    @Query() query: FindUserZipcodeDto,
+    @GetUserId() userId: number,
+  ): Promise<FoundUserDto> {
+    return this.usersService.findUserByZipCode(query.zipCode, userId);
+  }
 
   @Patch('nickname')
   @UseGuards(AuthGuard('accessToken'))

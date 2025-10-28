@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   Length,
 } from 'class-validator';
 
@@ -16,6 +15,14 @@ export class SendLetterDto {
   @IsOptional()
   @IsInt()
   receiverId?: number;
+
+  @ApiProperty({
+    example: 1,
+    description: '선택된 편지지 ID (필수)',
+  })
+  @IsInt({ message: '편지지 ID는 정수여야 합니다.' })
+  @IsNotEmpty({ message: '편지지 ID는 필수 입력 항목입니다.' })
+  paperId: number;
 
   @ApiProperty({ example: '안녕하세요!', description: '편지 내용' })
   @IsString()
