@@ -8,6 +8,9 @@ export class ResSendLetterDto {
   @ApiProperty({ example: 42 })
   id: number;
 
+  @ApiProperty({ example: 1, description: '선택된 편지지 ID' })
+  paperId: number;
+
   @ApiProperty({ example: 17 })
   senderId: number;
 
