@@ -10,6 +10,7 @@ import { ResDraftLetterDto } from './dtos/res-draft-letter.dto';
 import { ResReceivedLetterDto } from './dtos/res-received-letter.dto';
 import { ResSentLetterDto } from './dtos/res-sent-letter.dto';
 import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
+import { SaveWritingDto } from './dtos/save-writing.dto';
 
 const letterSelect = {
   id: true,
@@ -55,13 +56,15 @@ export class LetterRepository {
   /** writing이 이미 있으면 업데이트, 없으면 생성 */
   upsertWriting(
     senderId: number,
-    sendLetterDto: {
-      letterId?: number;
-      receiverId?: number | null;
-      content: string;
-      imageUrl?: string | null;
-    },
+    dto: SaveWritingDto,
   ): Promise<ResDraftLetterDto> {
+    const dataToSave = {
+      content: dto.content,
+      imageUrl: dto.imageUrl ?? null,
+      receiverId: dto.receiverId ?? null,
+      status: LetterStatusValue.WRITING,
+    };
+
     const commonSelect = {
       id: true,
       senderId: true,
@@ -73,13 +76,10 @@ export class LetterRepository {
     };
 
     // 기존에 있던 편지라면 업데이트
-    if (sendLetterDto.letterId) {
+    if (dto.letterId) {
       return this.prisma.letter.update({
-        where: { id: sendLetterDto.letterId },
-        data: {
-          ...sendLetterDto,
-          status: LetterStatusValue.WRITING,
-        },
+        where: { id: dto.letterId, senderId: senderId },
+        data: dataToSave,
         select: commonSelect,
       });
     }
@@ -87,8 +87,7 @@ export class LetterRepository {
     return this.prisma.letter.create({
       data: {
         senderId,
-        ...sendLetterDto,
-        status: LetterStatusValue.WRITING,
+        ...dataToSave,
       },
       select: commonSelect,
     });
