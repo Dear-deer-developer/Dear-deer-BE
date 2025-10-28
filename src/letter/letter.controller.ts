@@ -97,6 +97,6 @@ export class LetterController {
     @Body() dto: DeleteLettersDto,
     @GetUserId() userId: number,
   ): Promise<ResDeleteLettersDto> {
-    return this.letterService.deleteLetters(dto.letterIds, userId);
+    return await this.letterService.deleteLetters(dto.letterIds, userId);
   }
 }

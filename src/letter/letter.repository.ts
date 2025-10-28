@@ -163,7 +163,7 @@ export class LetterRepository {
         id: { in: letterIds },
         senderId: userId, // 또는 senderId
       },
-      select: { id: true, imageUrl: true },
+      select: { id: true, imageUrl: true, status: true },
     });
   }
 
