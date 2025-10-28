@@ -9,7 +9,6 @@ import {
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from 'src/users/users.service';
 import { EmailService } from '../Email/auth-email.service';
 import { TokenResponseDto } from '../dtos/token-res.dto';
 import { JwtPayload } from '../interface/jwt.interface';
@@ -17,13 +16,14 @@ import { AuthLoginDto } from '../dtos/auth-login.dto';
 import { AuthRegisterDto } from '../dtos/auth-register.dto';
 import { AuthNativeRepository } from './auth-native.repository';
 import { create6DigitCode } from '../functions/digit-code';
+import { AuthWithdrawDto } from '../dtos/auth-withdraw.dto';
+import { loginTypeValue } from 'src/common/enums/login-type.enum';
 
 @Injectable()
 export class AuthNativeService {
   constructor(
     private readonly authNativeRepository: AuthNativeRepository,
     private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
   ) {}
@@ -384,6 +384,43 @@ export class AuthNativeService {
     return {
       message: '비밀번호가 확인되었습니다. 새 비밀번호를 입력해 주세요.',
     };
+  }
+
+  // 회원탈퇴
+  async withdraw(userId: number, dto: AuthWithdrawDto): Promise<void> {
+    // 1. 사용자 정보 조회 (비밀번호, 로그인 타입 포함)
+    const user = await this.authNativeRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 2. 소셜 로그인 사용자인지 확인
+    if (user.loginType !== loginTypeValue.NATIVE) {
+      throw new BadRequestException(
+        '소셜 로그인 유저는 이 경로로 탈퇴할 수 없습니다.',
+      );
+    }
+
+    // 3. 비밀번호 비교
+    const isPasswordMatch = await bcrypt.compare(
+      dto.password,
+      user.hashedPassword,
+    );
+
+    if (!isPasswordMatch) {
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+    }
+
+    // 4. 사용자 삭제
+    try {
+      await this.authNativeRepository.deleteUserById(userId);
+    } catch (error) {
+      // (예: DB 오류 처리)
+      throw new InternalServerErrorException(
+        '회원 탈퇴 중 오류가 발생했습니다.',
+      );
+    }
   }
 
   // 이메일로 아이디 찾기 (이메일로 아이디 정보 발송) 은 리젝 되면 이어서 만들기 (10.18)

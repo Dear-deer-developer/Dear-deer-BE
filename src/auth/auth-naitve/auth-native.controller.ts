@@ -7,6 +7,8 @@ import {
   HttpStatus,
   Headers,
   Patch,
+  Delete,
+  Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthRegisterDto } from '../dtos/auth-register.dto';
@@ -23,6 +25,7 @@ import { AuthNativeService } from './auth-native.service';
 import { ApiAuthNative } from './auth-native.swagger';
 import { CheckNicknameDto } from '../dtos/check-nickname.dto';
 import { CheckEmailDto } from '../dtos/check-email.dto';
+import { AuthWithdrawDto } from '../dtos/auth-withdraw.dto';
 
 @ApiTags('auth-native')
 @Controller('auth')
@@ -155,6 +158,17 @@ export class AuthNativeController {
       userId,
       verifyCurrentPasswordDto.currentPassword,
     );
+  }
+
+  // 회원탈퇴
+  @Delete('native/withdraw')
+  @UseGuards(AuthGuard('accessToken'))
+  @HttpCode(204)
+  async withdraw(
+    @GetUserId() userId: number,
+    @Body() dto: AuthWithdrawDto,
+  ): Promise<void> {
+    return this.authNativeService.withdraw(userId, dto);
   }
 
   // 아이디 찾기는 앱 리젝되면 이어서 만들 예정(10.18)

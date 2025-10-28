@@ -32,13 +32,14 @@ export class AuthNativeRepository {
   async createUser(
     data: Omit<AuthRegisterDto, 'password'> & { hashedPassword: string },
   ): Promise<User> {
-    const { email, nickname, zipCode, hashedPassword } = data;
+    const { email, nickname, zipCode, hashedPassword, isAgreed } = data;
     return this.prisma.user.create({
       data: {
         email,
         hashedPassword,
         nickname,
         zipCode,
+        isAgreed,
         loginType: LoginType.NATIVE, // 자체 로그인으로 설정
       },
     });
@@ -152,6 +153,13 @@ export class AuthNativeRepository {
       data: {
         hashedPassword: newHashedPassword,
       },
+    });
+  }
+
+  // 사용자 삭제
+  async deleteUserById(userId: number): Promise<void> {
+    await this.prisma.user.delete({
+      where: { id: userId },
     });
   }
 }
