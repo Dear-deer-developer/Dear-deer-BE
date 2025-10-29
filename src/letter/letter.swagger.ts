@@ -1,9 +1,21 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { SendLetterDto } from './dtos/send-letter.dto';
 import { SaveWritingDto } from './dtos/save-writing.dto';
-import { ResLetterDto } from './dtos/res-letter.dto';
+import { ResSendLetterDto } from './dtos/res-send-letter.dto';
 import { DeleteLettersDto } from './dtos/delete-letter.dto';
+import { ResDraftLetterDto } from './dtos/res-draft-letter.dto';
+import { ResReceivedLetterDto } from './dtos/res-received-letter.dto';
+import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
+import { ResSentLetterDto } from './dtos/res-sent-letter.dto';
+import { ResLetterDto } from './dtos/res-letter.dto';
+import { ResDeleteLettersDto } from './dtos/res-delete-letter.dto';
 
 // 모든 API에 공통으로 적용될 401 Unauthorized 응답
 const ApiUnauthorizedResponse = ApiResponse({
@@ -31,10 +43,11 @@ export const ApiLetters = {
         description: '편지 전송에 필요한 정보',
         type: SendLetterDto,
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 201,
         description: '편지가 성공적으로 전송되었습니다.',
-        type: ResLetterDto, // ResLetterDto를 type으로 사용하면 예시를 별도로 명시할 필요가 줄어듭니다.
+        type: ResSendLetterDto, // ResLetterDto를 type으로 사용하면 예시를 별도로 명시할 필요가 줄어듭니다.
       }),
       ApiResponse({
         status: 400,
@@ -52,10 +65,11 @@ export const ApiLetters = {
     applyDecorators(
       ApiOperation({ summary: '편지 임시 저장' }),
       ApiBody({ type: SaveWritingDto }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 201,
         description: '임시 저장 완료',
-        type: ResLetterDto,
+        type: ResDraftLetterDto,
       }),
       ApiResponse({
         status: 400,
@@ -68,12 +82,13 @@ export const ApiLetters = {
   findReceived: () =>
     applyDecorators(
       ApiOperation({
-        summary: '받은 편지함 조회',
+        summary: '내 사서함 조회',
         description: '수신자가 나인 편지들만 조회합니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
-        type: ResLetterDto,
+        type: ResReceivedLetterDto,
         isArray: true,
         description: '내가 받은 편지함 목록',
       }),
@@ -87,9 +102,10 @@ export const ApiLetters = {
         summary: '보낸 편지함 조회',
         description: '내가 발송한 편지들만 조회됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
-        type: ResLetterDto,
+        type: ResSentLetterDto,
         isArray: true,
         description: '내가 보낸 편지함 목록',
       }),
@@ -103,9 +119,10 @@ export const ApiLetters = {
         summary: '임시 보관함 조회',
         description: 'status가 `writing` 상태인 편지들만 조회됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
-        type: ResLetterDto,
+        type: ResDraftLetterItemDto,
         isArray: true,
         description: '임시 저장된 편지함 목록',
       }),
@@ -120,6 +137,7 @@ export const ApiLetters = {
         description:
           '수신자가 본인이고, status가 `sent` 라면 status는 `received` 상태로 변경됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       // 경로 매개변수 추가
       ApiParam({
         name: 'letterId',
@@ -151,9 +169,11 @@ export const ApiLetters = {
         description: '삭제할 편지 ID 목록',
         type: DeleteLettersDto,
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
-        status: 204,
-        description: '성공적으로 삭제됨',
+        status: 200, // ⬅️ 200 OK
+        description: '삭제 처리 결과 (성공, 실패 목록)',
+        type: ResDeleteLettersDto, // ⬅️ 응답 DTO 명시
       }),
       ApiResponse({
         status: 400,
