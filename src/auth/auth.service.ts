@@ -209,6 +209,16 @@ export class AuthService {
     await this.authRepository.deleteRefreshToken(userId);
   }
 
+  // 닉네임 사용 가능 여부 확인
+  async checkNicknameAvailability(
+    nickname: string,
+  ): Promise<{ isAvailable: boolean }> {
+    const existingUser = await this.authRepository.findByNickname(nickname);
+
+    // 존재하면 false, 존재하지 않으면 true 반환
+    return { isAvailable: !existingUser };
+  }
+
   /////////// 아래는 소셜로그인 ///////////
 
   // Kakao Access Token -> Firebase Custom Token 발급

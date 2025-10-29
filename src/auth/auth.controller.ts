@@ -27,6 +27,7 @@ import { AuthLoginDto } from './dtos/auth-login.dto';
 import { TokenResponseDto } from './dtos/token-res.dto';
 import { GetUserId } from './decorators/get-user-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { CheckNicknameDto } from './dtos/check-nickname-dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -65,6 +66,16 @@ export class AuthController {
   @UseGuards(AuthGuard('accessToken'))
   async logout(@GetUserId() userId: number): Promise<void> {
     await this.authService.logout(userId);
+  }
+
+  // Guard 달지 않아도 됩니다! 회원가입시 닉네임 중복 체크용
+  @Get('native/check-nickname')
+  @ApiAuthNative.checkNickname()
+  @HttpCode(HttpStatus.OK)
+  async checkNickname(
+    @Query() dto: CheckNicknameDto,
+  ): Promise<{ isAvailable: boolean }> {
+    return await this.authService.checkNicknameAvailability(dto.nickname);
   }
 
   /////////// 아래는 소셜로그인 ///////////
