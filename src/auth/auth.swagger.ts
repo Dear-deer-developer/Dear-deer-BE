@@ -9,6 +9,7 @@ import { applyDecorators } from '@nestjs/common';
 import { TokenResponseDto } from './dtos/token-res.dto';
 import { AuthLoginDto } from './dtos/auth-login.dto';
 import { AuthRegisterDto } from './dtos/auth-register.dto';
+import { ResCheckNicknameDto } from './dtos/res-check-nickname.dto';
 
 export function SwaggerKakaoLogin() {
   return applyDecorators(
@@ -193,6 +194,32 @@ export const ApiAuthNative = {
       ApiResponse({
         status: 401,
         description: '인증 실패 (유효하지 않은 Access Token)',
+      }),
+    ),
+  checkNickname: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[네이티브] 닉네임 중복 확인',
+        description:
+          '회원가입 시 사용할 닉네임이 중복되었는지 확인합니다. (Public API)',
+      }),
+      ApiResponse({
+        status: 200,
+        description: '확인 성공 (true: 사용 가능, false: 중복)',
+        type: ResCheckNicknameDto, // 👈 [1] 에서 만든 응답 DTO
+      }),
+      ApiResponse({
+        status: 400,
+        description: '유효성 검사 실패 (닉네임 형식 오류)',
+        schema: {
+          example: {
+            message: [
+              '닉네임은 2~8자의 한글, 영어, 숫자만 사용 가능하며, 공백, 특수문자, 이모티콘은 허용되지 않습니다.',
+            ],
+            error: 'Bad Request',
+            statusCode: 400,
+          },
+        },
       }),
     ),
 };

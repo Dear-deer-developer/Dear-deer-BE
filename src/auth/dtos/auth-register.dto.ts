@@ -41,10 +41,4 @@ export class AuthRegisterDto {
       '닉네임은 2~8자의 한글, 영어, 숫자만 사용 가능하며, 공백, 특수문자, 이모티콘은 허용되지 않습니다.',
   })
   nickname: string;
-
-  @ApiProperty({ example: 20850, description: '우편번호' })
-  @IsInt({ message: '우편번호는 정수여야 합니다.' })
-  @Min(10000, { message: '유효하지 않은 우편번호 형식입니다.' })
-  @Max(99999, { message: '유효하지 않은 우편번호 형식입니다.' })
-  zipCode: number;
 }
