@@ -65,9 +65,13 @@ export class LetterService {
     }
 
     let presignedUrl: string | null = null;
-    presignedUrl = await this.s3Service.generateGetObjectPresignedUrl(
-      letterData.imageUrl,
-    );
+
+    // url 이 있는 경우에만 presignedUrl 생성
+    if (letterData.imageUrl) {
+      presignedUrl = await this.s3Service.generateGetObjectPresignedUrl(
+        letterData.imageUrl,
+      );
+    }
 
     const { imageUrl, receiverId, ...restOfLetterData } = letterData;
 
