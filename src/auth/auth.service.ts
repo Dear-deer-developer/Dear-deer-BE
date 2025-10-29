@@ -28,7 +28,9 @@ export class AuthService {
     private readonly configService: ConfigService, // 환경변수 사용을 위한 ConfigService
   ) {}
 
-  // JWT 쌍 생성
+  /**
+   * JWT 쌍 생성
+   */
   private async getTokens(user: {
     id: number;
     isAdmin: boolean;
@@ -72,6 +74,25 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  /**
+   * 고유한 5자리 우편번호를 생성하는 헬퍼 함수
+   */
+  private async generateUniqueZipCode(): Promise<number> {
+    while (true) {
+      // 1. 10000 ~ 99999 사이의 5자리 정수 생성
+      const zipCode = Math.floor(10000 + Math.random() * 90000);
+
+      // 2. DB에서 이 zipCode를 누가 쓰고 있는지 확인
+      const existingUser = await this.authRepository.findUserByZipCode(zipCode);
+
+      // 3. 아무도 안 쓰고 있다면 이 번호 반환
+      if (!existingUser) {
+        return zipCode;
+      }
+      // (if 만약 누군가 쓰고 있다면 {루프가 다시 돌면서 새 번호 생성})
+    }
+  }
+
   // 회원가입
   async register(dto: AuthRegisterDto): Promise<TokenResponseDto> {
     // 1. 이메일, 닉네임 중복 확인
@@ -87,15 +108,23 @@ export class AuthService {
     }
 
     // 2. 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await bcrypt.hash(
+      dto.password,
+      Number(this.configService.get<number>('BCRYPT_SALT_ROUNDS')),
+    );
 
-    // 3. 사용자 생성 (NATIVE 타입으로)
+    // 3. 고유 우편번호 생성
+    const uniqueZipCode = await this.generateUniqueZipCode();
+    console.log(uniqueZipCode);
+
+    // 4. 사용자 생성 (NATIVE 타입으로)
     const newUser = await this.authRepository.createUser({
       ...dto,
       hashedPassword,
+      zipCode: uniqueZipCode,
     });
 
-    // 4. 토큰 발급 및 리프레시 토큰 저장
+    // 5. 토큰 발급 및 리프레시 토큰 저장
     return this.getTokens(newUser);
   }
 

@@ -56,7 +56,6 @@ export class AuthController {
   async refresh(
     @Headers('refresh-token') refreshToken: string,
   ): Promise<TokenResponseDto> {
-    // 갱신 토큰을 Body로 받아 서비스로 전달하여 검증 및 재발급 처리
     return this.authService.refreshTokens(refreshToken);
   }
 
