@@ -34,7 +34,7 @@ export class UsersController {
   //   return this.usersService.getUserInfoByProviderId(uid);
   // }
 
-  @Get('zipCode')
+  @Get('zipcode')
   @UseGuards(AuthGuard('accessToken'))
   @SwaggerFindUserByZipcode()
   async findUsersByZipCode(
