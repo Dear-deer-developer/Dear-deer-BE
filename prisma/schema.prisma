@@ -55,7 +55,6 @@ model User {
   hashedPassword String?   @map("hashed_password") // 자체로그인시 저장
   nickname       String    @unique
   zipCode        Int       @unique @map("zip_code")
-  zipCode        Int       @map("zip_code")
   loginType      LoginType @default(NATIVE) @map("login_type")
   providerId     String?   @unique @map("provider_id") // 소셜로그인시 저장
   isAdmin        Boolean   @default(false) @map("is_admin")
