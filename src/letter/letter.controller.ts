@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { LetterService } from './letter.service';
 import { SendLetterDto } from './dtos/send-letter.dto';
@@ -94,7 +95,7 @@ export class LetterController {
   @HttpCode(200)
   @ApiLetters.delete()
   async deleteLetters(
-    @Body() dto: DeleteLettersDto,
+    @Query() dto: DeleteLettersDto,
     @GetUserId() userId: number,
   ): Promise<ResDeleteLettersDto> {
     return await this.letterService.deleteLetters(dto.letterIds, userId);

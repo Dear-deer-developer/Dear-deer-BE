@@ -151,9 +151,12 @@ export class LetterRepository {
       },
       select: {
         id: true,
-        receiverId: true,
+        receiver: {
+          select: {
+            nickname: true,
+          },
+        },
         content: true,
-        imageUrl: true,
         status: true,
         updatedAt: true,
       },

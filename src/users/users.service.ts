@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { FoundUserDto } from './dtos/res-user.dto';
 
@@ -52,6 +56,10 @@ export class UsersService {
     zipCode: number,
     myId: number,
   ): Promise<FoundUserDto> {
+    if (zipCode === 12025) {
+      throw new BadRequestException('12025는 검색할 수 없는 예시 번호입니다.');
+    }
+
     // 1. 리포지토리에서 사용자 조회 (null일 수 있음)
     const user = await this.usersRepository.findUserByZipCode(zipCode, myId);
 

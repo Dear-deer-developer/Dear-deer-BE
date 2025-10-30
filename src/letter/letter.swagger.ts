@@ -165,10 +165,6 @@ export const ApiLetters = {
         description:
           '요청 본문에 포함된 ID 목록에 해당하는 편지들을 삭제합니다.',
       }),
-      ApiBody({
-        description: '삭제할 편지 ID 목록',
-        type: DeleteLettersDto,
-      }),
       ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200, // ⬅️ 200 OK
