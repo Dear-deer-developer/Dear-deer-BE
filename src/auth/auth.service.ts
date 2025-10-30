@@ -82,6 +82,11 @@ export class AuthService {
       // 1. 10000 ~ 99999 사이의 5자리 정수 생성
       const zipCode = Math.floor(10000 + Math.random() * 90000);
 
+      // 1-1. 12025가 생성되면 루프의 처음으로 돌아가 재시도
+      if (zipCode === 12025) {
+        continue; // 12025가 생성되면 루프의 처음으로 돌아가 재시도
+      }
+
       // 2. DB에서 이 zipCode를 누가 쓰고 있는지 확인
       const existingUser = await this.authRepository.findUserByZipCode(zipCode);
 
