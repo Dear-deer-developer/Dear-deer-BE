@@ -11,11 +11,18 @@ export const ApiCalendarReward = {
         status: 200,
         schema: {
           example: {
-            awarded: true,
-            localDate: '2025-11-07',
-            giftId: 123,
-            giftName: 'ball_1',
-            awardedAt: '2025-11-07T00:00:00.000Z',
+            received: true,
+            localDate: '2025-10-31',
+            giftId: 31,
+            giftName: 'cookie',
+          },
+        },
+      }),
+      ApiResponse({
+        status: 201,
+        schema: {
+          example: {
+            received: false,
           },
         },
       }),
