@@ -6,6 +6,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ResEnterCalendarDto } from './dtos/res-enter-calendar-reward.dto';
+import { ResTestSantaLetterDto } from './dtos/res-test-santa-letter.dto';
 
 export const ApiCalendarReward = {
   enter: () =>
@@ -62,5 +63,36 @@ export const ApiCalendarReward = {
           example: { success: true, giftId: 1 },
         },
       }),
+    ),
+
+  sendTestSanta: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[테스트용] 산타 편지 즉시 받기 🎅',
+        description:
+          '12월 25일을 기다리지 않고 산타 편지를 즉시 받습니다. (1회만 가능)',
+      }),
+      HttpCode(201),
+      ApiResponse({
+        status: 201,
+        description: '산타 편지 발송 성공',
+        type: ResTestSantaLetterDto,
+      }),
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (JWT)',
+      }),
+      ApiResponse({
+        status: 409,
+        description: '이미 산타 편지를 받음 (멱등성)',
+        schema: {
+          example: {
+            message: '이미 산타 편지를 받았습니다. (Letter ID: 123)',
+            error: 'Conflict',
+            statusCode: 409,
+          },
+        },
+      }),
+      ApiBearerAuth('accessToken'),
     ),
 };

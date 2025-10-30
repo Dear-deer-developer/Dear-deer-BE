@@ -16,6 +16,7 @@ import {
   SANTA_TRIGGER_GIFT_NAME,
 } from './calender-reward.constants';
 import { ResEnterCalendarDto } from './dtos/res-enter-calendar-reward.dto';
+import { ResTestSantaLetterDto } from './dtos/res-test-santa-letter.dto';
 
 @Injectable()
 export class CalendarRewardService {
@@ -196,5 +197,22 @@ export class CalendarRewardService {
 
       return { success: true, giftId };
     });
+  }
+
+  // 산타편지 테스트용
+  async sendTestSantaLetter(userId: number): Promise<ResTestSantaLetterDto> {
+    const result = await this.sendSantaLetterOnce(userId);
+
+    // 멱등성: 이미 받았다면 에러
+    if (!result.received) {
+      throw new ConflictException(`이미 산타 편지를 받았습니다.`);
+    }
+
+    // 새로 받았다면 성공 응답
+    return {
+      success: true,
+      letterId: result.letter.id,
+      senderId: result.letter.senderId,
+    };
   }
 }
