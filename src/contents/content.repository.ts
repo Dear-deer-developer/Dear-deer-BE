@@ -113,24 +113,31 @@ export class ContentRepository {
     subCategoryId: number;
     title: string;
     body: string;
-    images: { url: string }[];
+    images?: { url: string }[];
   }) {
-    const { images, ...contentData } = data;
-
     return this.prisma.content.create({
       data: {
-        ...contentData,
-        status: ContentStatus.PUBLISHED, // 관리자 등록 시 바로 게시
-        // ContentImage 모델에 연결하여 여러 장 저장
-        images: {
-          createMany: {
-            data: images.map((img) => ({ url: img.url })),
-          },
-        },
+        authorId: data.authorId,
+        subCategoryId: data.subCategoryId,
+        title: data.title,
+        body: data.body,
+        images: data.images ? { create: data.images } : undefined,
       },
-      include: {
-        images: true, // 생성된 이미지 목록을 포함하여 반환
-      },
+    });
+  }
+
+  /** 이미지들을 콘텐츠에 추가 */
+  async addContentImages(
+    contentId: number,
+    images: { url: string }[],
+  ): Promise<void> {
+    if (!images || images.length === 0) return;
+
+    await this.prisma.contentImage.createMany({
+      data: images.map((img) => ({
+        contentId: contentId,
+        url: img.url,
+      })),
     });
   }
 

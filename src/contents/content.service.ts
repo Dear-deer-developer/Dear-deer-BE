@@ -61,37 +61,46 @@ export class ContentService {
   }> {
     const { title, content, subCategoryId, images } = createContentDto;
 
-    // 1. 카테고리 유효성 검사 (Optional)
+    // 1. 카테고리 유효성 검사
     if (!(await this.contentRepository.existSubCategory(subCategoryId))) {
       throw new NotFoundException(
         `존재하지 않는 서브 카테고리 ID입니다: ${subCategoryId}`,
       );
     }
 
-    // 2. S3 Presigned URL 생성 (업로드 전에 key를 먼저 받아야 한다)
-    const s3Files = images.map((img) => ({
-      originalFileName: img.filename,
-      contentType: img.contentType,
-    }));
-
-    // S3에 업로드할 이미지 파일 정보 목록을 가져옵니다.
-    const presignedUrls =
-      await this.s3Service.generateContentImagePresignedUrls(authorId, s3Files);
-
-    // 3. DB에 Content 및 ContentImage 저장
+    // 2. 콘텐츠 생성 (contentId만 생성 , 이미지 없이)
     const createdContent = await this.contentRepository.createContent({
       authorId,
       subCategoryId,
       title,
       body: content,
-      // DB에 저장할 이미지 URL (S3 key) 목록
-      images: presignedUrls.map((res) => ({ url: res.key })),
+      images: [], // 이미지 정보는 나중에 추가
     });
 
-    // 4. Content ID와 Presigned URL 목록 반환
+    // 3. S3 Presigned URL 생성 (-> contentId 이용한다)
+    const s3Files = images.map((img) => ({
+      originalFileName: img.filename,
+      contentType: img.contentType,
+    }));
+
+    // S3에 업로드할 이미지 파일 정보 목록 가져오기
+    const presignedUrls =
+      await this.s3Service.generateContentImagePresignedUrls(
+        authorId,
+        s3Files,
+        createdContent.id, //contentId 전달
+      );
+
+    // 4. DB에 presigned URL로 생성된 key들을 저장
+    await this.contentRepository.addContentImages(
+      createdContent.id,
+      presignedUrls.map((res) => ({ url: res.key })),
+    );
+
+    // 4. 결과 반환
     return {
       contentId: createdContent.id,
-      presignedUrls: presignedUrls,
+      presignedUrls,
     };
   }
 
