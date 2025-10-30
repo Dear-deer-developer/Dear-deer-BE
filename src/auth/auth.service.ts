@@ -28,13 +28,9 @@ export class AuthService {
     private readonly configService: ConfigService, // 환경변수 사용을 위한 ConfigService
   ) {}
 
-<<<<<<< HEAD
   /**
    * JWT 쌍 생성
    */
-=======
-  // JWT 쌍 생성
->>>>>>> 8bb9ec4 (feat/#44/자체로그인(native) 기능 추가)
   private async getTokens(user: {
     id: number;
     isAdmin: boolean;
@@ -78,7 +74,6 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-<<<<<<< HEAD
   /**
    * 고유한 5자리 우편번호를 생성하는 헬퍼 함수
    */
@@ -98,8 +93,6 @@ export class AuthService {
     }
   }
 
-=======
->>>>>>> 8bb9ec4 (feat/#44/자체로그인(native) 기능 추가)
   // 회원가입
   async register(dto: AuthRegisterDto): Promise<TokenResponseDto> {
     // 1. 이메일, 닉네임 중복 확인
@@ -115,7 +108,6 @@ export class AuthService {
     }
 
     // 2. 비밀번호 해싱
-<<<<<<< HEAD
     const hashedPassword = await bcrypt.hash(
       dto.password,
       Number(this.configService.get<number>('BCRYPT_SALT_ROUNDS')),
@@ -133,17 +125,6 @@ export class AuthService {
     });
 
     // 5. 토큰 발급 및 리프레시 토큰 저장
-=======
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    // 3. 사용자 생성 (NATIVE 타입으로)
-    const newUser = await this.authRepository.createUser({
-      ...dto,
-      hashedPassword,
-    });
-
-    // 4. 토큰 발급 및 리프레시 토큰 저장
->>>>>>> 8bb9ec4 (feat/#44/자체로그인(native) 기능 추가)
     return this.getTokens(newUser);
   }
 
@@ -228,7 +209,6 @@ export class AuthService {
     await this.authRepository.deleteRefreshToken(userId);
   }
 
-<<<<<<< HEAD
   // 닉네임 사용 가능 여부 확인
   async checkNicknameAvailability(
     nickname: string,
@@ -239,8 +219,6 @@ export class AuthService {
     return { isAvailable: !existingUser };
   }
 
-=======
->>>>>>> 8bb9ec4 (feat/#44/자체로그인(native) 기능 추가)
   /////////// 아래는 소셜로그인 ///////////
 
   // Kakao Access Token -> Firebase Custom Token 발급
