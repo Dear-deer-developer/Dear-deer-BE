@@ -10,6 +10,7 @@ export const GiftCategoryValue = {
   TRAIN: 'TRAIN',
   GIFTBOX: 'GIFTBOX',
   ANIMAL: 'ANIMAL',
+  EVENT: 'EVENT',
 } as const;
 export type GiftCategory = ValueOf<typeof GiftCategoryValue>;
 
