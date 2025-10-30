@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class DeleteLettersDto {
   @ApiProperty({
-    description: '삭제할 편지 ID의 배열',
+    description: '삭제할 편지 ID의 배열 (Query: ?letterIds=1&letterIds=2)',
     type: [Number],
     example: [1, 2, 4],
   })
