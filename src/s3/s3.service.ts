@@ -140,7 +140,7 @@ export class S3Service {
       const fileUuid = uuidv4();
 
       //S3 image Key 생성
-      const key = `${S3Folder.CONTENTS}/${userId}/${folderId}/${fileUuid}${ext}`;
+      const key = `${S3Folder.CONTENTS}/${folderId}/${fileUuid}${ext}`;
 
       const result = await this.generatePresignedUrl(key, file.contentType);
       results.push(result);
