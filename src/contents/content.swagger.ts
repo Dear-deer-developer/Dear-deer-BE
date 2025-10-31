@@ -6,6 +6,7 @@ import {
   ApiBearerAuth,
   ApiForbiddenResponse,
   ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { Content } from '@prisma/client';
 import { CreateContentDto } from './dtos/create-content.dto';
@@ -86,13 +87,14 @@ export const ApiContent = {
       ApiOperation({
         summary: '관리자용 콘텐츠 등록',
         description:
-          '**관리자만 접근 가능합니다.**콘텐츠 정보와 이미지 파일 정보를 받아 DB에 저장하고, S3 업로드를 위한 Presigned URL 목록을 반환합니다. (이미지: 최소 1장, 최대 10장)',
+          '**관리자만 접근 가능합니다.**  \n\n 콘텐츠 기본 정보를 먼저 DB에 저장한 후(이미지 없이),  \n이미지 업로드용 S3 Presigned URL을 생성하여 반환합니다.  \n(이미지: 최소 1장, 최대 10장)',
       }),
       ApiBearerAuth(),
       ApiBody({ type: CreateContentDto }),
       ApiResponse({
         status: 201,
-        description: '콘텐츠가 성공적으로 등록되고 S3 업로드 URL이 반환됨',
+        description:
+          '콘텐츠는 기본 정보가 DB에 저장되고, 이미지 업로드용 Presigned URL 목록이 반환됨',
         schema: {
           example: {
             contentId: 10,
@@ -108,6 +110,9 @@ export const ApiContent = {
             ],
           },
         },
+      }),
+      ApiBadRequestResponse({
+        description: '요청 데이터가 유효하지 않거나 이미지 개수가 10장 초과함',
       }),
       ApiUnauthorizedResponse({
         description: '유효하지 않은 토큰',

@@ -2,12 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 
 export class ContentImageUploadDto {
-  @ApiProperty({ example: 'image_1.jpg', description: '원래 파일 이름' })
+  @ApiProperty({
+    example: 'image1.jpg',
+    description: '업로드할 원본 파일 이름(확장자 포함)',
+  })
   @IsString()
   @IsNotEmpty()
-  filename: string;
+  originalFileName: string;
 
-  @ApiProperty({ example: 'image/jpeg', description: '파일 MIME 타입' })
+  @ApiProperty({
+    example: 'image/jpeg',
+    description: '이미지 MIME 타입(예: image/jpeg, image/png',
+  })
   @IsString()
   @IsNotEmpty()
   contentType: string;

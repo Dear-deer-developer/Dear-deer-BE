@@ -79,7 +79,7 @@ export class ContentService {
 
     // 3. S3 Presigned URL 생성 (-> contentId 이용한다)
     const s3Files = images.map((img) => ({
-      originalFileName: img.filename,
+      originalFileName: img.originalFileName,
       contentType: img.contentType,
     }));
 
@@ -146,7 +146,7 @@ export class ContentService {
 
     // 4. S3 업로드용 Presigned URL 생성 (새 이미지에 대해서만)
     const s3Files = newImages.map((img) => ({
-      originalFileName: img.filename,
+      originalFileName: img.originalFileName,
       contentType: img.contentType,
     }));
 
