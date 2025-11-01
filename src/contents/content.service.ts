@@ -74,7 +74,6 @@ export class ContentService {
       subCategoryId,
       title,
       body: content,
-      images: [], // 이미지 정보는 나중에 추가
     });
 
     // 3. S3 Presigned URL 생성 (-> contentId 이용한다)
