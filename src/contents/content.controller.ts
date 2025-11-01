@@ -46,7 +46,7 @@ export class ContentController {
   @UseGuards(AuthGuard('jwtAdmin'))
   @ApiContent.create()
   async createContent(
-    @GetUser('id') authorId: number,
+    @GetUser('sub') authorId: number,
     @Body() dto: CreateContentDto,
   ) {
     return this.contentService.createContent(authorId, dto);
@@ -60,7 +60,7 @@ export class ContentController {
   async updateContent(
     @Param('contentId', ParseIntPipe) contentId: number,
     @Body() dto: UpdateContentDto,
-    @GetUser('id') authorId: number,
+    @GetUser('sub') authorId: number,
   ) {
     return this.contentService.updateContent(contentId, authorId, dto);
   }
@@ -73,7 +73,7 @@ export class ContentController {
   @ApiContent.delete()
   async deleteContent(
     @Param('contentId', ParseIntPipe) contentId: number,
-    @GetUser('id') authorId: number,
+    @GetUser('sub') authorId: number,
   ) {
     await this.contentService.deleteContent(contentId, authorId);
   }
