@@ -123,14 +123,14 @@ export class S3Service {
   async generateContentImagePresignedUrls(
     userId: number,
     imageFiles: { originalFileName: string; contentType: string }[],
-    contentId?: number,
+    contentId: number,
   ): Promise<{ url: string; key: string }[]> {
     const results = [];
 
-    const folderId = contentId ? String(contentId) : uuidv4();
+    const baseS3Path = `${S3Folder.CONTENTS}/${userId}/${contentId}}`;
 
     for (const file of imageFiles) {
-      //확장자 추출 및 UUID 생성
+      //확장자 추출
       const ext = path.extname(file.originalFileName);
       if (!ext) {
         throw new Error('Invalid file extension');
@@ -139,8 +139,8 @@ export class S3Service {
       //UUID 생성
       const fileUuid = uuidv4();
 
-      //S3 image Key 생성
-      const key = `${S3Folder.CONTENTS}/${folderId}/${fileUuid}${ext}`;
+      //S3 image Key 생성 (contents/유저ID/콘텐츠ID/고유파일명.확장자)
+      const key = `${baseS3Path}/${fileUuid}${ext}`;
 
       const result = await this.generatePresignedUrl(key, file.contentType);
       results.push(result);
