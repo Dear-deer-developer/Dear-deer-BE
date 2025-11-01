@@ -113,7 +113,6 @@ export class ContentRepository {
     subCategoryId: number;
     title: string;
     body: string;
-    images?: { url: string }[];
   }) {
     return this.prisma.content.create({
       data: {
@@ -121,7 +120,7 @@ export class ContentRepository {
         subCategoryId: data.subCategoryId,
         title: data.title,
         body: data.body,
-        images: data.images ? { create: data.images } : undefined,
+        status: ContentStatus.PUBLISHED,
       },
     });
   }
