@@ -127,7 +127,7 @@ export class S3Service {
   ): Promise<{ url: string; key: string }[]> {
     const results = [];
 
-    const baseS3Path = `${S3Folder.CONTENTS}/${userId}/${contentId}}`;
+    const baseS3Path = `${S3Folder.CONTENTS}/${userId}/${contentId}`;
 
     for (const file of imageFiles) {
       //확장자 추출
