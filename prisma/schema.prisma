@@ -59,6 +59,7 @@ model User {
   loginType      LoginType @default(NATIVE) @map("login_type")
   providerId     String?   @unique @map("provider_id") // 소셜로그인시 저장
   isAdmin        Boolean   @default(false) @map("is_admin")
+  isAgreed       Boolean   @default(false) @map("is_agreed")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
@@ -75,6 +76,19 @@ model User {
   userEquipSlots  UserEquipSlot[]
 
   @@map("users")
+}
+
+// 이메일 인증 코드 테이블
+model AuthCode {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  code         String
+  isVerified   Boolean  @default(false) @map("is_verified") // 인증 완료 상태
+  attemptCount Int      @default(0) @map("attempt_count") // 시도 횟수 카운트
+  expiredAt    DateTime @map("expired_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("auth_codes")
 }
 
 // refreshToken 저장 테이블
