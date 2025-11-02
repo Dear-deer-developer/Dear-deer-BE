@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { LetterService } from './letter.service';
 import { SendLetterDto } from './dtos/send-letter.dto';
@@ -39,7 +40,7 @@ export class LetterController {
     @Body() sendLetterDto: SendLetterDto,
     @GetUserId() userId: number,
   ): Promise<ResSendLetterDto> {
-    return this.letterService.sendLetter(userId, sendLetterDto);
+    return await this.letterService.sendLetter(userId, sendLetterDto);
   }
 
   /** 임시 저장 */
@@ -49,7 +50,7 @@ export class LetterController {
     @Body() saveWritingDto: SaveWritingDto,
     @GetUserId() userId: number,
   ): Promise<ResDraftLetterDto> {
-    return this.letterService.saveWriting(userId, saveWritingDto);
+    return await this.letterService.saveWriting(userId, saveWritingDto);
   }
 
   /** 내 사서함 조회 */
@@ -58,7 +59,7 @@ export class LetterController {
   async findReceivedLetters(
     @GetUserId() userId: number,
   ): Promise<ResReceivedLetterDto[]> {
-    return this.letterService.findReceivedLetters(userId);
+    return await this.letterService.findReceivedLetters(userId);
   }
 
   /** 보낸 편지함 조회 */
@@ -67,7 +68,7 @@ export class LetterController {
   async findSentLetters(
     @GetUserId() userId: number,
   ): Promise<ResSentLetterDto[]> {
-    return this.letterService.findSentLetters(userId);
+    return await this.letterService.findSentLetters(userId);
   }
 
   /** 임시 보관함 조회 */
@@ -76,7 +77,7 @@ export class LetterController {
   async findDraftLetters(
     @GetUserId() userId: number,
   ): Promise<ResDraftLetterItemDto[]> {
-    return this.letterService.findDraftLetters(userId);
+    return await this.letterService.findDraftLetters(userId);
   }
 
   /** 단일 편지 조회 */
@@ -86,7 +87,7 @@ export class LetterController {
     @Param('letterId', ParseIntPipe) letterId: number,
     @GetUserId() userId: number,
   ): Promise<ResLetterDto> {
-    return this.letterService.findLetter(letterId, userId);
+    return await this.letterService.findLetter(letterId, userId);
   }
 
   /** 편지 삭제 */
@@ -94,7 +95,7 @@ export class LetterController {
   @HttpCode(200)
   @ApiLetters.delete()
   async deleteLetters(
-    @Body() dto: DeleteLettersDto,
+    @Query() dto: DeleteLettersDto,
     @GetUserId() userId: number,
   ): Promise<ResDeleteLettersDto> {
     return await this.letterService.deleteLetters(dto.letterIds, userId);

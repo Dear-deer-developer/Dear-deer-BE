@@ -151,9 +151,12 @@ export class LetterRepository {
       },
       select: {
         id: true,
-        receiverId: true,
+        receiver: {
+          select: {
+            nickname: true,
+          },
+        },
         content: true,
-        imageUrl: true,
         status: true,
         updatedAt: true,
       },
@@ -181,8 +184,8 @@ export class LetterRepository {
   }
 
   /** letterId로 단일 편지 조회 */
-  findLetterById(letterId: number): Promise<LetterDetail | null> {
-    return this.prisma.letter.findUnique({
+  async findLetterById(letterId: number): Promise<LetterDetail | null> {
+    return await this.prisma.letter.findUnique({
       where: { id: letterId },
       select: letterSelect, // 공통 select 적용
     });
