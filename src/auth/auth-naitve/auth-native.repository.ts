@@ -28,9 +28,19 @@ export class AuthNativeRepository {
     });
   }
 
+  // zipCode로 사용자 찾기
+  async findByZipCode(zipCode: number): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { zipCode },
+    });
+  }
+
   // 신규 사용자 생성 (자체 로그인)
   async createUser(
-    data: Omit<AuthRegisterDto, 'password'> & { hashedPassword: string },
+    data: Omit<AuthRegisterDto, 'password'> & {
+      hashedPassword: string;
+      zipCode: number;
+    },
   ): Promise<User> {
     const { email, nickname, zipCode, hashedPassword, isAgreed } = data;
     return this.prisma.user.create({
@@ -39,7 +49,7 @@ export class AuthNativeRepository {
         hashedPassword,
         nickname,
         zipCode,
-        //isAgreed, 주석 풀기 !!!
+        isAgreed,
         loginType: LoginType.NATIVE, // 자체 로그인으로 설정
       },
     });
@@ -86,7 +96,6 @@ export class AuthNativeRepository {
     });
   }
 
-  /* auth 코드 테이블 생기면 다시 풀기!
   // 인증코드 upsert
   async upsertAuthCode(email: string, code: string, expiredAt: Date) {
     return this.prisma.authCode.upsert({
@@ -146,7 +155,6 @@ export class AuthNativeRepository {
       },
     });
   }
-    */
 
   // 새 비밀번호 설정
   async updatePassword(userId: number, newHashedPassword: string) {

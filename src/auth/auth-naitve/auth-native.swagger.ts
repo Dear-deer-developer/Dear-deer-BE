@@ -15,6 +15,7 @@ import { SetNewPasswordDto } from '../dtos/set-new-password.dto';
 import { VerifyCurrentPasswordDto } from '../dtos/verify-current-password.dto';
 import { CheckNicknameDto } from '../dtos/check-nickname.dto';
 import { CheckEmailDto } from '../dtos/check-email.dto';
+import { AuthWithdrawDto } from '../dtos/auth-withdraw.dto';
 
 // 💡 Generic Error Schema for reusability
 const UnauthorizedError = {
@@ -117,7 +118,6 @@ export const ApiAuthNative = {
         description:
           '입력한 이메일이 이미 데이터베이스에 등록되어 있는지 확인합니다.',
       }),
-      ApiBody({ type: CheckEmailDto }),
       ApiResponse({
         status: 200,
         description: '사용 가능한 이메일',
@@ -146,7 +146,6 @@ export const ApiAuthNative = {
         description:
           '입력한 닉네임이 이미 데이터베이스에 등록되어 있는지 확인합니다.',
       }),
-      ApiBody({ type: CheckNicknameDto }),
       ApiResponse({
         status: 200,
         description: '사용 가능한 닉네임',
@@ -384,6 +383,46 @@ export const ApiAuthNative = {
             statusCode: 401,
           },
         },
+      }),
+    ),
+
+  /**
+   * @summary [네이티브] 회원 탈퇴
+   */
+  withdraw: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '[네이티브] 회원 탈퇴',
+        description:
+          '로그인된 네이티브 계정을 탈퇴 처리합니다. 보안을 위해 현재 비밀번호 검증이 필요합니다.',
+      }),
+      ApiBearerAuth('accessToken'), // Access Token 인증 요구
+      ApiBody({ type: AuthWithdrawDto }),
+
+      // 204 No Content 응답 (성공)
+      ApiResponse({
+        status: 204,
+        description: '회원 탈퇴 성공 (No Content)',
+      }),
+
+      // 401 Unauthorized (인증 실패)
+      ApiResponse({
+        status: 401,
+        description: '인증 실패 (현재 비밀번호 불일치)',
+        schema: {
+          example: {
+            message: '현재 비밀번호가 일치하지 않습니다.',
+            error: 'Unauthorized',
+            statusCode: 401,
+          },
+        },
+      }),
+
+      // 일반적인 401 (토큰 문제)
+      ApiResponse({
+        status: 401,
+        description: '토큰 인증 실패 (토큰 불일치, 만료 등)',
+        ...UnauthorizedError,
       }),
     ),
 };

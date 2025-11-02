@@ -43,12 +43,6 @@ export class AuthRegisterDto {
   })
   nickname: string;
 
-  @ApiProperty({ example: 20850, description: '우편번호' })
-  @IsInt({ message: '우편번호는 정수여야 합니다.' })
-  @Min(10000, { message: '유효하지 않은 우편번호 형식입니다.' })
-  @Max(99999, { message: '유효하지 않은 우편번호 형식입니다.' })
-  zipCode: number;
-
   @ApiProperty({
     example: true,
     description: '필수 약관 동의 여부 (반드시 true여야 함)',

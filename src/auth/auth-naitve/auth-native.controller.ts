@@ -8,7 +8,8 @@ import {
   Headers,
   Patch,
   Delete,
-  Req,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthRegisterDto } from '../dtos/auth-register.dto';
@@ -48,20 +49,20 @@ export class AuthNativeController {
     return this.authNativeService.login(dto);
   }
 
-  // 이메일 중복확인
-  @Post('native/check-email')
+  // 회원가입시 이메일 중복확인
+  @Get('native/check-email')
   @ApiAuthNative.checkEmail()
   @HttpCode(HttpStatus.OK)
-  async checkEmail(@Body() dto: CheckEmailDto): Promise<{ message: string }> {
+  async checkEmail(@Query() dto: CheckEmailDto): Promise<{ message: string }> {
     return this.authNativeService.checkEmailExists(dto.email);
   }
 
-  // 닉네임 중복확인
-  @Post('native/check-nickname')
+  // 회원가입시 닉네임 중복확인
+  @Get('native/check-nickname')
   @ApiAuthNative.checkNickname()
   @HttpCode(HttpStatus.OK)
   async checkNickname(
-    @Body() dto: CheckNicknameDto,
+    @Query() dto: CheckNicknameDto,
   ): Promise<{ message: string }> {
     return this.authNativeService.checkNicknameExists(dto.nickname);
   }
@@ -86,7 +87,6 @@ export class AuthNativeController {
     await this.authNativeService.logout(userId);
   }
 
-  /*
   // 이메일 인증코드 요청 (회원가입 할 때 이메일로 인증코드를 발송)
   @Post('native/register/auth-code')
   @ApiAuthNative.sendRegisterCode()
@@ -130,7 +130,6 @@ export class AuthNativeController {
       verifyCodeDto.code,
     );
   }
-  */
 
   // 새 비밀번호 설정
   @Patch('native/password')
@@ -164,6 +163,7 @@ export class AuthNativeController {
 
   // 회원탈퇴
   @Delete('native/withdraw')
+  @ApiAuthNative.withdraw()
   @UseGuards(AuthGuard('accessToken'))
   @HttpCode(204)
   async withdraw(

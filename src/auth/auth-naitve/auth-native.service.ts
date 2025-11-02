@@ -28,7 +28,9 @@ export class AuthNativeService {
     private readonly emailService: EmailService,
   ) {}
 
-  // JWT 쌍 생성
+  /**
+   * JWT 쌍 생성
+   */
   private async getTokens(user: {
     id: number;
     isAdmin: boolean;
@@ -59,7 +61,7 @@ export class AuthNativeService {
       expiryDate.getDate() +
         parseInt(
           this.configService.get<string>('REFRESH_TOKEN_EXPIRY_TIME_FOR_DB'),
-          this.configService.get<number>('BCRYPT_SALT_ROUNDS'),
+          10, // 10진수로 변경
         ),
     );
 
@@ -72,15 +74,31 @@ export class AuthNativeService {
     return { accessToken, refreshToken };
   }
 
+  private async generateUniqueZipCode(): Promise<number> {
+    while (true) {
+      // 1. 10000 ~ 99999 사이의 5자리 정수 생성 (12025 제외)
+      const zipCode = Math.floor(10000 + Math.random() * 90000);
+      if (zipCode === 12025) continue; // 12025 예외 처리
+      // 2. DB에서 이 zipCode를 누가 쓰고 있는지 확인
+
+      const existingUser =
+        await this.authNativeRepository.findByZipCode(zipCode); // 3. 아무도 안 쓰고 있다면 (null) 이 번호 반환
+
+      if (!existingUser) {
+        return zipCode;
+      }
+    }
+  }
+
   // 회원가입
   async register(dto: AuthRegisterDto): Promise<TokenResponseDto> {
     // 0. 이메일 인증 확인
-    // const authCode = await this.authNativeRepository.findAuthCodeByEmail(
-    //   dto.email,
-    // );
-    // if (!authCode || !authCode.isVerified) {
-    //   throw new UnauthorizedException('이메일 인증이 완료되지 않았습니다.');
-    // }
+    const authCode = await this.authNativeRepository.findAuthCodeByEmail(
+      dto.email,
+    );
+    if (!authCode || !authCode.isVerified) {
+      throw new UnauthorizedException('이메일 인증이 완료되지 않았습니다.');
+    }
 
     // 1. 이메일, 닉네임 중복 확인
     const emailExists = await this.authNativeRepository.findByEmail(dto.email);
@@ -98,16 +116,23 @@ export class AuthNativeService {
     // 2. 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(
       dto.password,
-      this.configService.get<number>('BCRYPT_SALT_ROUNDS'),
+      Number(this.configService.get<number>('BCRYPT_SALT_ROUNDS')),
     );
 
-    // 3. 사용자 생성 (NATIVE 타입으로)
+    // 3. 고유 우편번호 생성
+    const uniqueZipCode = await this.generateUniqueZipCode();
+
+    // 4. 사용자 생성 (NATIVE 타입으로)
     const newUser = await this.authNativeRepository.createUser({
       ...dto,
       hashedPassword,
+      zipCode: uniqueZipCode,
     });
 
-    // 4. 토큰 발급 및 리프레시 토큰 저장
+    // 5. 인증코드를 삭제
+    await this.authNativeRepository.deleteAuthCodeByEmail(dto.email);
+
+    // 6. 토큰 발급 및 리프레시 토큰 저장
     return this.getTokens(newUser);
   }
 
@@ -211,7 +236,6 @@ export class AuthNativeService {
     await this.authNativeRepository.deleteRefreshToken(userId);
   }
 
-  /*
   // 회원가입할 때 인증코드 발송 (이메일 인증코드 발송 + DB에 코드 저장)
   async sendRegisterCode(email: string): Promise<{ message: string }> {
     // 1. [핵심] 이미 가입된 이메일인지 먼저 확인합니다.
@@ -345,7 +369,6 @@ export class AuthNativeService {
 
     return this.getTokens(user);
   }
-  */
 
   // 새 비밀번호 설정
   async setNewPassword(
@@ -355,7 +378,7 @@ export class AuthNativeService {
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(
       newPassword,
-      this.configService.get<number>('BCRYPT_SALT_ROUNDS'),
+      Number(this.configService.get<number>('BCRYPT_SALT_ROUNDS')),
     );
 
     await this.authNativeRepository.updatePassword(userId, hashedPassword);
