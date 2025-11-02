@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
+  IsEthereumAddress,
   IsInt,
   IsNotEmpty,
   IsString,
-  Length,
   Matches,
   Max,
   Min,
@@ -41,4 +42,13 @@ export class AuthRegisterDto {
       '닉네임은 2~8자의 한글, 영어, 숫자만 사용 가능하며, 공백, 특수문자, 이모티콘은 허용되지 않습니다.',
   })
   nickname: string;
+
+  @ApiProperty({
+    example: true,
+    description: '필수 약관 동의 여부 (반드시 true여야 함)',
+    type: Boolean,
+  })
+  @IsBoolean({ message: '약관 동의 여부는 boolean 값이어야 합니다.' })
+  @IsEthereumAddress({ message: '필수 약관에 동의해야 회원가입이 가능합니다.' })
+  isAgreed: boolean;
 }
