@@ -40,7 +40,7 @@ export class ContentController {
     return this.contentService.findOnePublishedContent(contentId);
   }
 
-  /** 콘텐츠 등록 */
+  /** (관리자 전용) 콘텐츠 등록 */
   @Post()
   @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard('jwtAdmin'))
@@ -52,7 +52,7 @@ export class ContentController {
     return this.contentService.createContent(authorId, dto);
   }
 
-  /** 콘텐츠 수정 */
+  /** (관리자 전용) 콘텐츠 수정 */
   @Put(':contentId')
   @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard('jwtAdmin'))
@@ -65,7 +65,7 @@ export class ContentController {
     return this.contentService.updateContent(contentId, authorId, dto);
   }
 
-  /** 콘텐츠 삭제 */
+  /** (관리자 전용) 콘텐츠 삭제 */
   @Delete(':contentId')
   @HttpCode(204)
   @ApiBearerAuth('accessToken')

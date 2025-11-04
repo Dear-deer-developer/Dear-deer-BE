@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectsCommand,
+  ListObjectsV2Command,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
@@ -127,7 +128,7 @@ export class S3Service {
   ): Promise<{ url: string; key: string }[]> {
     const results = [];
 
-    const baseS3Path = `${S3Folder.CONTENTS}/${userId}/${contentId}`;
+    const baseS3Path = `${S3Folder.CONTENTS}/${userId}/${contentId}}`;
 
     for (const file of imageFiles) {
       //확장자 추출
@@ -193,6 +194,46 @@ export class S3Service {
       Bucket: this.configService.get<string>('AWS_S3_BUCKET'),
       Delete: {
         Objects: keys.map((key) => ({ Key: key })),
+      },
+    });
+
+    await this.s3Client.send(command);
+  }
+
+  /** 콘텐츠 폴더 전체 삭제 */
+  async deleteContentFolder(userId: number, contentId: number): Promise<void> {
+    const prefix = `${S3Folder.CONTENTS}/${userId}/${contentId}/`;
+
+    // 1. 해당 폴더 내 모든 객체 목록 조회
+    const listCommand = new ListObjectsV2Command({
+      Bucket: this.bucket,
+      Prefix: prefix,
+    });
+
+    const listedObjects = await this.s3Client.send(listCommand);
+
+    // 2. 비어있으면 바로 종료
+    if (!listedObjects.Contents || listedObjects.Contents.length === 0) return;
+
+    // 3. 삭제할 키 배열로 변환
+    const keysToDelete = listedObjects.Contents.map((obj) => ({
+      Key: obj.Key,
+    }));
+
+    // 4. 객체 삭제
+    const deleteCommand = new DeleteObjectsCommand({
+      Bucket: this.bucket,
+      Delete: { Objects: keysToDelete },
+    });
+
+    await this.s3Client.send(deleteCommand);
+  }
+
+  async deleteSingleImage(key: string): Promise<void> {
+    const command = new DeleteObjectsCommand({
+      Bucket: this.bucket,
+      Delete: {
+        Objects: [{ Key: key }],
       },
     });
 

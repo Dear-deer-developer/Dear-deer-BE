@@ -113,9 +113,15 @@ export class ContentService {
     contentId: number;
     presignedUrls: { url: string; key: string }[];
   }> {
-    const { title, content, subCategoryId, currentImageKeys, newImages } = dto;
+    const {
+      title,
+      content,
+      subCategoryId,
+      currentImageKeys = [],
+      newImages = [],
+    } = dto;
 
-    // 1. 콘텐츠 존재 및 권한 확인 (등록한 관리자만 수정 가능하다고 가정)
+    // 1. 콘텐츠 존재 및 권한 확인
     const existingContent =
       await this.contentRepository.findContentByIdWithImages(contentId);
 
@@ -157,26 +163,22 @@ export class ContentService {
       );
 
     // 5. DB 트랜잭션 처리 (삭제할 이미지와 새로 추가할 이미지 목록 전달)
-    const contentUpdateData = {
-      ...(subCategoryId !== undefined && { subCategoryId }),
-      ...(title !== undefined && { title }),
-      ...(content !== undefined && { body: content }),
-    };
-
-    // 카테고리 유효성 검사 (Optional)
-    if (
-      subCategoryId !== undefined &&
-      !(await this.contentRepository.existSubCategory(subCategoryId))
-    ) {
-      throw new NotFoundException(
-        `존재하지 않는 서브 카테고리 ID입니다: ${subCategoryId}`,
-      );
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (content !== undefined) updateData.body = content;
+    if (subCategoryId !== undefined) {
+      if (!(await this.contentRepository.existSubCategory(subCategoryId))) {
+        throw new NotFoundException(
+          `존재하지 않는 서브 카테고리 ID 입니다: ${subCategoryId}`,
+        );
+      }
+      updateData.subCategoryId = subCategoryId;
     }
 
     const updatedContent = await this.contentRepository.updateContent(
       contentId,
-      contentUpdateData, // 필터링된 객체 전달
-      presignedUrls.map((res) => res.key),
+      updateData, // 필터링된 객체 전달
+      presignedUrls.map((p) => p.key),
       imageKeysToDeleteFromS3,
     );
 
