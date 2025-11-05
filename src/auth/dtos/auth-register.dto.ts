@@ -2,13 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEmail,
-  IsEthereumAddress,
-  IsInt,
   IsNotEmpty,
   IsString,
   Matches,
-  Max,
-  Min,
 } from 'class-validator';
 
 export class AuthRegisterDto {
@@ -49,6 +45,5 @@ export class AuthRegisterDto {
     type: Boolean,
   })
   @IsBoolean({ message: '약관 동의 여부는 boolean 값이어야 합니다.' })
-  @IsEthereumAddress({ message: '필수 약관에 동의해야 회원가입이 가능합니다.' })
   isAgreed: boolean;
 }
