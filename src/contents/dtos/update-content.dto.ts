@@ -47,8 +47,8 @@ export class UpdateContentDto {
   @ApiProperty({
     type: [String],
     description:
-      '**수정 후 최종적으로 유지할** 기존 이미지 S3 Key 목록 (예: "contents/1/uuid1.jpg").',
-    example: ['contents/1/uuid-old-1.jpg', 'contents/1/uuid-old-2.png'],
+      '**수정 후 최종적으로 유지할** 기존 이미지 S3 Key 목록 (예: "contents/1/10/uuid1.jpg").',
+    example: ['contents/1/10/uuid-old-1.jpg', 'contents/1/10/uuid-old-2.png'],
   })
   @IsArray()
   @IsString({ each: true })
