@@ -92,6 +92,11 @@ export class AuthNativeService {
 
   // 회원가입
   async register(dto: AuthRegisterDto): Promise<TokenResponseDto> {
+    if (dto.isAgreed !== true) {
+      throw new BadRequestException(
+        '필수 약관에 동의해야 회원가입이 가능합니다.',
+      );
+    }
     // 0. 이메일 인증 확인
     const authCode = await this.authNativeRepository.findAuthCodeByEmail(
       dto.email,
