@@ -7,90 +7,40 @@ export class ContentRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /** 전체 공개 콘텐츠 리스트 조회 */
-  async findAllPublished(
-    mainCategoryId?: string,
-    subCategoryId?: string,
-  ): Promise<Content[]> {
-    if (subCategoryId) {
-      return this.prisma.content.findMany({
-        where: {
-          status: ContentStatus.PUBLISHED,
-          subCategoryId: +subCategoryId,
-        },
-        include: {
-          subCategory: {
-            include: {
-              mainCategory: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-    }
+  async findAllPublished(mainCategoryId?: string, subCategoryId?: string) {
+    const where: any = {
+      status: ContentStatus.PUBLISHED,
+    };
 
-    if (mainCategoryId) {
-      return this.prisma.content.findMany({
-        where: {
-          status: ContentStatus.PUBLISHED,
-          subCategory: {
-            mainCategoryId: +mainCategoryId,
-          },
-        },
-        include: {
-          subCategory: {
-            include: {
-              mainCategory: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-    }
+    if (subCategoryId) where.subCategoryId = +subCategoryId;
+    else if (mainCategoryId)
+      where.subCategory = { mainCategoryId: +mainCategoryId };
 
     return this.prisma.content.findMany({
-      where: {
-        status: ContentStatus.PUBLISHED,
-      },
+      where,
       include: {
+        images: true, //이미지 포함
         subCategory: {
           include: {
             mainCategory: true,
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  /** 메인 카테고리 존재 여부 확인 */
-  async existMainCategory(id: number): Promise<boolean> {
-    return (await this.prisma.contentMainCategory.count({ where: { id } })) > 0;
-  }
-
-  /** 서브 카테고리 존재 여부 확인 */
-  async existSubCategory(id: number): Promise<boolean> {
-    return (await this.prisma.contentSubCategory.count({ where: { id } })) > 0;
-  }
-
   /** 특정 공개 콘텐츠 상세 조회 */
-  async findOnePublished(contentId: number): Promise<Content | null> {
+  async findOnePublished(contentId: number) {
     return this.prisma.content.findUnique({
       where: {
         id: contentId,
         status: ContentStatus.PUBLISHED,
       },
       include: {
+        images: true,
         author: {
-          select: {
-            id: true,
-            nickname: true,
-          },
+          select: { id: true, nickname: true },
         },
         subCategory: {
           select: {
@@ -106,6 +56,16 @@ export class ContentRepository {
         },
       },
     });
+  }
+
+  /** 메인 카테고리 존재 여부 확인 */
+  async existMainCategory(id: number): Promise<boolean> {
+    return (await this.prisma.contentMainCategory.count({ where: { id } })) > 0;
+  }
+
+  /** 서브 카테고리 존재 여부 확인 */
+  async existSubCategory(id: number): Promise<boolean> {
+    return (await this.prisma.contentSubCategory.count({ where: { id } })) > 0;
   }
 
   async createContent(data: {
