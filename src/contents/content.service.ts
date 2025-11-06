@@ -5,6 +5,8 @@ import { S3Service } from 'src/s3/s3.service';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { ContentListItemDto } from './dtos/content-list-item.dto';
+import { ContentDetailDto } from './dtos/content-detail.dto';
 
 @Injectable()
 export class ContentService {
@@ -14,7 +16,9 @@ export class ContentService {
   ) {}
 
   /** 공개된 콘텐츠 리스트 조회 (카테고리 필터링) */
-  async findAllPublishedContents(query: ContentsQueryDto) {
+  async findAllPublishedContents(
+    query: ContentsQueryDto,
+  ): Promise<ContentListItemDto[]> {
     const { mainCategoryId, subCategoryId } = query;
 
     if (
@@ -35,20 +39,38 @@ export class ContentService {
       );
     }
 
-    return this.contentRepository.findAllPublished(
+    const contents = await this.contentRepository.findAllPublished(
       mainCategoryId,
       subCategoryId,
     );
+
+    //대표 이미지 (thumbnail) 만 썸네일로 나온다.
+    return contents.map((content) => ({
+      id: content.id,
+      title: content.title,
+      thumbnail: content.images[0]?.url || null, //첫 번째(유일한) 이미지
+      subCategory: content.subCategory,
+      createdAt: content.createdAt,
+    }));
   }
 
   /** 특정 공개된 콘텐츠 상세 조회 */
-  async findOnePublishedContent(contentId: number) {
+  async findOnePublishedContent(contentId: number): Promise<ContentDetailDto> {
     const content = await this.contentRepository.findOnePublished(contentId);
 
     if (!content) {
       throw new NotFoundException('게시된 콘텐츠를 찾을 수 없습니다.');
     }
-    return content;
+
+    return {
+      id: content.id,
+      title: content.title,
+      body: content.body,
+      author: content.author,
+      subCategory: content.subCategory,
+      images: content.images.map((img) => img.url),
+      createdAt: content.createdAt,
+    };
   }
 
   /** 콘텐츠 등록 (관리자 전용) */

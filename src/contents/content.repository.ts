@@ -19,7 +19,12 @@ export class ContentRepository {
     return this.prisma.content.findMany({
       where,
       include: {
-        images: true, //이미지 포함
+        images: {
+          take: 1,
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
         subCategory: {
           include: {
             mainCategory: true,
@@ -38,7 +43,11 @@ export class ContentRepository {
         status: ContentStatus.PUBLISHED,
       },
       include: {
-        images: true,
+        images: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
         author: {
           select: { id: true, nickname: true },
         },

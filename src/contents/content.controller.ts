@@ -20,6 +20,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
+import { ContentListItemDto } from './dtos/content-list-item.dto';
+import { ContentDetailDto } from './dtos/content-detail.dto';
+import { Content } from '@prisma/client';
 
 @ApiTags('contents')
 @Controller('contents')
@@ -29,14 +32,18 @@ export class ContentController {
   /** 콘텐츠 리스트 조회 (카테고리별 필터링) */
   @Get()
   @ApiContent.findAll()
-  async findAll(@Query() query: ContentsQueryDto) {
+  async findAll(
+    @Query() query: ContentsQueryDto,
+  ): Promise<ContentListItemDto[]> {
     return this.contentService.findAllPublishedContents(query);
   }
 
   /** 특정 콘텐츠 상세 조회 */
   @Get(':contentId')
   @ApiContent.findOne()
-  async findOne(@Param('contentId', ParseIntPipe) contentId: number) {
+  async findOne(
+    @Param('contentId', ParseIntPipe) contentId: number,
+  ): Promise<ContentDetailDto> {
     return this.contentService.findOnePublishedContent(contentId);
   }
 
