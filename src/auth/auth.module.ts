@@ -37,6 +37,12 @@ import { AuthNativeRepository } from './auth-naitve/auth-native.repository';
     JWTAdminGuard,
   ],
   controllers: [AuthController, AuthNativeController],
-  exports: [FirebaseAuthGuard, UsersModule, AccessTokenGuard, JWTAdminGuard],
+  exports: [
+    UsersModule,
+    AuthNativeRepository,
+    FirebaseAuthGuard,
+    AccessTokenGuard,
+    JWTAdminGuard,
+  ],
 })
 export class AuthModule {}
