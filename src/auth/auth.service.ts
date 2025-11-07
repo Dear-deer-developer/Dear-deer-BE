@@ -13,11 +13,9 @@ type ReqUser = { id: number; uid: string };
 export class AuthService {
   constructor(
     private readonly authRepository: AuthRepository,
-    private readonly jwtService: JwtService,
     private readonly firebaseAdminService: FirebaseAdminService,
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
-    private readonly emailService: EmailService,
   ) {}
 
   // Kakao Access Token -> Firebase Custom Token 발급

@@ -9,7 +9,9 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LetterStatusValue } from 'src/common/enums/letter-status.enum';
 import {
+  APP_LAUNCH_DATE,
   CHRISTMAS_PAPER_ID,
+  EVENT_START_DATE,
   EVENT_TZ,
   SANTA_LETTER_CONTENT,
   SANTA_PROVIDER_ID,
@@ -117,6 +119,7 @@ export class CalendarRewardService {
     }
   }
 
+  /** 산타편지를 유저에게 전송 */
   private async sendSantaLetterOnce(receiverId: number): Promise<{
     received: boolean;
     letter?: {
@@ -175,6 +178,50 @@ export class CalendarRewardService {
         return { received: false };
       }
       throw e;
+    }
+  }
+
+  /**
+   * 신규 유저 회원가입 시, 기본 선물 일괄 지급 (1회성)
+   * authNative Service에서 호출
+   */
+  async grantGiftsForNewUser(userId: number) {
+    const startDate = this.dateYmdToDateObject(EVENT_START_DATE); // 시작날짜
+    const beforeDate = this.dateYmdToDateObject(APP_LAUNCH_DATE); // 출시날짜
+
+    console.log(startDate, beforeDate);
+
+    // 1. (11/1 ~ 11/11)까지의 모든 'GIFT' 선물 계획 조회
+    const historicalPlans =
+      await this.calendarRewardRepository.findHistoricalPlans(
+        startDate,
+        beforeDate,
+      );
+
+    console.log(historicalPlans);
+    if (historicalPlans.length === 0) {
+      console.log(`No historical gifts to grant for new user ${userId}.`);
+      return;
+    }
+
+    // 2. [트랜잭션] 누락된 선물(N개)을 한꺼번에 지급
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await this.calendarRewardRepository.bulkGrantGiftsForNewUser(
+          userId,
+          historicalPlans,
+        );
+      });
+      console.log(
+        `Successfully granted ${historicalPlans.length} historical gifts to new user ${userId}.`,
+      );
+    } catch (e) {
+      // 중요: 이 로직이 실패해도 회원가입이 롤백되면 안 됨.
+      // 에러를 로깅만 하고, 상위 서비스(AuthService)로 throw하지 않음.
+      console.error(
+        `[CRITICAL] Failed to grant historical gifts for new user ${userId}`,
+        e,
+      );
     }
   }
 

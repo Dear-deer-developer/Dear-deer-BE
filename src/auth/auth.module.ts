@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
@@ -15,6 +15,7 @@ import { EmailService } from './Email/auth-email.service';
 import { AuthNativeController } from './auth-naitve/auth-native.controller';
 import { AuthNativeService } from './auth-naitve/auth-native.service';
 import { AuthNativeRepository } from './auth-naitve/auth-native.repository';
+import { CalendarRewardModule } from 'src/calendar-reward/calendar-reward.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthNativeRepository } from './auth-naitve/auth-native.repository';
     UsersModule,
     HttpModule,
     FirebaseAdminModule,
+    forwardRef(() => CalendarRewardModule),
   ],
   providers: [
     AuthService,
