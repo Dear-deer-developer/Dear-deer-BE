@@ -51,17 +51,18 @@ enum LoginType {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  email          String?   @unique // (10.13 자체로그인시에만 저장)
-  hashedPassword String?   @map("hashed_password") // 자체로그인시 저장
-  nickname       String    @unique
-  zipCode        Int       @unique @map("zip_code")
-  loginType      LoginType @default(NATIVE) @map("login_type")
-  providerId     String?   @unique @map("provider_id") // 소셜로그인시 저장
-  isAdmin        Boolean   @default(false) @map("is_admin")
-  isAgreed       Boolean   @default(false) @map("is_agreed")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id               Int       @id @default(autoincrement())
+  email            String?   @unique // (10.13 자체로그인시에만 저장)
+  hashedPassword   String?   @map("hashed_password") // 자체로그인시 저장
+  nickname         String    @unique
+  zipCode          Int       @unique @map("zip_code")
+  loginType        LoginType @default(NATIVE) @map("login_type")
+  providerId       String?   @unique @map("provider_id") // 소셜로그인시 저장
+  isAdmin          Boolean   @default(false) @map("is_admin")
+  isAgreed         Boolean   @default(false) @map("is_agreed")
+  lastGiftViewedAt DateTime? @map("last_gift_viewed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   refreshToken          RefreshToken?
   sentLetters           Letter[]               @relation("SentLetters")

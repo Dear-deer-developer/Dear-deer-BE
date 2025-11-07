@@ -11,22 +11,33 @@ import {
 import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
 import { ResGiftDto } from './dtos/res-gift.dto';
+import { UsersRepository } from 'src/users/users.repository';
+import { ResMyGiftDto } from './dtos/res-my-gift.dto';
 
 @Injectable()
 export class GiftService {
-  constructor(private readonly giftRepository: GiftRepository) {}
+  constructor(
+    private readonly giftRepository: GiftRepository,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
-  async findUserGifts(userId: number) {
-    const myGifts = await this.giftRepository.findUserGifts(userId);
+  async findMyGifts(userId: number): Promise<ResMyGiftDto[]> {
+    // 선물함 들어간 마지막 시간을 가져옴.
+    const user = await this.usersRepository.findUserForNewGiftCheck(userId);
 
-    // 1. GIFT로 매핑합니다.
+    const lastViewed = user.lastGiftViewedAt || new Date(0); // =1970년 1월 1일
+
+    const myGifts = await this.giftRepository.findMyGifts(userId);
+
+    // 1. GIFT로 매핑.
     const gifts = myGifts.map((userGift) => ({
       giftId: userGift.gift.id,
       name: userGift.gift.name,
       category: userGift.gift.category, // 이 카테고리 기준
+      isNew: userGift.obtainedAt > lastViewed,
     }));
 
-    // 2. GIFT 배열을 'categoryRankMap' 기준으로 정렬합니다.
+    // 2. GIFT 배열을 'categoryRankMap' 기준으로 정렬.
     gifts.sort((a, b) => {
       const rankA = categoryRankMap.get(a.category) ?? 99; // ?? 99 는 정렬 예외처리
       const rankB = categoryRankMap.get(b.category) ?? 99;
@@ -35,6 +46,12 @@ export class GiftService {
 
     // 3. 정렬된 GIFT 배열을 반환합니다.
     return gifts;
+  }
+
+  async updateLastGiftViewed(userId: number): Promise<{ success: boolean }> {
+    // (UserRepository에 updateLastGiftViewed 메서드가 필요합니다)
+    await this.usersRepository.updateLastGiftViewed(userId, new Date());
+    return { success: true };
   }
 
   async getEquippedGifts(userId: number): Promise<ResEquippedGiftDto[]> {

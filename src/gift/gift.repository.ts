@@ -12,10 +12,15 @@ export class GiftRepository {
   /**
    * 나의 gifts 조회
    */
-  async findUserGifts(userId: number) {
+  async findMyGifts(userId: number) {
     const myGifts = this.prisma.userGift.findMany({
       where: { userId },
-      select: { gift: { select: { id: true, name: true, category: true } } },
+      select: {
+        gift: {
+          select: { id: true, name: true, category: true },
+        },
+        obtainedAt: true,
+      },
     });
     return myGifts;
   }

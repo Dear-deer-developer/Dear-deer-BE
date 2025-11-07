@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FoundUserDto } from './dtos/res-user.dto';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersRepository {
@@ -32,6 +33,26 @@ export class UsersRepository {
         providerId: true,
         isAdmin: true,
       },
+    });
+  }
+
+  // new 아이템 조회할때 사용
+  async findUserForNewGiftCheck(
+    userId: number,
+  ): Promise<{ lastGiftViewedAt: Date | null } | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        lastGiftViewedAt: true,
+      },
+    });
+  }
+
+  // 나의 아이템 조회 후 사용
+  async updateLastGiftViewed(userId: number, time: Date): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { lastGiftViewedAt: time },
     });
   }
 
