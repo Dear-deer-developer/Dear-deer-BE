@@ -109,12 +109,12 @@ export const ApiAuthNative = {
     ),
 
   /**
-   * @summary [네이티브] 이메일 중복 확인
+   * @summary [네이티브] 회원가입시 이메일 중복 확인
    */
   checkEmail: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[네이티브] 이메일 중복 확인',
+        summary: '[네이티브] 회원가입시 이메일 중복 확인',
         description:
           '입력한 이메일이 이미 데이터베이스에 등록되어 있는지 확인합니다.',
       }),
@@ -137,12 +137,12 @@ export const ApiAuthNative = {
     ),
 
   /**
-   * @summary [네이티브] 닉네임 중복 확인
+   * @summary [네이티브] 회원가입시 닉네임 중복 확인
    */
   checkNickname: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[공통] 닉네임 중복 확인',
+        summary: '[공통] 회원가입시 닉네임 중복 확인',
         description:
           '입력한 닉네임이 이미 데이터베이스에 등록되어 있는지 확인합니다.',
       }),
