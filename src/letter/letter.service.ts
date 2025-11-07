@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,30 +9,37 @@ import { SendLetterDto } from './dtos/send-letter.dto';
 import { SaveWritingDto } from './dtos/save-writing.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { LetterStatusValue } from 'src/common/enums/letter-status.enum';
-import { ImagePresignService } from 'src/image/image-presign.service';
 import { ResSendLetterDto } from './dtos/res-send-letter.dto';
 import { ResDraftLetterDto } from './dtos/res-draft-letter.dto';
 import { ResReceivedLetterDto } from './dtos/res-received-letter.dto';
 import { ResSentLetterDto } from './dtos/res-sent-letter.dto';
 import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
 import { ResLetterDto } from './dtos/res-letter.dto';
+import { SANTA_USER_ID } from './santa-user-id.provider';
 
 @Injectable()
 export class LetterService {
   constructor(
     private readonly letterRepository: LetterRepository,
     private readonly s3Service: S3Service,
-    private readonly imagePresignService: ImagePresignService,
-  ) {}
+    @Inject(SANTA_USER_ID) private readonly santaUserId: number,
+  ) {
+    console.log(`LetterService initialized with Santa ID: ${this.santaUserId}`);
+  }
 
   /** 실제 전송, status: sent, sentAt 기록 */
   async sendLetter(
-    userId: number,
+    senderId: number,
     sendLetterDto: SendLetterDto,
   ): Promise<ResSendLetterDto> {
+    // 산타에게 편지 보내기 차단
+    if (sendLetterDto.receiverId === this.santaUserId) {
+      throw new BadRequestException('산타클로스에게 편지를 보낼 수 없습니다.');
+    }
+
     return this.letterRepository.sendLetter({
       ...sendLetterDto,
-      senderId: userId,
+      senderId,
       status: LetterStatusValue.SENT,
       sentAt: new Date(),
     });

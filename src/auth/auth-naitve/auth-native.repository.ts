@@ -35,6 +35,13 @@ export class AuthNativeRepository {
     });
   }
 
+  // providerId로 사용자 찾기
+  async findByProviderId(providerId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { providerId: providerId },
+    });
+  }
+
   // 신규 사용자 생성 (자체 로그인)
   async createUser(
     data: Omit<AuthRegisterDto, 'password'> & {
@@ -166,7 +173,7 @@ export class AuthNativeRepository {
     });
   }
 
-  // 사용자 삭제
+  // 사용자 삭제 (탈퇴시 사용)
   async deleteUserById(userId: number): Promise<void> {
     await this.prisma.user.delete({
       where: { id: userId },
