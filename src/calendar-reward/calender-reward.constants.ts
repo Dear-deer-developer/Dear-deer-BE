@@ -38,3 +38,8 @@ export const EVENT_START_DATE = '2025-11-01';
 
 // 2. 앱 출시일 (이 날짜 '전날'까지의 선물을 가입 시 지급) * 추후 변경되는 날짜!
 export const APP_LAUNCH_DATE = '2025-11-12';
+
+export const REWARD_TYPE = {
+  GIFT: 'GIFT',
+  LETTER: 'LETTER',
+} as const;

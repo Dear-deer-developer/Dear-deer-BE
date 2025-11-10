@@ -13,6 +13,7 @@ import {
   CHRISTMAS_PAPER_ID,
   EVENT_START_DATE,
   EVENT_TZ,
+  REWARD_TYPE,
   SANTA_LETTER_CONTENT,
   SANTA_PROVIDER_ID,
   SANTA_TRIGGER_GIFT_NAME,
@@ -59,7 +60,7 @@ export class CalendarRewardService {
         // (성공)
         return {
           received: true,
-          rewardType: 'LETTER',
+          rewardType: REWARD_TYPE.LETTER,
           localDate: todayYmd,
           giftName: plan.gift.name,
           letter: {
@@ -71,7 +72,7 @@ export class CalendarRewardService {
       } else {
         // (이미 받음)
         return {
-          rewardType: 'LETTER',
+          rewardType: REWARD_TYPE.LETTER,
           received: false,
         };
       }
@@ -85,21 +86,21 @@ export class CalendarRewardService {
       );
     if (existing) {
       return {
-        rewardType: 'GIFT',
+        rewardType: REWARD_TYPE.GIFT,
         received: false,
       };
     }
 
     // 생성 시 동시 요청이 있더라도 PK 충돌만 캐치하면 멱등
     try {
-      const claim =
-        await this.calendarRewardRepository.createRecordAndEnsureInventory(
-          userId,
-          todayDate,
-          plan.gift.id,
-        );
+      await this.calendarRewardRepository.createRecordAndEnsureInventory(
+        userId,
+        todayDate,
+        plan.gift.id,
+      );
+
       return {
-        rewardType: 'GIFT',
+        rewardType: REWARD_TYPE.GIFT,
         received: true,
         localDate: todayYmd,
         giftId: plan.gift.id,
@@ -166,7 +167,7 @@ export class CalendarRewardService {
         received: true,
         letter: {
           id: newLetter.id,
-          senderId: santaUser.id, // 👈 [변경] senderId (산타 ID) 반환
+          senderId: santaUser.id, // senderId (산타 ID) 반환
         },
       };
     } catch (e) {

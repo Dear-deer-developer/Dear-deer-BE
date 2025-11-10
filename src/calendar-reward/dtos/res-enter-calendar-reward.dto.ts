@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { REWARD_TYPE } from '../calender-reward.constants';
 
 /**
  * 12/25 산타 편지 응답에 포함될 편지 정보 DTO
@@ -13,16 +14,18 @@ class ResEnterCalendarLetterDto {
   senderId: number;
 }
 
+type RewardTypeValues = (typeof REWARD_TYPE)[keyof typeof REWARD_TYPE];
+
 /**
  * 캘린더 진입(POST /calendar/enter) 응답 DTO
  */
 export class ResEnterCalendarDto {
   @ApiProperty({
-    example: 'GIFT',
-    enum: ['GIFT', 'LETTER'],
+    example: REWARD_TYPE.GIFT,
+    enum: REWARD_TYPE,
     description: '오늘 보상 타입 (GIFT: 일반 아이템, LETTER: 산타 편지)',
   })
-  rewardType: 'GIFT' | 'LETTER';
+  rewardType: RewardTypeValues;
 
   @ApiProperty({
     example: true,
