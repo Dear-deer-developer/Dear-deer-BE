@@ -39,7 +39,7 @@ export class GiftController {
   }
 
   // 선물함 확인했음용 API (=NEW 뱃지 제거용)
-  @Post('viewes')
+  @Post('checked-view')
   @HttpCode(200)
   @ApiGifts.updateLastGiftViewed()
   async updateLastGiftViewed(
