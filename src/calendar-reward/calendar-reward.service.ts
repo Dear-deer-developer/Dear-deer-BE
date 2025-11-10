@@ -189,8 +189,6 @@ export class CalendarRewardService {
     const startDate = this.dateYmdToDateObject(EVENT_START_DATE); // 시작날짜
     const beforeDate = this.dateYmdToDateObject(APP_LAUNCH_DATE); // 출시날짜
 
-    console.log(startDate, beforeDate);
-
     // 1. (11/1 ~ 11/11)까지의 모든 'GIFT' 선물 계획 조회
     const historicalPlans =
       await this.calendarRewardRepository.findHistoricalPlans(
@@ -198,7 +196,6 @@ export class CalendarRewardService {
         beforeDate,
       );
 
-    console.log(historicalPlans);
     if (historicalPlans.length === 0) {
       console.log(`No historical gifts to grant for new user ${userId}.`);
       return;
@@ -206,12 +203,11 @@ export class CalendarRewardService {
 
     // 2. [트랜잭션] 누락된 선물(N개)을 한꺼번에 지급
     try {
-      await this.prisma.$transaction(async (tx) => {
-        await this.calendarRewardRepository.bulkGrantGiftsForNewUser(
-          userId,
-          historicalPlans,
-        );
-      });
+      await this.calendarRewardRepository.bulkGrantGiftsForNewUser(
+        userId,
+        historicalPlans,
+      );
+
       console.log(
         `Successfully granted ${historicalPlans.length} historical gifts to new user ${userId}.`,
       );
