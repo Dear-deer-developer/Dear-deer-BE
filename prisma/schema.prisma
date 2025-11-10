@@ -36,6 +36,7 @@ enum GiftCategory {
   TRAIN
   GIFTBOX
   ANIMAL
+  EVENT
 }
 
 enum Platform {
@@ -50,30 +51,46 @@ enum LoginType {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  email          String?   @unique // (10.13 자체로그인시에만 저장)
-  hashedPassword String?   @map("hashed_password") // 자체로그인시 저장
-  nickname       String    @unique
-  zipCode        Int       @unique @map("zip_code")
-  loginType      LoginType @default(NATIVE) @map("login_type")
-  providerId     String?   @unique @map("provider_id") // 소셜로그인시 저장
-  isAdmin        Boolean   @default(false) @map("is_admin")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id               Int       @id @default(autoincrement())
+  email            String?   @unique // (10.13 자체로그인시에만 저장)
+  hashedPassword   String?   @map("hashed_password") // 자체로그인시 저장
+  nickname         String    @unique
+  zipCode          Int       @unique @map("zip_code")
+  loginType        LoginType @default(NATIVE) @map("login_type")
+  providerId       String?   @unique @map("provider_id") // 소셜로그인시 저장
+  isAdmin          Boolean   @default(false) @map("is_admin")
+  isAgreed         Boolean   @default(false) @map("is_agreed")
+  lastGiftViewedAt DateTime? @map("last_gift_viewed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  refreshToken    RefreshToken?
-  sentLetters     Letter[]        @relation("SentLetters")
-  receivedLetters Letter[]        @relation("ReceivedLetters")
-  schedule        Schedule[]
-  deviceTokens    DeviceToken[]
-  alarms          Alarm[]
-  contents        Content[]
-  scraps          Scrap[]
-  contentViews    ContentView[]
-  userGifts       UserGift[]
-  userEquipSlots  UserEquipSlot[]
+  refreshToken          RefreshToken?
+  sentLetters           Letter[]               @relation("SentLetters")
+  receivedLetters       Letter[]               @relation("ReceivedLetters")
+  schedule              Schedule[]
+  deviceTokens          DeviceToken[]
+  alarms                Alarm[]
+  contents              Content[]
+  scraps                Scrap[]
+  contentViews          ContentView[]
+  userGifts             UserGift[]
+  userEquipSlots        UserEquipSlot[]
+  calendarRewardRecords CalendarRewardRecord[]
 
   @@map("users")
+}
+
+// 이메일 인증 코드 테이블
+model AuthCode {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  code         String
+  isVerified   Boolean  @default(false) @map("is_verified") // 인증 완료 상태
+  attemptCount Int      @default(0) @map("attempt_count") // 시도 횟수 카운트
+  expiredAt    DateTime @map("expired_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("auth_codes")
 }
 
 // refreshToken 저장 테이블
@@ -102,8 +119,8 @@ model Letter {
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
 
-  sender   User        @relation("SentLetters", fields: [senderId], references: [id])
-  receiver User?       @relation("ReceivedLetters", fields: [receiverId], references: [id])
+  sender   User        @relation("SentLetters", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User?       @relation("ReceivedLetters", fields: [receiverId], references: [id], onDelete: SetNull)
   paper    LetterPaper @relation(fields: [paperId], references: [id], onDelete: Restrict)
 
   @@map("letters")
@@ -130,7 +147,7 @@ model Schedule {
   createdAt DateTime         @default(now()) @map("created_at")
   updatedAt DateTime         @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("schedules")
 }
@@ -150,9 +167,9 @@ model Gift {
 }
 
 model UserGift {
-  userId     Int
-  giftId     Int
-  obtainedAt DateTime @default(now()) @map("user_id")
+  userId     Int      @map("user_id")
+  giftId     Int      @map("gift_id")
+  obtainedAt DateTime @default(now()) @map("obtained_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
@@ -187,7 +204,7 @@ model Alarm {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  music Music @relation(fields: [musicId], references: [id]) // 여기는 Cascade를 일부러 안달았음. -> 음악을 지울때 주의 !
+  music Music @relation(fields: [musicId], references: [id], onDelete: Restrict)
 
   @@index([isFired, scheduledAt])
   @@map("alarms")
@@ -302,10 +319,10 @@ model EquipCategorySlot {
 
 // 장착 상태 (1슬롯 = 1행)
 model UserEquipSlot {
-  userId   Int
+  userId   Int          @map("user_id")
   category GiftCategory
   slot     Int // 1..capacity  (EquipGroupSlot FK로 강제)
-  giftId   Int
+  giftId   Int          @map("gift_id")
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupSlot EquipCategorySlot @relation(fields: [category, slot], references: [category, slot], onDelete: Restrict)
@@ -321,7 +338,7 @@ model UserEquipSlot {
 // 날짜별 지급 계획
 model CalendarRewardPlan {
   localDate DateTime @unique @db.Date
-  giftId    Int
+  giftId    Int      @map("gift_id")
 
   gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
 
@@ -331,11 +348,12 @@ model CalendarRewardPlan {
 
 // 유저의 일별 수령 기록 (하루 1회)
 model CalendarRewardRecord {
-  userId     Int
+  userId     Int      @map("user_id")
   localDate  DateTime @db.Date
-  giftId     Int
+  giftId     Int      @map("gift_id")
   receivedAt DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
 
   @@id([userId, localDate])

@@ -1,5 +1,11 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { MonthlyScheduleResDto } from './dtos/monthly-schedule-res.dto';
 import { DailyScheduleResDto } from './dtos/daily-schedule-res.dto';
 import { CreateScheduleDto } from './dtos/create-schedule.dto';
@@ -8,6 +14,7 @@ import { UpdateScheduleDto } from './dtos/update-schedule.dto';
 export const ApiSchedules = {
   getMonthly: () =>
     applyDecorators(
+      ApiBearerAuth('accessToken'),
       ApiOperation({
         summary: '월별 일정 조회',
         description: '해당 연도/월의 일정들을 조회합니다.',
@@ -24,6 +31,7 @@ export const ApiSchedules = {
 
   getDaily: () =>
     applyDecorators(
+      ApiBearerAuth('accessToken'),
       ApiOperation({
         summary: '일별 일정 조회',
         description: '해당 일자의 전체 일정 정보를 조회합니다.',
@@ -39,6 +47,7 @@ export const ApiSchedules = {
 
   create: () =>
     applyDecorators(
+      ApiBearerAuth('accessToken'),
       ApiOperation({
         summary: '일정 추가',
         description: '새 일정을 추가합니다.',
@@ -53,6 +62,7 @@ export const ApiSchedules = {
 
   update: () =>
     applyDecorators(
+      ApiBearerAuth('accessToken'),
       ApiOperation({
         summary: '일정 수정',
         description: '기존 일정을 수정합니다.',
@@ -71,6 +81,7 @@ export const ApiSchedules = {
 
   delete: () =>
     applyDecorators(
+      ApiBearerAuth('accessToken'),
       ApiOperation({ summary: '일정 삭제', description: '일정을 삭제합니다.' }),
       ApiResponse({
         status: 204,

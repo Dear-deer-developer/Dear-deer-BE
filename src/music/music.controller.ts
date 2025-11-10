@@ -9,7 +9,7 @@ import {
   ParseIntPipe,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { MusicService } from './music.service';
 import { CreateMusicDto } from './dtos/create-music.dto';
 import { UpdateMusicDto } from './dtos/update-music.dto';
@@ -18,6 +18,7 @@ import { ApiMusics } from './music.swagger';
 
 @Controller('musics')
 @ApiTags('musics')
+@ApiExcludeController() // 음악을 앱 자체저장하는 방식으로 바꾸면서 스웨거에서 숨깁니다.
 // @UseGuards(FirebaseAuthGuard) // 여기는 admin 가드로 추후 변경 (09.16)
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}

@@ -10,12 +10,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from './jwt.config';
 import { ConfigService } from '@nestjs/config';
 import { AccessTokenGuard } from './guard/jwt.guard';
-import { PassportModule } from '@nestjs/passport';
 import { JWTAdminGuard } from './guard/jwt-admin.guard';
+import { EmailService } from './Email/auth-email.service';
+import { AuthNativeController } from './auth-naitve/auth-native.controller';
+import { AuthNativeService } from './auth-naitve/auth-native.service';
+import { AuthNativeRepository } from './auth-naitve/auth-native.repository';
 
 @Module({
   imports: [
-    // PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: jwtConfig, // 옵션을 생성할 함수
@@ -26,12 +28,21 @@ import { JWTAdminGuard } from './guard/jwt-admin.guard';
   ],
   providers: [
     AuthService,
-    FirebaseAuthGuard,
+    AuthNativeService,
     AuthRepository,
+    AuthNativeRepository,
+    EmailService,
+    FirebaseAuthGuard,
     AccessTokenGuard,
     JWTAdminGuard,
   ],
-  controllers: [AuthController],
-  exports: [FirebaseAuthGuard, UsersModule, AccessTokenGuard, JWTAdminGuard],
+  controllers: [AuthController, AuthNativeController],
+  exports: [
+    UsersModule,
+    AuthNativeRepository,
+    FirebaseAuthGuard,
+    AccessTokenGuard,
+    JWTAdminGuard,
+  ],
 })
 export class AuthModule {}

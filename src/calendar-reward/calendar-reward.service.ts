@@ -7,8 +7,16 @@ import { CalendarRewardRepository } from './calendar-reward.repository';
 import { DateTime } from 'luxon';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-
-const EVENT_TZ = 'Asia/Seoul';
+import { LetterStatusValue } from 'src/common/enums/letter-status.enum';
+import {
+  CHRISTMAS_PAPER_ID,
+  EVENT_TZ,
+  SANTA_LETTER_CONTENT,
+  SANTA_PROVIDER_ID,
+  SANTA_TRIGGER_GIFT_NAME,
+} from './calender-reward.constants';
+import { ResEnterCalendarDto } from './dtos/res-enter-calendar-reward.dto';
+import { ResTestSantaLetterDto } from './dtos/res-test-santa-letter.dto';
 
 @Injectable()
 export class CalendarRewardService {
@@ -30,13 +38,41 @@ export class CalendarRewardService {
   }
 
   /** 오늘 첫 진입이면 지급(멱등). 이미 수령했다면 received=false */
-  async enterAndMaybeGrant(userId: number) {
+  async enterAndMaybeGrant(userId: number): Promise<ResEnterCalendarDto> {
     const todayYmd = this.todayYmd();
     const todayDate = this.dateYmdToDateObject(todayYmd);
 
+    // 1. 오늘 날짜의 보상 계획 조회
     const plan = await this.calendarRewardRepository.findPlanByDate(todayDate);
     if (!plan) {
       throw new NotFoundException('no reward plan');
+    }
+
+    // 12월 25일 "산타의 편지" 선물 이벤트
+    if (plan.gift.name === SANTA_TRIGGER_GIFT_NAME) {
+      // "산타 편지 발송" 로직을 실행 (이 함수는 자체적으로 멱등성을 가짐)
+      const santaLetterResult = await this.sendSantaLetterOnce(userId);
+
+      if (santaLetterResult.received) {
+        // (성공)
+        return {
+          received: true,
+          rewardType: 'LETTER',
+          localDate: todayYmd,
+          giftName: plan.gift.name,
+          letter: {
+            // 👈 [수정] DTO 구조에 맞게 중첩
+            id: santaLetterResult.letter.id,
+            senderId: santaLetterResult.letter.senderId,
+          },
+        };
+      } else {
+        // (이미 받음)
+        return {
+          rewardType: 'LETTER',
+          received: false,
+        };
+      }
     }
 
     // 이미 수령했는지 확인
@@ -47,6 +83,7 @@ export class CalendarRewardService {
       );
     if (existing) {
       return {
+        rewardType: 'GIFT',
         received: false,
       };
     }
@@ -57,12 +94,13 @@ export class CalendarRewardService {
         await this.calendarRewardRepository.createRecordAndEnsureInventory(
           userId,
           todayDate,
-          plan.giftId,
+          plan.gift.id,
         );
       return {
+        rewardType: 'GIFT',
         received: true,
         localDate: todayYmd,
-        giftId: plan.giftId,
+        giftId: plan.gift.id,
         giftName: plan.gift.name,
       };
     } catch (e) {
@@ -75,6 +113,67 @@ export class CalendarRewardService {
         throw new ConflictException('already-received');
       }
       // 이외의 에러라면 그냥 throw e
+      throw e;
+    }
+  }
+
+  private async sendSantaLetterOnce(receiverId: number): Promise<{
+    received: boolean;
+    letter?: {
+      id: number;
+      senderId: number;
+    };
+  }> {
+    // 1. "산타" 유저 조회
+    const santaUser = await this.prisma.user.findUnique({
+      where: { providerId: SANTA_PROVIDER_ID },
+    });
+    if (!santaUser) {
+      throw new Error('산타 유저가 시드되지 않았습니다!');
+    }
+
+    // 2. 이 유저가 이미 산타 편지를 받았는지 확인 (멱등성 체크)
+    const existingLetter = await this.prisma.letter.findFirst({
+      where: {
+        senderId: santaUser.id,
+        receiverId: receiverId,
+        paperId: CHRISTMAS_PAPER_ID,
+      },
+    });
+
+    // 3. 이미 편지를 받았다면, 그냥 "이미 받음" 처리
+    if (existingLetter) {
+      return { received: false };
+    }
+
+    try {
+      const newLetter = await this.prisma.letter.create({
+        data: {
+          senderId: santaUser.id,
+          receiverId: receiverId,
+          content: SANTA_LETTER_CONTENT,
+          paperId: CHRISTMAS_PAPER_ID,
+          status: LetterStatusValue.SENT,
+          sentAt: new Date(),
+        },
+      });
+
+      // 4. 클라이언트에게 특별 응답 전송
+      return {
+        received: true,
+        letter: {
+          id: newLetter.id,
+          senderId: santaUser.id, // 👈 [변경] senderId (산타 ID) 반환
+        },
+      };
+    } catch (e) {
+      // (예: 동시 요청으로 create 충돌 시)
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        return { received: false };
+      }
       throw e;
     }
   }
@@ -98,5 +197,22 @@ export class CalendarRewardService {
 
       return { success: true, giftId };
     });
+  }
+
+  // 산타편지 테스트용
+  async sendTestSantaLetter(userId: number): Promise<ResTestSantaLetterDto> {
+    const result = await this.sendSantaLetterOnce(userId);
+
+    // 멱등성: 이미 받았다면 에러
+    if (!result.received) {
+      throw new ConflictException(`이미 산타 편지를 받았습니다.`);
+    }
+
+    // 새로 받았다면 성공 응답
+    return {
+      success: true,
+      letterId: result.letter.id,
+      senderId: result.letter.senderId,
+    };
   }
 }

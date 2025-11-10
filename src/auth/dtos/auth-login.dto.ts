@@ -6,7 +6,7 @@ export class AuthLoginDto {
   @IsEmail({}, { message: '유효한 이메일 형식이 아닙니다.' })
   email: string;
 
-  @ApiProperty({ example: 'qlalfqjsgh', description: '비밀번호' })
+  @ApiProperty({ example: 'qlalfqjsgh1@', description: '비밀번호' })
   @IsString()
   @IsNotEmpty()
   password: string;

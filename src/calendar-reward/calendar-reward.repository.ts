@@ -11,7 +11,6 @@ export class CalendarRewardRepository {
       where: { localDate },
       select: {
         localDate: true,
-        giftId: true,
         gift: { select: { id: true, name: true } },
       },
     });
