@@ -12,7 +12,7 @@ export const ApiCalendarReward = {
   enter: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[캘린더] 오늘의 선물 받기 (매일 1회)',
+        summary: '오늘의 선물 받기 (매일 1회)',
         description: `캘린더 화면 진입 시 호출합니다.
 - 오늘 날짜의 선물을 지급합니다 (멱등성 보장).
 - 11/1~12/24: 일반 아이템 지급 (GIFT)
@@ -68,7 +68,7 @@ export const ApiCalendarReward = {
   sendTestSanta: () =>
     applyDecorators(
       ApiOperation({
-        summary: '[테스트용] 산타 편지 즉시 받기 🎅',
+        summary: '산타 편지 즉시 받기 (개발용/관리자용)',
         description:
           '12월 25일을 기다리지 않고 산타 편지를 즉시 받습니다. (1회만 가능)',
       }),

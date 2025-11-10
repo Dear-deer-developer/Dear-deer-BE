@@ -22,6 +22,7 @@ import { UpdateEquippedDto } from './dtos/update-equipped.dto';
 import { CreateGiftDto } from './dtos/dev-add-my-gift.dto';
 import { ResEquippedGiftDto } from './dtos/res-equipped-gift.dto';
 import { ResGiftDto } from './dtos/res-gift.dto';
+import { ResMyGiftDto } from './dtos/res-my-gift.dto';
 
 /** 추후 관리자 토큰 가드 추가 예정 */
 @ApiTags('gift')
@@ -33,8 +34,18 @@ export class GiftController {
   // 나의 gifts 조회 (필요없는 값은 수정해서 성능 향상해야됨 10.03)
   @Get('me')
   @ApiGifts.findMine()
-  async getMyGifts(@GetUserId() userId: number) {
-    return this.giftService.findUserGifts(userId);
+  async getMyGifts(@GetUserId() userId: number): Promise<ResMyGiftDto[]> {
+    return this.giftService.findMyGifts(userId);
+  }
+
+  // 선물함 확인했음용 API (=NEW 뱃지 제거용)
+  @Post('checked-view')
+  @HttpCode(200)
+  @ApiGifts.updateLastGiftViewed()
+  async updateLastGiftViewed(
+    @GetUserId() userId: number,
+  ): Promise<{ success: boolean }> {
+    return this.giftService.updateLastGiftViewed(userId);
   }
 
   // 장착된 선물들 조회
