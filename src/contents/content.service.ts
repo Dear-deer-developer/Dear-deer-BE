@@ -7,15 +7,23 @@ import { UpdateContentDto } from './dtos/update-content.dto';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ContentListItemDto } from './dtos/content-list-item.dto';
 import { ContentDetailDto } from './dtos/content-detail.dto';
+import { ScrapRepository } from 'src/scrap/scrap.repository';
+import { ContentStatus, Prisma } from '@prisma/client';
+import { AdminContentsQueryDto } from './dtos/admin-contents-query.dto';
 
 @Injectable()
 export class ContentService {
   constructor(
     private readonly contentRepository: ContentRepository,
     private readonly s3Service: S3Service,
+    private readonly scrapRepository: ScrapRepository,
   ) {}
 
-  /** 공개된 콘텐츠 리스트 조회 (카테고리 필터링) */
+  // ===================================================================
+  // 🧑🏻일반 사용자용 API🧑🏻
+  // ===================================================================
+
+  /** (사용자)공개된 콘텐츠 리스트 조회 */
   async findAllPublishedContents(
     query: ContentsQueryDto,
   ): Promise<ContentListItemDto[]> {
@@ -44,7 +52,7 @@ export class ContentService {
       subCategoryId,
     );
 
-    //대표 이미지 (thumbnail) 만 썸네일로 나온다.
+    //대표 이미지(thumbnail)만 썸네일로 나온다.
     return contents.map((content) => ({
       id: content.id,
       title: content.title,
@@ -54,12 +62,60 @@ export class ContentService {
     }));
   }
 
-  /** 특정 공개된 콘텐츠 상세 조회 */
-  async findOnePublishedContent(contentId: number): Promise<ContentDetailDto> {
+  /** (사용자) 특정 공개된 콘텐츠 상세 조회 (+ 스크랩 여부 포함) */
+  async findOnePublishedContent(
+    contentId: number,
+    userId: number,
+  ): Promise<ContentDetailDto> {
     const content = await this.contentRepository.findOnePublished(contentId);
 
     if (!content) {
       throw new NotFoundException('게시된 콘텐츠를 찾을 수 없습니다.');
+    }
+
+    const scrapCount = await this.scrapRepository.count(userId, contentId);
+    const isScrapped = scrapCount > 0;
+
+    return {
+      id: content.id,
+      title: content.title,
+      body: content.body,
+      author: content.author,
+      subCategory: content.subCategory,
+      images: content.images.map((img) => img.url),
+      createdAt: content.createdAt,
+      isScrapped,
+    };
+  }
+
+  // ===================================================================
+  // ⚙️관리자 전용 API⚙️
+  // ===================================================================
+  /** (관리자) 콘텐츠 목록 조회 */
+  async findAllForAdmin(query: AdminContentsQueryDto) {
+    const { status } = query;
+    if (status && !Object.values(ContentStatus).includes(status)) {
+      throw new BadRequestException('유효하지 않은 status 값입니다.');
+    }
+
+    const contents = await this.contentRepository.findAllForAdmin(status);
+
+    return contents.map((content) => ({
+      id: content.id,
+      title: content.title,
+      thumbnail: content.images[0]?.url || null,
+      subCategory: content.subCategory,
+      createdAt: content.createdAt,
+      status: content.status, // 관리자용 목록에는 status(published/writing/hidden) 포함
+    }));
+  }
+
+  /** (관리자) 콘텐츠 상세 조회 */
+  async findOneForAdmin(contentId: number) {
+    const content = await this.contentRepository.findOneForAdmin(contentId);
+
+    if (!content) {
+      throw new NotFoundException('콘텐츠를 찾을 수 없습니다.');
     }
 
     return {
@@ -70,18 +126,20 @@ export class ContentService {
       subCategory: content.subCategory,
       images: content.images.map((img) => img.url),
       createdAt: content.createdAt,
+      isScrapped: false, // 관리자 조회 : 스크랩 여부 불필요
+      status: content.status,
     };
   }
 
-  /** 콘텐츠 등록 (관리자 전용) */
-  async createContent(
+  /** (관리자) 콘텐츠 등록 */
+  async createContentByAdmin(
     authorId: number,
-    createContentDto: CreateContentDto,
+    dto: CreateContentDto,
   ): Promise<{
     contentId: number;
     presignedUrls: { url: string; key: string }[];
   }> {
-    const { title, content, subCategoryId, images } = createContentDto;
+    const { title, content, subCategoryId, images, status } = dto;
 
     // 1. 카테고리 유효성 검사
     if (!(await this.contentRepository.existSubCategory(subCategoryId))) {
@@ -96,6 +154,7 @@ export class ContentService {
       subCategoryId,
       title,
       body: content,
+      status,
     });
 
     // 3. S3 Presigned URL 생성 (-> contentId 이용한다)
@@ -125,9 +184,9 @@ export class ContentService {
     };
   }
 
-  /** 콘텐츠 수정 (관리자 전용) */
+  /** (관리자) 콘텐츠 수정 */
 
-  async updateContent(
+  async updateContentByAdmin(
     contentId: number,
     authorId: number,
     dto: UpdateContentDto,
@@ -139,6 +198,7 @@ export class ContentService {
       title,
       content,
       subCategoryId,
+      status,
       currentImageKeys = [],
       newImages = [],
     } = dto;
@@ -151,15 +211,19 @@ export class ContentService {
       throw new NotFoundException('수정할 콘텐츠를 찾을 수 없습니다.');
     }
     if (existingContent.authorId !== authorId) {
-      // 보안상 ForbiddenException 대신 NotFound/Unauthorized를 고려할 수 있지만, 관리자 등록이므로 Forbidden도 적절
       throw new ForbiddenException('수정 권한이 없습니다.');
     }
 
-    // 2. 최종 이미지 개수 유효성 검사
+    // 2. 최종 이미지 개수 유효성 검사 (0장 허용. status = WRITING 인 경우일 수 있어서(?))
     const totalImageCount = currentImageKeys.length + newImages.length;
-    if (totalImageCount < 1 || totalImageCount > 10) {
+    if (status === ContentStatus.PUBLISHED && totalImageCount < 1) {
       throw new BadRequestException(
-        `이미지는 최소 1장, 최대 10장까지 등록할 수 있습니다. (현재: ${totalImageCount}장)`,
+        `PUBLISHED 상태는 이미지가 최소 1장 이상 필요합니다. (현재: ${totalImageCount}장)`,
+      );
+    }
+    if (totalImageCount > 10) {
+      throw new BadRequestException(
+        `이미지는 최대 10장까지 등록할 수 있습니다. (현재: ${totalImageCount}장)`,
       );
     }
 
@@ -185,21 +249,22 @@ export class ContentService {
       );
 
     // 5. DB 트랜잭션 처리 (삭제할 이미지와 새로 추가할 이미지 목록 전달)
-    const updateData: any = {};
+    const updateData: Prisma.ContentUpdateInput = {};
     if (title !== undefined) updateData.title = title;
     if (content !== undefined) updateData.body = content;
+    if (status !== undefined) updateData.status = status;
     if (subCategoryId !== undefined) {
       if (!(await this.contentRepository.existSubCategory(subCategoryId))) {
         throw new NotFoundException(
           `존재하지 않는 서브 카테고리 ID 입니다: ${subCategoryId}`,
         );
       }
-      updateData.subCategoryId = subCategoryId;
+      updateData.subCategory = { connect: { id: subCategoryId } };
     }
 
     const updatedContent = await this.contentRepository.updateContent(
       contentId,
-      updateData, // 필터링된 객체 전달
+      updateData,
       presignedUrls.map((p) => p.key),
       imageKeysToDeleteFromS3,
     );
@@ -217,7 +282,10 @@ export class ContentService {
   }
 
   /** 콘텐츠 삭제 (관리자 전용) */
-  async deleteContent(contentId: number, authorId: number): Promise<void> {
+  async deleteContentByAdmin(
+    contentId: number,
+    authorId: number,
+  ): Promise<void> {
     // 1. 콘텐츠 존재 및 권한 확인 (등록된 관리자만 삭제 가능)
     const existingContent =
       await this.contentRepository.findContentByIdWithImages(contentId);

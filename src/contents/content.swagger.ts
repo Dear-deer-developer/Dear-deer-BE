@@ -7,52 +7,102 @@ import {
   ApiForbiddenResponse,
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
-import { Content } from '@prisma/client';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
 import { ContentListItemDto } from './dtos/content-list-item.dto';
 import { ContentDetailDto } from './dtos/content-detail.dto';
+import { ContentStatus } from '@prisma/client';
 
 export const ApiContent = {
   findAll: () =>
     applyDecorators(
       ApiOperation({
-        summary: '전체 콘텐츠 리스트 조회',
+        summary: '콘텐츠 리스트 조회 (로그인 필수)',
         description:
-          '모든 사용자에게 공개된 콘텐츠 목록을 최신순으로 조회합니다.',
+          '**로그인한 사용자만** 접근 가능합니다. \n\n 공개된(PUBLISHED) 콘텐츠 목록을 최신순으로 조회합니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
         description: '공개된 콘텐츠 목록 조회 성공',
-        type: [ContentListItemDto], // 객체 여러 개가 들어있는 배열로 반환
+        type: [ContentListItemDto],
       }),
+      ApiUnauthorizedResponse({ description: '인증되지 않은 사용자입니다.' }),
     ),
+
   findOne: () =>
     applyDecorators(
       ApiOperation({
-        summary: '특정 콘텐츠 상세 조회',
-        description: '특정 ID를 가진 공개된 콘텐츠의 상세 정보를 조회합니다.',
+        summary: '특정 콘텐츠 상세 조회 (로그인 필수)',
+        description:
+          '**로그인한 사용자만** 접근 가능합니다. \n\n `isScrapped` (스크랩 여부) 필드가 **항상** 포함됩니다.',
       }),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 200,
         description: '콘텐츠 상세 조회 성공',
-        type: ContentDetailDto, // 단일 객체 반환
+        type: ContentDetailDto,
       }),
-      ApiResponse({
-        status: 404,
+      ApiNotFoundResponse({
         description: '게시된 콘텐츠를 찾을 수 없음',
       }),
+      ApiUnauthorizedResponse({ description: '인증되지 않은 사용자입니다.' }),
+    ),
+
+  findAllForAdmin: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '(관리자) 콘텐츠 목록 조회',
+        description:
+          '**관리자만 접근 가능합니다.** \n\n `status` 쿼리(WRITING, PUBLISHED, HIDDEN)로 필터링된 콘텐츠 목록을 조회합니다.',
+      }),
+      ApiBearerAuth('accessToken'),
+      ApiQuery({
+        name: 'status',
+        required: false,
+        enum: ContentStatus,
+        description: '필터링할 상태 (WRITING, PUBLISHED, HIDDEN)',
+      }),
+      ApiResponse({
+        status: 200,
+        description: '관리자용 콘텐츠 목록 조회 성공',
+        type: [ContentListItemDto],
+      }),
+      ApiUnauthorizedResponse({ description: '유효하지 않은 토큰' }),
+      ApiForbiddenResponse({ description: '관리자 권한이 필요합니다.' }),
+    ),
+
+  findOneForAdmin: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '(관리자) 콘텐츠 상세 조회',
+        description:
+          '**관리자만 접근 가능합니다.** \n\n `status`에 관계없이 특정 ID의 콘텐츠 상세 정보를 조회합니다.',
+      }),
+      ApiBearerAuth('accessToken'),
+      ApiResponse({
+        status: 200,
+        description: '관리자용 콘텐츠 상세 조회 성공',
+        type: ContentDetailDto,
+      }),
+      ApiNotFoundResponse({
+        description: '콘텐츠를 찾을 수 없음',
+      }),
+      ApiUnauthorizedResponse({ description: '유효하지 않은 토큰' }),
+      ApiForbiddenResponse({ description: '관리자 권한이 필요합니다.' }),
     ),
 
   create: () =>
     applyDecorators(
       ApiOperation({
-        summary: '관리자용 콘텐츠 등록',
+        summary: '(관리자) 콘텐츠 등록',
         description:
-          '**관리자만 접근 가능합니다.**  \n\n 콘텐츠 기본 정보를 먼저 DB에 저장한 후(이미지 없이),  \n이미지 업로드용 S3 Presigned URL을 생성하여 반환합니다.  \n(이미지: 최소 1장, 최대 10장)',
+          '**관리자만 접근 가능합니다.** \n\n `status` 필드에 `WRITING` (임시저장) 또는 `PUBLISHED` (발행)를 지정하여 콘텐츠를 등록합니다.',
       }),
-      ApiBearerAuth(),
+      ApiBearerAuth('accessToken'),
       ApiBody({ type: CreateContentDto }),
       ApiResponse({
         status: 201,
@@ -66,16 +116,12 @@ export const ApiContent = {
                 url: 'https://s3-bucket-url.com/signed-url-for-upload-1',
                 key: 'contents/1/uuid1.jpg',
               },
-              {
-                url: 'https://s3-bucket-url.com/signed-url-for-upload-2',
-                key: 'contents/1/uuid2.png',
-              },
             ],
           },
         },
       }),
       ApiBadRequestResponse({
-        description: '요청 데이터가 유효하지 않거나 이미지 개수가 10장 초과함',
+        description: '요청 데이터가 유효하지 않음',
       }),
       ApiUnauthorizedResponse({
         description: '유효하지 않은 토큰',
@@ -88,11 +134,11 @@ export const ApiContent = {
   update: () =>
     applyDecorators(
       ApiOperation({
-        summary: '관리자용 콘텐츠 수정',
+        summary: '(관리자) 콘텐츠 수정',
         description:
-          '**관리자만 접근 가능합니다.** 콘텐츠를 수정하고, 새로 업로드할 이미지가 있다면 S3 Presigned URL 목록을 반환합니다. **(중요)** `currentImageKeys`에는 수정 후 **최종적으로 남길 모든 이미지의 S3 Key**를 포함해야 합니다.',
+          '**관리자만 접근 가능합니다.** \n\n 콘텐츠의 `title`, `body`, `status` (WRITING, PUBLISHED, HIDDEN) 등을 수정합니다.',
       }),
-      ApiBearerAuth(),
+      ApiBearerAuth('accessToken'),
       ApiBody({ type: UpdateContentDto }),
       ApiResponse({
         status: 200,
@@ -101,7 +147,6 @@ export const ApiContent = {
           example: {
             contentId: 10,
             presignedUrls: [
-              // 새로 업로드할 이미지가 있을 경우에만 이 목록이 채워집니다.
               {
                 url: 'https://s3-bucket-url.com/signed-url-for-upload-new-1',
                 key: 'contents/1/uuid-new-1.jpg',
@@ -110,43 +155,40 @@ export const ApiContent = {
           },
         },
       }),
+      ApiBadRequestResponse({
+        description: '유효성 검사 실패',
+      }),
+      ApiNotFoundResponse({
+        description: '콘텐츠를 찾을 수 없음',
+      }),
       ApiUnauthorizedResponse({
         description: '유효하지 않은 토큰',
       }),
       ApiForbiddenResponse({
         description: '수정 권한이 없거나 관리자 권한이 필요합니다.',
       }),
-      ApiResponse({
-        status: 400,
-        description: '유효성 검사 실패 (이미지 개수 1~10장 위반 등)',
-      }),
-      ApiResponse({
-        status: 404,
-        description: '콘텐츠를 찾을 수 없음',
-      }),
     ),
 
   delete: () =>
     applyDecorators(
       ApiOperation({
-        summary: '관리자용 콘텐츠 삭제',
+        summary: '(관리자) 콘텐츠 삭제',
         description:
-          '**관리자만 접근 가능합니다.** 지정된 콘텐츠와 관련된 DB 레코드 및 S3 파일들을 모두 삭제합니다. (작성자 본인만 삭제 가능)',
+          '**관리자만 접근 가능합니다.** \n\n `status`와 관계없이 지정된 콘텐츠를 삭제합니다.',
       }),
-      ApiBearerAuth(),
+      ApiBearerAuth('accessToken'),
       ApiResponse({
         status: 204,
         description: '콘텐츠 삭제 성공 (No Content)',
+      }),
+      ApiNotFoundResponse({
+        description: '삭제할 콘텐츠를 찾을 수 없음',
       }),
       ApiUnauthorizedResponse({
         description: '유효하지 않은 토큰',
       }),
       ApiForbiddenResponse({
         description: '삭제 권한이 없거나 관리자 권한이 필요합니다.',
-      }),
-      ApiResponse({
-        status: 404,
-        description: '삭제할 콘텐츠를 찾을 수 없음',
       }),
     ),
 };

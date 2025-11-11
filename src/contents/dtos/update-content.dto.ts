@@ -5,13 +5,13 @@ import {
   Length,
   IsInt,
   IsArray,
-  ArrayMinSize,
-  ArrayMaxSize,
   ValidateNested,
   IsOptional,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ContentImageUploadDto } from './content-image-upload.dto';
+import { ContentStatus } from '@prisma/client';
 
 export class UpdateContentDto {
   @ApiProperty({
@@ -43,6 +43,17 @@ export class UpdateContentDto {
   @IsString()
   @IsNotEmpty()
   content?: string;
+
+  @ApiProperty({
+    enum: ContentStatus,
+    example: 'PUBLISHED',
+    description:
+      '콘텐츠 상태 변경 (WRITING: 임시저장, PUBLISHED: 발행, HIDDEN: 숨김)',
+    required: false,
+  })
+  @IsOptional()
+  @IsIn(Object.values(ContentStatus))
+  status?: ContentStatus;
 
   @ApiProperty({
     type: [String],

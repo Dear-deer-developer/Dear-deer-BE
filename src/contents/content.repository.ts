@@ -6,7 +6,11 @@ import { Content, ContentStatus, Prisma } from '@prisma/client';
 export class ContentRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 전체 공개 콘텐츠 리스트 조회 */
+  // ===================================================================
+  // 🧑🏻일반 사용자용 API🧑🏻
+  // ===================================================================
+
+  /** (사용자) 전체 공개 콘텐츠 리스트 조회 */
   async findAllPublished(mainCategoryId?: string, subCategoryId?: string) {
     const where: any = {
       status: ContentStatus.PUBLISHED,
@@ -35,7 +39,7 @@ export class ContentRepository {
     });
   }
 
-  /** 특정 공개 콘텐츠 상세 조회 */
+  /** (사용자) 특정 공개 콘텐츠 상세 조회 */
   async findOnePublished(contentId: number) {
     return this.prisma.content.findUnique({
       where: {
@@ -67,6 +71,10 @@ export class ContentRepository {
     });
   }
 
+  // ===================================================================
+  // 공용 (CRUD)
+  // ===================================================================
+
   /** 메인 카테고리 존재 여부 확인 */
   async existMainCategory(id: number): Promise<boolean> {
     return (await this.prisma.contentMainCategory.count({ where: { id } })) > 0;
@@ -77,11 +85,68 @@ export class ContentRepository {
     return (await this.prisma.contentSubCategory.count({ where: { id } })) > 0;
   }
 
+  // ===================================================================
+  // ⚙️관리자 전용 API⚙️
+  // ===================================================================
+
+  /** (관리자) 콘텐츠 목록 조회 */
+  async findAllForAdmin(status?: ContentStatus) {
+    const where: Prisma.ContentWhereInput = {};
+    if (status) {
+      where.status = status;
+    }
+
+    return this.prisma.content.findMany({
+      where,
+      include: {
+        images: {
+          take: 1,
+          orderBy: { createdAt: 'asc' },
+        },
+        subCategory: {
+          include: { mainCategory: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** (관리자) 콘텐츠 상세 조회 */
+  async findOneForAdmin(contentId: number) {
+    return this.prisma.content.findUnique({
+      where: {
+        id: contentId,
+      },
+      include: {
+        images: {
+          orderBy: { createdAt: 'asc' },
+        },
+        author: {
+          select: { id: true, nickname: true },
+        },
+        subCategory: {
+          select: {
+            id: true,
+            name: true,
+            mainCategory: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /** (관리자) 콘텐츠 등록 */
   async createContent(data: {
     authorId: number;
     subCategoryId: number;
     title: string;
     body: string;
+    status: ContentStatus;
   }) {
     return this.prisma.content.create({
       data: {
@@ -89,7 +154,7 @@ export class ContentRepository {
         subCategoryId: data.subCategoryId,
         title: data.title,
         body: data.body,
-        status: ContentStatus.PUBLISHED,
+        status: data.status,
       },
     });
   }
@@ -165,20 +230,10 @@ export class ContentRepository {
     });
   }
 
-  /** 콘텐츠 및 관련 이미지 레코드 삭제 트랜잭션 */
+  /** (관리자) 콘텐츠 삭제 (트랜잭션) */
   async deleteContent(contentId: number) {
-    return this.prisma.$transaction(async (tx) => {
-      // 1. ContentImage 레코드 삭제
-      await tx.contentImage.deleteMany({
-        where: { contentId: contentId },
-      });
-
-      // 2. Content 레코드 삭제
-      const deletedContent = await tx.content.delete({
-        where: { id: contentId },
-      });
-
-      return deletedContent;
+    return this.prisma.content.delete({
+      where: { id: contentId },
     });
   }
 }

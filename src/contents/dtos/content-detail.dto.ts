@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthorDto } from './content-author.dto';
 import { SubCategoryDto } from './content-category.dto';
+import { ContentStatus } from '@prisma/client';
 
 export class ContentDetailDto {
   @ApiProperty({ example: 1, description: '콘텐츠 ID' })
@@ -30,4 +31,18 @@ export class ContentDetailDto {
 
   @ApiProperty({ description: '콘텐츠 생성 일시' })
   createdAt: Date;
+
+  @ApiProperty({
+    example: false,
+    description: '(로그인 시) 현재 사용자의 스크랩 여부',
+  })
+  isScrapped: boolean;
+
+  @ApiProperty({
+    enum: ContentStatus,
+    example: 'PUBLISHED',
+    description: '콘텐츠 상태 (관리자 조회 시에만 유의미)',
+    required: false,
+  })
+  status?: ContentStatus;
 }

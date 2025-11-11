@@ -8,9 +8,11 @@ import {
   ArrayMinSize,
   ArrayMaxSize,
   ValidateNested,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ContentImageUploadDto } from './content-image-upload.dto';
+import { ContentStatus } from '@prisma/client';
 
 export class CreateContentDto {
   @ApiProperty({
@@ -47,11 +49,19 @@ export class CreateContentDto {
     ],
   })
   @IsArray()
-  @ArrayMinSize(1, { message: '이미지는 최소 1장 이상 업로드해야 합니다.' })
+  @ArrayMinSize(0)
   @ArrayMaxSize(10, {
     message: '이미지는 최대 10장까지만 업로드 가능합니다.',
   })
   @ValidateNested({ each: true })
   @Type(() => ContentImageUploadDto)
   images: ContentImageUploadDto[];
+
+  @ApiProperty({
+    enum: ContentStatus,
+    example: 'WRITING',
+    description: '콘텐츠 상태 (WRTING: 임시저장, PUBLISHED: 발행)',
+  })
+  @IsIn([ContentStatus.WRITING, ContentStatus.PUBLISHED])
+  status: ContentStatus;
 }
