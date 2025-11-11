@@ -98,17 +98,6 @@ export class LetterService {
   async findSentLetters(userId: number): Promise<ResSentLetterDto[]> {
     const letters = await this.letterRepository.findSentLetters(userId);
 
-    // 편지함 확인시 이미지까지 불러오는게 아니라 이미지는 단일조회시만 호출.
-    // 이 코드는 잘 못 만들었던 코드같은데 일단 남겨두고 나중에 삭제할게요 (10.27)
-    // const lettersWithPresign = await this.imagePresignService.attachSignedUrls(
-    //   letters,
-    //   {
-    //     keySelector: (r) => r.imageUrl,
-    //     outProp: 'signedImageUrl', // 기본값이라 생략 가능
-    //     ttlSec: 300, // 나중에 상수값으로 변경하겠습니다 (09.10)
-    //   },
-    // );
-
     return letters;
   }
 

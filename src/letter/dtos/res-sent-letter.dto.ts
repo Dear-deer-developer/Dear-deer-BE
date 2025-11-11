@@ -16,7 +16,7 @@ export class ResSentLetterDto {
   @ApiProperty({
     example: LetterStatusValue.SENT,
     enum: LetterStatusValue,
-    description: '편지 상태 (SENT or RECEIVED',
+    description: '편지 상태 (SENT or RECEIVED)',
   })
   status: LetterStatus;
 
