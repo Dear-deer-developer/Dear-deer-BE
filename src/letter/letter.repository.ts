@@ -122,11 +122,9 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         senderId: userId,
-        status: LetterStatusValue.SENT,
+        status: { in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED] },
       },
-      orderBy: {
-        sentAt: 'desc',
-      },
+      orderBy: [{ status: 'desc' }, { sentAt: 'desc' }],
       select: {
         id: true,
         status: true,
@@ -168,7 +166,7 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         id: { in: letterIds },
-        senderId: userId, // 또는 senderId
+        senderId: userId,
       },
       select: { id: true, imageUrl: true, status: true, paperId: true },
     });
