@@ -97,15 +97,19 @@ export class LetterRepository {
     });
   }
 
-  /** 내 사서함 조회 */
+  /** 내 사서함 (받은 편지)조회 */
   async findReceivedLetters(userId: number): Promise<ResReceivedLetterDto[]> {
     return this.prisma.letter.findMany({
       where: {
         receiverId: userId,
+        status: {
+          in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED],
+        },
       },
-      orderBy: {
-        sentAt: 'desc',
-      },
+      orderBy: [
+        { status: 'desc' }, // 'SENT'(안 읽음)가 'RECEIVED'(읽음)보다 먼저 오도록
+        { sentAt: 'desc' }, // 그 다음 최신순 정렬
+      ],
       select: {
         id: true,
         status: true,

@@ -89,7 +89,7 @@ export class LetterService {
     return { ...restOfLetterData, presignedUrl };
   }
 
-  /** 내 사서함 확인 */
+  /** 내 사서함 (받은 편지)확인 */
   async findReceivedLetters(userId: number): Promise<ResReceivedLetterDto[]> {
     return this.letterRepository.findReceivedLetters(userId);
   }
