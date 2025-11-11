@@ -53,7 +53,7 @@ export class LetterController {
     return await this.letterService.saveWriting(userId, saveWritingDto);
   }
 
-  /** 내 사서함 조회 */
+  /** 내 사서함 (받은 편지)조회 */
   @Get('received')
   @ApiLetters.findReceived()
   async findReceivedLetters(
