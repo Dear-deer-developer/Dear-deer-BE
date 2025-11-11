@@ -102,14 +102,11 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         receiverId: userId,
-        status: {
-          in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED],
-        },
+        status: { in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED] },
       },
-      orderBy: [
-        { status: 'desc' }, // 'SENT'(안 읽음)가 'RECEIVED'(읽음)보다 먼저 오도록
-        { sentAt: 'desc' }, // 그 다음 최신순 정렬
-      ],
+      // 'SENT'(안 읽음)가 'RECEIVED'(읽음)보다 먼저 오도록
+      // 그 다음 최근 편지부터 정렬
+      orderBy: [{ status: 'asc' }, { sentAt: 'desc' }],
       select: {
         id: true,
         status: true,
@@ -128,7 +125,7 @@ export class LetterRepository {
         senderId: userId,
         status: { in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED] },
       },
-      orderBy: [{ status: 'desc' }, { sentAt: 'desc' }],
+      orderBy: [{ status: 'asc' }, { sentAt: 'desc' }],
       select: {
         id: true,
         status: true,
