@@ -229,10 +229,10 @@ model Content {
   updatedAt DateTime      @updatedAt @map("updated_at")
 
   // Relations
-  authorId      Int
-  author        User               @relation(fields: [authorId], references: [id])
-  subCategoryId Int
-  subCategory   ContentSubCategory @relation(fields: [subCategoryId], references: [id])
+  authorId      Int @map("author_id")
+  author        User               @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  subCategoryId Int @map("sub_category_id")
+  subCategory   ContentSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
   images        ContentImage[]
   scraps        Scrap[]
   views         ContentView[]
@@ -244,7 +244,7 @@ model ContentImage {
   id        Int      @id @default(autoincrement())
   contentId Int      @map("content_id")
   url       String   @map("url")
-  content   Content  @relation(fields: [contentId], references: [id])
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("content_images")
@@ -261,8 +261,8 @@ model ContentMainCategory {
 model ContentSubCategory {
   id             Int                 @id @default(autoincrement())
   name           String
-  mainCategoryId Int
-  mainCategory   ContentMainCategory @relation(fields: [mainCategoryId], references: [id])
+  mainCategoryId Int @map("main_category_id")
+  mainCategory   ContentMainCategory @relation(fields: [mainCategoryId], references: [id], onDelete: Restrict )
   contents       Content[]
 
   @@map("content_sub_categories")
@@ -276,12 +276,12 @@ enum ContentStatus {
 
 model Scrap {
   id        Int      @id @default(autoincrement())
-  userId    Int
-  contentId Int
+  userId    Int @map("user_id")
+  contentId Int @map("content_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user    User    @relation(fields: [userId], references: [id])
-  content Content @relation(fields: [contentId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, contentId])
   @@map("scraps")
@@ -289,12 +289,12 @@ model Scrap {
 
 model ContentView {
   id        Int      @id @default(autoincrement())
-  userId    Int
-  contentId Int
+  userId    Int @map("user_id")
+  contentId Int @map("content_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user    User    @relation(fields: [userId], references: [id])
-  content Content @relation(fields: [contentId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
   @@map("content_views")
 }
@@ -349,9 +349,9 @@ model CalendarRewardPlan {
 // 유저의 일별 수령 기록 (하루 1회)
 model CalendarRewardRecord {
   userId     Int      @map("user_id")
-  localDate  DateTime @db.Date
+  localDate  DateTime @db.Date @map("local_date")
   giftId     Int      @map("gift_id")
-  receivedAt DateTime @default(now())
+  receivedAt DateTime @default(now()) @map ("received_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   gift Gift @relation(fields: [giftId], references: [id], onDelete: Restrict)
