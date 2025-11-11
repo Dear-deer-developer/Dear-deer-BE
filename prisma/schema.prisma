@@ -229,7 +229,7 @@ model Content {
   updatedAt DateTime      @updatedAt @map("updated_at")
 
   // Relations
-  authorId      Int @map("author_id")
+  authorId      Int       @map("author_id")
   author        User               @relation(fields: [authorId], references: [id], onDelete: Restrict)
   subCategoryId Int @map("sub_category_id")
   subCategory   ContentSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
