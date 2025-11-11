@@ -190,6 +190,26 @@ export class LetterRepository {
     });
   }
 
+  /**
+   * letterId + userId(본인)로 편지 조회
+   * (본인이 senderId 또는 receiverId와 일치해야만 조회됨)
+   */
+  findLetterByIdAndUser(
+    letterId: number,
+    userId: number,
+  ): Promise<LetterDetail | null> {
+    return this.prisma.letter.findFirst({
+      where: {
+        id: letterId,
+        OR: [
+          { senderId: userId }, // 내가 보냈거나
+          { receiverId: userId }, // 내가 받음
+        ],
+      },
+      select: letterSelect, // 공통 select 적용
+    });
+  }
+
   /** 편지 상태 변경 */
   async updateLetterStatus(
     letterId: number,

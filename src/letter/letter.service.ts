@@ -56,7 +56,10 @@ export class LetterService {
   /** 단일 조회 */
   async findLetter(letterId: number, userId: number): Promise<ResLetterDto> {
     // 일단 편지 데이터를 조회
-    const letter = await this.letterRepository.findLetterById(letterId);
+    const letter = await this.letterRepository.findLetterByIdAndUser(
+      letterId,
+      userId,
+    );
     if (!letter) throw new NotFoundException('Letter not found');
 
     let letterData = letter;
