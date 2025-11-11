@@ -167,6 +167,7 @@ export class LetterRepository {
       where: {
         id: { in: letterIds },
         senderId: userId,
+        status: LetterStatusValue.WRITING, // 작성중인 편지만 삭제 가능
       },
       select: { id: true, imageUrl: true, status: true, paperId: true },
     });
