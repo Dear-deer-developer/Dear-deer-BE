@@ -12,7 +12,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ScrapService } from './scrap.service';
 import { GetUser } from 'src/auth/get-user.decorator';
-//import { ApiScrap } from './scrap.swagger';
+import { ApiScrap } from './scrap.swagger';
 
 @ApiTags('scraps')
 @ApiBearerAuth('accessToken')
@@ -24,7 +24,7 @@ export class ScrapController {
   /** 스크랩 생성 (좋아요) */
   @Post('contents/:contentId/scrap')
   @HttpCode(201)
-  //@ApiScrap.createScrap()
+  @ApiScrap.createScrap()
   async createScrap(
     @GetUser('userId') userId: number,
     @Param('contentId', ParseIntPipe) contentId: number,
@@ -36,7 +36,7 @@ export class ScrapController {
   /** 스크랩 삭제 (좋아요 취소) */
   @Delete('contents/:contentId/scrap')
   @HttpCode(204)
-  //@ApiScrap.deleteScrap()
+  @ApiScrap.deleteScrap()
   async deleteScrap(
     @GetUser('userId') userId: number,
     @Param('contentId', ParseIntPipe) contentId: number,
@@ -46,7 +46,7 @@ export class ScrapController {
 
   /** 내 스크랩 목록 조회 */
   @Get('scraps/me')
-  //@ApiScrap.findMyScraps()
+  @ApiScrap.findMyScraps()
   async getMyScraps(@GetUser('userId') userId: number) {
     return this.scrapService.findMyScraps(userId);
   }
