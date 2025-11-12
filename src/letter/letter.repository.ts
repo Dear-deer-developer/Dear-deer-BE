@@ -97,15 +97,16 @@ export class LetterRepository {
     });
   }
 
-  /** 내 사서함 조회 */
+  /** 내 사서함 (받은 편지)조회 */
   async findReceivedLetters(userId: number): Promise<ResReceivedLetterDto[]> {
     return this.prisma.letter.findMany({
       where: {
         receiverId: userId,
+        status: { in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED] },
       },
-      orderBy: {
-        sentAt: 'desc',
-      },
+      // 'SENT'(안 읽음)가 'RECEIVED'(읽음)보다 먼저 오도록
+      // 그 다음 최근 편지부터 정렬
+      orderBy: [{ status: 'asc' }, { sentAt: 'desc' }],
       select: {
         id: true,
         status: true,
@@ -122,11 +123,9 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         senderId: userId,
-        status: LetterStatusValue.SENT,
+        status: { in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED] },
       },
-      orderBy: {
-        sentAt: 'desc',
-      },
+      orderBy: [{ status: 'asc' }, { sentAt: 'desc' }],
       select: {
         id: true,
         status: true,
@@ -168,7 +167,8 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         id: { in: letterIds },
-        senderId: userId, // 또는 senderId
+        senderId: userId,
+        status: LetterStatusValue.WRITING, // 작성중인 편지만 삭제 가능
       },
       select: { id: true, imageUrl: true, status: true, paperId: true },
     });
@@ -187,6 +187,26 @@ export class LetterRepository {
   async findLetterById(letterId: number): Promise<LetterDetail | null> {
     return await this.prisma.letter.findUnique({
       where: { id: letterId },
+      select: letterSelect, // 공통 select 적용
+    });
+  }
+
+  /**
+   * letterId + userId(본인)로 편지 조회
+   * (본인이 senderId 또는 receiverId와 일치해야만 조회됨)
+   */
+  findLetterByIdAndUser(
+    letterId: number,
+    userId: number,
+  ): Promise<LetterDetail | null> {
+    return this.prisma.letter.findFirst({
+      where: {
+        id: letterId,
+        OR: [
+          { senderId: userId }, // 내가 보냈거나
+          { receiverId: userId }, // 내가 받음
+        ],
+      },
       select: letterSelect, // 공통 select 적용
     });
   }
