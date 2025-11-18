@@ -14,7 +14,7 @@ import {
 import { ContentService } from './content.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from 'src/auth/get-user.decorator';
+import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { CreateContentDto } from './dtos/create-content.dto';
 import { UpdateContentDto } from './dtos/update-content.dto';
 import { AdminContentsQueryDto } from './dtos/admin-contents-query.dto';
@@ -45,7 +45,7 @@ export class ContentAdminController {
   @Post()
   @ApiContent.create()
   async createContent(
-    @GetUser('userId') authorId: number,
+    @GetUserId('userId') authorId: number,
     @Body() dto: CreateContentDto,
   ) {
     return this.contentService.createContentByAdmin(authorId, dto);
@@ -57,7 +57,7 @@ export class ContentAdminController {
   async updateContent(
     @Param('contentId', ParseIntPipe) contentId: number,
     @Body() dto: UpdateContentDto,
-    @GetUser('userId') authorId: number,
+    @GetUserId('userId') authorId: number,
   ) {
     return this.contentService.updateContentByAdmin(contentId, authorId, dto);
   }
@@ -68,7 +68,7 @@ export class ContentAdminController {
   @ApiContent.delete()
   async deleteContent(
     @Param('contentId', ParseIntPipe) contentId: number,
-    @GetUser('userId') authorId: number,
+    @GetUserId('userId') authorId: number,
   ) {
     await this.contentService.deleteContentByAdmin(contentId, authorId);
   }

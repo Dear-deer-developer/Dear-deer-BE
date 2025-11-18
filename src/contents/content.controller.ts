@@ -12,7 +12,7 @@ import { ApiContent } from './content.swagger';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
 import { ContentListItemDto } from './dtos/content-list-item.dto';
 import { ContentDetailDto } from './dtos/content-detail.dto';
-import { GetUser } from 'src/auth/get-user.decorator';
+import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('contents')
@@ -36,7 +36,7 @@ export class ContentController {
   @ApiContent.findOne()
   async findOne(
     @Param('contentId', ParseIntPipe) contentId: number,
-    @GetUser('userId') userId: number,
+    @GetUserId('userId') userId: number,
   ): Promise<ContentDetailDto> {
     return this.contentService.findOnePublishedContent(contentId, userId);
   }
