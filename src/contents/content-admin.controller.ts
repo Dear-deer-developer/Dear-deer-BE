@@ -45,10 +45,10 @@ export class ContentAdminController {
   @Post()
   @ApiContent.create()
   async createContent(
-    @GetUserId('userId') authorId: number,
+    @GetUserId('userId') userId: number,
     @Body() dto: CreateContentDto,
   ) {
-    return this.contentService.createContentByAdmin(authorId, dto);
+    return this.contentService.createContentByAdmin(userId, dto);
   }
 
   /** (관리자) 콘텐츠 수정 */
@@ -57,9 +57,9 @@ export class ContentAdminController {
   async updateContent(
     @Param('contentId', ParseIntPipe) contentId: number,
     @Body() dto: UpdateContentDto,
-    @GetUserId('userId') authorId: number,
+    @GetUserId('userId') userId: number,
   ) {
-    return this.contentService.updateContentByAdmin(contentId, authorId, dto);
+    return this.contentService.updateContentByAdmin(contentId, userId, dto);
   }
 
   /** (관리자) 콘텐츠 삭제 */
@@ -68,8 +68,8 @@ export class ContentAdminController {
   @ApiContent.delete()
   async deleteContent(
     @Param('contentId', ParseIntPipe) contentId: number,
-    @GetUserId('userId') authorId: number,
+    @GetUserId('userId') userId: number,
   ) {
-    await this.contentService.deleteContentByAdmin(contentId, authorId);
+    await this.contentService.deleteContentByAdmin(contentId, userId);
   }
 }

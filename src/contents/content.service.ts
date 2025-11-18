@@ -153,7 +153,7 @@ export class ContentService {
 
   /** (관리자) 콘텐츠 등록 */
   async createContentByAdmin(
-    authorId: number,
+    userId: number,
     dto: CreateContentDto,
   ): Promise<{
     contentId: number;
@@ -170,7 +170,7 @@ export class ContentService {
 
     // 2. 콘텐츠 생성 (contentId만 생성 , 이미지 없이)
     const createdContent = await this.contentRepository.createContent({
-      authorId,
+      authorId: userId,
       subCategoryId,
       title,
       body: content,
@@ -186,7 +186,7 @@ export class ContentService {
     // S3에 업로드할 이미지 파일 정보 목록 가져오기
     const presignedUrls =
       await this.s3Service.generateContentImagePresignedUrls(
-        authorId,
+        userId,
         s3Files,
         createdContent.id, //contentId 전달
       );
@@ -208,7 +208,7 @@ export class ContentService {
 
   async updateContentByAdmin(
     contentId: number,
-    authorId: number,
+    userId: number,
     dto: UpdateContentDto,
   ): Promise<{
     contentId: number;
@@ -230,7 +230,7 @@ export class ContentService {
     if (!existingContent) {
       throw new NotFoundException('수정할 콘텐츠를 찾을 수 없습니다.');
     }
-    if (existingContent.authorId !== authorId) {
+    if (existingContent.authorId !== userId) {
       throw new ForbiddenException('수정 권한이 없습니다.');
     }
 
@@ -263,7 +263,7 @@ export class ContentService {
 
     const presignedUrls =
       await this.s3Service.generateContentImagePresignedUrls(
-        authorId,
+        userId,
         s3Files,
         contentId,
       );
@@ -302,10 +302,7 @@ export class ContentService {
   }
 
   /** 콘텐츠 삭제 (관리자 전용) */
-  async deleteContentByAdmin(
-    contentId: number,
-    authorId: number,
-  ): Promise<void> {
+  async deleteContentByAdmin(contentId: number, userId: number): Promise<void> {
     // 1. 콘텐츠 존재 및 권한 확인 (등록된 관리자만 삭제 가능)
     const existingContent =
       await this.contentRepository.findContentByIdWithImages(contentId);
@@ -313,7 +310,7 @@ export class ContentService {
     if (!existingContent) {
       throw new NotFoundException('삭제할 콘텐츠를 찾을 수 없습니다.');
     }
-    if (existingContent.authorId !== authorId) {
+    if (existingContent.authorId !== userId) {
       // 등록 관리자가 아니면 권한 없음
       throw new ForbiddenException('삭제 권한이 없습니다.');
     }
