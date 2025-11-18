@@ -52,14 +52,26 @@ export class ContentService {
       subCategoryId,
     );
 
-    //대표 이미지(thumbnail)만 썸네일로 나온다.
-    return contents.map((content) => ({
-      id: content.id,
-      title: content.title,
-      thumbnail: content.images[0]?.url || null, //첫 번째(유일한) 이미지
-      subCategory: content.subCategory,
-      createdAt: content.createdAt,
-    }));
+    return Promise.all(
+      contents.map(async (content) => {
+        const imageKey = content.images[0]?.url || null;
+        let thumbnailUrl = null;
+
+        if (imageKey) {
+          thumbnailUrl =
+            await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+        }
+
+        //대표 이미지(thumbnail)만 썸네일로 나온다.
+        return {
+          id: content.id,
+          title: content.title,
+          thumbnail: thumbnailUrl,
+          subCategory: content.subCategory,
+          createdAt: content.createdAt,
+        };
+      }),
+    );
   }
 
   /** (사용자) 특정 공개된 콘텐츠 상세 조회 (+ 스크랩 여부 포함) */
@@ -73,6 +85,14 @@ export class ContentService {
       throw new NotFoundException('게시된 콘텐츠를 찾을 수 없습니다.');
     }
 
+    //1. DB에 저장된 이미지 Key 목록 추출
+    const imageKeys = content.images.map((img) => img.url);
+
+    //2. Key들을 '조회 가능한 Presigned URL'로 변환한다. (병렬처리)
+    const imageUrls = await Promise.all(
+      imageKeys.map((key) => this.s3Service.generateGetObjectPresignedUrl(key)),
+    );
+    //3. 스크랩 여부 확인
     const scrapCount = await this.scrapRepository.count(userId, contentId);
     const isScrapped = scrapCount > 0;
 
@@ -82,7 +102,7 @@ export class ContentService {
       body: content.body,
       author: content.author,
       subCategory: content.subCategory,
-      images: content.images.map((img) => img.url),
+      images: imageUrls,
       createdAt: content.createdAt,
       isScrapped,
     };
