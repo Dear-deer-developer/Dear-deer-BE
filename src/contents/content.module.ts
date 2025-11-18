@@ -4,7 +4,7 @@ import { ContentService } from './content.service';
 import { ContentRepository } from './content.repository';
 import { S3Module } from 'src/s3/s3.module';
 import { UsersModule } from 'src/users/users.module';
-import { ContentAdminController } from './content.admin.controller';
+import { ContentAdminController } from './content-admin.controller';
 import { ScrapModule } from 'src/scrap/scrap.module';
 
 @Module({
