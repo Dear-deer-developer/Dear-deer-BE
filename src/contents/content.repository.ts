@@ -12,7 +12,7 @@ export class ContentRepository {
 
   /** (사용자) 전체 공개 콘텐츠 리스트 조회 */
   async findAllPublished(mainCategoryId?: string, subCategoryId?: string) {
-    const where: any = {
+    const where: Prisma.ContentWhereInput = {
       status: ContentStatus.PUBLISHED,
     };
 
