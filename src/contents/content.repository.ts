@@ -6,6 +6,17 @@ import { Content, ContentStatus, Prisma } from '@prisma/client';
 export class ContentRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly subCategorySelect = {
+    id: true,
+    name: true,
+    mainCategory: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  };
+
   // ===================================================================
   // 🧑🏻일반 사용자용 API🧑🏻
   // ===================================================================
@@ -30,9 +41,7 @@ export class ContentRepository {
           },
         },
         subCategory: {
-          include: {
-            mainCategory: true,
-          },
+          select: this.subCategorySelect,
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -56,16 +65,7 @@ export class ContentRepository {
           select: { id: true, nickname: true },
         },
         subCategory: {
-          select: {
-            id: true,
-            name: true,
-            mainCategory: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          select: this.subCategorySelect,
         },
       },
     });
@@ -104,7 +104,7 @@ export class ContentRepository {
           orderBy: { createdAt: 'asc' },
         },
         subCategory: {
-          include: { mainCategory: true },
+          select: this.subCategorySelect,
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -125,16 +125,7 @@ export class ContentRepository {
           select: { id: true, nickname: true },
         },
         subCategory: {
-          select: {
-            id: true,
-            name: true,
-            mainCategory: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          select: this.subCategorySelect,
         },
       },
     });
