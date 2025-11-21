@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -16,6 +17,7 @@ import { ResSentLetterDto } from './dtos/res-sent-letter.dto';
 import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
 import { ResLetterDto } from './dtos/res-letter.dto';
 import { SANTA_USER_ID } from './santa-user-id.provider';
+import { nowKST } from 'src/common/functions/time.helper';
 
 @Injectable()
 export class LetterService {
@@ -55,6 +57,19 @@ export class LetterService {
 
   /** 단일 조회 */
   async findLetter(letterId: number, userId: number): Promise<ResLetterDto> {
+    const nowKst = nowKST();
+
+    const currentMonth = nowKst.getUTCMonth() + 1; // 0부터 시작하므로 +1
+    const currentDay = nowKst.getUTCDate();
+
+    // 2. 12월 25일 이전인지 체크
+    // (12월이 아니거나, 12월이어도 25일 전이라면)
+    if (currentMonth !== 12 || currentDay < 25) {
+      throw new ForbiddenException(
+        '아직 개봉할 수 없습니다! 12월 25일에 열어볼 수 있어요',
+      );
+    }
+
     // 일단 편지 데이터를 조회
     const letter = await this.letterRepository.findLetterByIdAndUser(
       letterId,
