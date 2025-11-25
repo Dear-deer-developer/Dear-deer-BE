@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -18,6 +19,7 @@ import { AuthNativeRepository } from './auth-native.repository';
 import { create6DigitCode } from '../functions/digit-code';
 import { AuthWithdrawDto } from '../dtos/auth-withdraw.dto';
 import { loginTypeValue } from 'src/common/enums/login-type.enum';
+import { ReportRepository } from 'src/report/report.repository';
 
 @Injectable()
 export class AuthNativeService {
@@ -26,6 +28,7 @@ export class AuthNativeService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    private readonly reportRepository: ReportRepository,
   ) {}
 
   /**
@@ -163,12 +166,21 @@ export class AuthNativeService {
   // 로그인
   async login(dto: AuthLoginDto): Promise<TokenResponseDto> {
     // 1. 이메일로 사용자 찾기
+
     const user = await this.authNativeRepository.findByEmail(dto.email);
 
     // 사용자가 없거나 (NATIVE가 아닌 다른 타입일 수 있음), 비밀번호가 없으면 에러
     if (!user || user.loginType !== 'NATIVE' || !user.hashedPassword) {
       throw new UnauthorizedException(
         '유효하지 않은 이메일 또는 비밀번호입니다.',
+      );
+    }
+
+    const banInfo = await this.reportRepository.findBanByUserId(user.id);
+
+    if (banInfo) {
+      throw new ForbiddenException(
+        `계정이 정지되었습니다. 사유: ${banInfo.reason}`,
       );
     }
 

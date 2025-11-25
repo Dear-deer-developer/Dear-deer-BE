@@ -76,6 +76,16 @@ export class UsersRepository {
         NOT: {
           id: myId, // 2. 본인 ID 제외
         },
+        AND: [
+          {
+            // 내가 차단한 사람이 아닐 것 (수신한 차단 목록에 내가 없어야 함)
+            blocksReceived: { none: { blockerId: myId } },
+          },
+          {
+            // 나를 차단한 사람이 아닐 것 (발신한 차단 목록에 내가 없어야 함)
+            blocksSent: { none: { blockedId: myId } },
+          },
+        ],
       },
       select: {
         id: true,

@@ -15,6 +15,7 @@ import { EmailService } from './Email/auth-email.service';
 import { AuthNativeController } from './auth-naitve/auth-native.controller';
 import { AuthNativeService } from './auth-naitve/auth-native.service';
 import { AuthNativeRepository } from './auth-naitve/auth-native.repository';
+import { ReportModule } from 'src/report/report.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthNativeRepository } from './auth-naitve/auth-native.repository';
     UsersModule,
     HttpModule,
     FirebaseAdminModule,
+    ReportModule,
   ],
   providers: [
     AuthService,

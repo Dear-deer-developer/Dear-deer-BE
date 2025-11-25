@@ -28,7 +28,7 @@ const letterSelect = {
   },
 };
 
-// (2) Prisma가 이 select의 타입을 추론하도록 유틸리티 타입 생성
+// Prisma가 이 select의 타입을 추론하도록 유틸리티 타입 생성
 // (이 타입을 Promise의 반환 타입으로 사용합니다)
 type LetterDetail = Prisma.LetterGetPayload<{
   select: typeof letterSelect;
@@ -37,6 +37,17 @@ type LetterDetail = Prisma.LetterGetPayload<{
 @Injectable()
 export class LetterRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  // [Helper] 차단된 유저 필터링 조건 생성 함수
+  // 내가 차단했거나(blockerId=나), 나를 차단한(blockedId=나) 사람 제외
+  private getBlockFilter(userId: number) {
+    return {
+      sender: {
+        blocksReceived: { none: { blockerId: userId } }, // 내가 차단한 사람이 아님
+        blocksSent: { none: { blockedId: userId } }, // 나를 차단한 사람이 아님
+      },
+    };
+  }
 
   /** 편지 전송 */
   sendLetter(
@@ -102,7 +113,10 @@ export class LetterRepository {
     return this.prisma.letter.findMany({
       where: {
         receiverId: userId,
-        status: { in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED] },
+        status: {
+          in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED],
+          ...this.getBlockFilter(userId),
+        },
       },
       // 'SENT'(안 읽음)가 'RECEIVED'(읽음)보다 먼저 오도록
       // 그 다음 최근 편지부터 정렬
@@ -203,8 +217,11 @@ export class LetterRepository {
       where: {
         id: letterId,
         OR: [
-          { senderId: userId }, // 내가 보냈거나
-          { receiverId: userId }, // 내가 받음
+          { senderId: userId }, // 내가 보낸거면 다 보이고
+          {
+            receiverId: userId, // 내가 받은거면
+            ...this.getBlockFilter(userId), // 차단필터 적용
+          },
         ],
       },
       select: letterSelect, // 공통 select 적용
