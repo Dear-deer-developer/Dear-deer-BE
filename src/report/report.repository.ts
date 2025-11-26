@@ -52,12 +52,63 @@ export class ReportRepository {
   async findAllPendingReports() {
     return this.prisma.report.findMany({
       where: { isResolved: false },
-      include: {
-        reporter: { select: { id: true, nickname: true } },
-        reportedUser: { select: { id: true } },
-        letter: true, // 문제의 편지 내용 확인
+      select: {
+        id: true,
+        reason: true,
+        isResolved: true,
+        createdAt: true,
+        reporter: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+        reportedUser: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * [Admin] 신고 단건 상세 조회 (편지 내용 포함)
+   */
+  async findReportDetail(reportId: number) {
+    return this.prisma.report.findUnique({
+      where: { id: reportId },
+      // select를 사용하면 최상단의 reporterId, reportedUserId 등이 제외됩니다.
+      select: {
+        id: true,
+        reason: true,
+        createdAt: true,
+        // isResolved: true, // 필요하다면 주석 해제 (요청하신 JSON에는 없어서 뺌)
+
+        reporter: {
+          select: {
+            id: true,
+            nickname: true,
+            // email: true, // 필요 시 추가
+          },
+        },
+        reportedUser: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+        letter: {
+          select: {
+            id: true,
+            content: true,
+            imageUrl: true, // S3 URL 생성을 위해 필수
+            sentAt: true,
+          },
+        },
+      },
     });
   }
 
@@ -84,6 +135,23 @@ export class ReportRepository {
       });
 
       return ban;
+    });
+  }
+
+  /**
+   * 신고 ID로 조회
+   */
+  async findReportById(reportId: number) {
+    return this.prisma.report.findUnique({ where: { id: reportId } });
+  }
+
+  /**
+   * 신고 처리 상태 업데이트
+   */
+  async updateReportStatus(reportId: number, isResolved: boolean) {
+    return this.prisma.report.update({
+      where: { id: reportId },
+      data: { isResolved },
     });
   }
 
