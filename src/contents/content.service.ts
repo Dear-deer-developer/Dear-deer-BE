@@ -62,7 +62,6 @@ export class ContentService {
             await this.s3Service.generateGetObjectPresignedUrl(imageKey);
         }
 
-        //대표 이미지(thumbnail)만 썸네일로 나온다.
         return {
           id: content.id,
           title: content.title,
@@ -120,14 +119,26 @@ export class ContentService {
 
     const contents = await this.contentRepository.findAllForAdmin(status);
 
-    return contents.map((content) => ({
-      id: content.id,
-      title: content.title,
-      thumbnail: content.images[0]?.url || null,
-      subCategory: content.subCategory,
-      createdAt: content.createdAt,
-      status: content.status, // 관리자용 목록에는 status(published/writing/hidden) 포함
-    }));
+    return Promise.all(
+      contents.map(async (content) => {
+        const imageKey = content.images[0]?.url || null;
+        let thumbnailUrl = null;
+
+        if (imageKey) {
+          thumbnailUrl =
+            await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+        }
+
+        return {
+          id: content.id,
+          title: content.title,
+          thumbnail: thumbnailUrl,
+          subCategory: content.subCategory,
+          createdAt: content.createdAt,
+          status: content.status,
+        };
+      }),
+    );
   }
 
   /** (관리자) 콘텐츠 상세 조회 */
@@ -138,13 +149,18 @@ export class ContentService {
       throw new NotFoundException('콘텐츠를 찾을 수 없습니다.');
     }
 
+    const imageKeys = content.images.map((img) => img.url);
+    const imageUrls = await Promise.all(
+      imageKeys.map((key) => this.s3Service.generateGetObjectPresignedUrl(key)),
+    );
+
     return {
       id: content.id,
       title: content.title,
       body: content.body,
       author: content.author,
       subCategory: content.subCategory,
-      images: content.images.map((img) => img.url),
+      images: imageUrls,
       createdAt: content.createdAt,
       isScrapped: false, // 관리자 조회 : 스크랩 여부 불필요
       status: content.status,

@@ -24,7 +24,10 @@ export class ContentDetailDto {
 
   @ApiProperty({
     type: [String],
-    example: ['contents/1/10/uuid1.jpg', 'contents/1/10/uuid2.png'],
+    example: [
+      'https://s3-bucket.amazonaws.com/contents/1/10/uuid1.jpg',
+      'https://s3-bucket.amazonaws.com/contents/1/10/uuid2.png',
+    ],
     description: '콘텐츠 이미지 S3 Key 목록 (전체)',
   })
   images: string[];
