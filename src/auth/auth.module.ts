@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
@@ -26,7 +26,7 @@ import { ReportModule } from 'src/report/report.module';
     UsersModule,
     HttpModule,
     FirebaseAdminModule,
-    ReportModule,
+    forwardRef(() => ReportModule),
   ],
   providers: [
     AuthService,
