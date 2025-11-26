@@ -32,3 +32,14 @@ export const SANTA_LETTER_CONTENT = `메리 크리스마스!
 
 언제나 너를 응원하는
 산타할아버지가 🎅`;
+
+// 1. 이벤트 시작일 (이 날짜부터 선물을 줌)
+export const EVENT_START_DATE = '2025-11-01';
+
+// 2. 앱 출시일 (이 날짜 '전날'까지의 선물을 가입 시 지급) * 추후 변경되는 날짜!
+export const APP_LAUNCH_DATE = '2025-11-12';
+
+export const REWARD_TYPE = {
+  GIFT: 'GIFT',
+  LETTER: 'LETTER',
+} as const;

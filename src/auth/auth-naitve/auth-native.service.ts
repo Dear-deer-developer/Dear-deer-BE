@@ -18,6 +18,7 @@ import { AuthNativeRepository } from './auth-native.repository';
 import { create6DigitCode } from '../functions/digit-code';
 import { AuthWithdrawDto } from '../dtos/auth-withdraw.dto';
 import { loginTypeValue } from 'src/common/enums/login-type.enum';
+import { CalendarRewardService } from 'src/calendar-reward/calendar-reward.service';
 
 @Injectable()
 export class AuthNativeService {
@@ -26,6 +27,7 @@ export class AuthNativeService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    private readonly calendarRewardService: CalendarRewardService,
   ) {}
 
   /**
@@ -134,10 +136,22 @@ export class AuthNativeService {
       zipCode: uniqueZipCode,
     });
 
-    // 5. 인증코드를 삭제
+    // 5. 신규 유저에게 과거 선물 일괄 지급
+    try {
+      // 11/12 출시라면, 11/1 ~ 11/11 선물을 1회성 지급
+      await this.calendarRewardService.grantGiftsForNewUser(newUser.id);
+    } catch (e) {
+      // 선물 지급이 실패해도 회원가입은 롤백되지 않음 (에러 로깅만)
+      console.error(
+        `[Non-Fatal] Failed to grant welcome gifts for user ${newUser.id}`,
+        e,
+      );
+    }
+
+    // 6. 사용된 인증코드를 삭제
     await this.authNativeRepository.deleteAuthCodeByEmail(dto.email);
 
-    // 6. 토큰 발급 및 리프레시 토큰 저장
+    // 7. 토큰 발급 및 리프레시 토큰 저장
     return this.getTokens(newUser);
   }
 
