@@ -16,8 +16,8 @@ export class ContentDetailDto {
   })
   body: string;
 
-  @ApiProperty({ description: '작성자 정보' })
-  author: AuthorDto;
+  @ApiProperty({ description: '작성자(관리자) 정보_닉네임' })
+  author: string;
 
   @ApiProperty({ description: '서브 카테고리 정보' })
   subCategory: SubCategoryDto;

@@ -40,6 +40,9 @@ export class ContentRepository {
             createdAt: 'asc',
           },
         },
+        author: {
+          select: { id: true, nickname: true },
+        },
         subCategory: {
           select: this.subCategorySelect,
         },
@@ -102,6 +105,9 @@ export class ContentRepository {
         images: {
           take: 1,
           orderBy: { createdAt: 'asc' },
+        },
+        author: {
+          select: { id: true, nickname: true },
         },
         subCategory: {
           select: this.subCategorySelect,
