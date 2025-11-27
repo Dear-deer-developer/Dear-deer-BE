@@ -11,7 +11,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ScrapService } from './scrap.service';
-import { GetUser } from 'src/auth/get-user.decorator';
+import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { ApiScrap } from './scrap.swagger';
 
 @ApiTags('scraps')
@@ -26,7 +26,7 @@ export class ScrapController {
   @HttpCode(201)
   @ApiScrap.createScrap()
   async createScrap(
-    @GetUser('userId') userId: number,
+    @GetUserId('userId') userId: number,
     @Param('contentId', ParseIntPipe) contentId: number,
   ) {
     await this.scrapService.createScrap(userId, contentId);
@@ -38,7 +38,7 @@ export class ScrapController {
   @HttpCode(204)
   @ApiScrap.deleteScrap()
   async deleteScrap(
-    @GetUser('userId') userId: number,
+    @GetUserId('userId') userId: number,
     @Param('contentId', ParseIntPipe) contentId: number,
   ) {
     await this.scrapService.deleteScrap(userId, contentId);
@@ -47,7 +47,7 @@ export class ScrapController {
   /** 내 스크랩 목록 조회 */
   @Get('scraps/me')
   @ApiScrap.findMyScraps()
-  async getMyScraps(@GetUser('userId') userId: number) {
+  async getMyScraps(@GetUserId('userId') userId: number) {
     return this.scrapService.findMyScraps(userId);
   }
 }
