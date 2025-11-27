@@ -10,7 +10,8 @@ export class ContentListItemDto {
 
   @ApiProperty({
     example: 'https://s3-bucket.amazonaws.com/contents/1/10/uuid1.jpg',
-    description: '콘텐츠 썸네일 이미지 S3 Key (첫 번째 이미지)',
+    description:
+      '콘텐츠 썸네일 이미지 Presigned URL (첫 번째 이미지, 5분간 유효)',
     nullable: true,
   })
   thumbnail: string | null;
