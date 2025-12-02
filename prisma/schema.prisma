@@ -392,6 +392,7 @@ model Report {
   reportedUser User    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
   letter       Letter? @relation(fields: [letterId], references: [id], onDelete: SetNull) // 편지가 삭제되어도 신고 기록은 남겨야 함
 
+  @@unique([reporterId, letterId])
   @@map("reports")
 }
 

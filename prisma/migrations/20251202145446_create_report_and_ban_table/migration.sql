@@ -35,6 +35,9 @@ CREATE TABLE "bans" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "reports_reporter_id_letter_id_key" ON "reports"("reporter_id", "letter_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "blocks_blocker_id_blocked_id_key" ON "blocks"("blocker_id", "blocked_id");
 
 -- CreateIndex
