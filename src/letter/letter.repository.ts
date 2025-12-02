@@ -115,8 +115,8 @@ export class LetterRepository {
         receiverId: userId,
         status: {
           in: [LetterStatusValue.SENT, LetterStatusValue.RECEIVED],
-          ...this.getBlockFilter(userId),
         },
+        ...this.getBlockFilter(userId),
       },
       // 'SENT'(안 읽음)가 'RECEIVED'(읽음)보다 먼저 오도록
       // 그 다음 최근 편지부터 정렬
