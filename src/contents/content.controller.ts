@@ -16,7 +16,6 @@ import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('contents')
-@ApiBearerAuth('accessToken')
 @UseGuards(AuthGuard('accessToken'))
 @Controller('contents')
 export class ContentController {
