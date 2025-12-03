@@ -7,9 +7,16 @@ import { S3Module } from 'src/s3/s3.module';
 import { ImagePresignModule } from 'src/image/image-presign.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { SantaUserIdProvider } from './santa-user-id.provider';
+import { ReportModule } from 'src/report/report.module';
 
 @Module({
-  imports: [UsersModule, S3Module, ImagePresignModule, AuthModule],
+  imports: [
+    UsersModule,
+    S3Module,
+    ImagePresignModule,
+    AuthModule,
+    ReportModule,
+  ],
   controllers: [LetterController],
   providers: [LetterService, LetterRepository, SantaUserIdProvider],
   exports: [LetterService],

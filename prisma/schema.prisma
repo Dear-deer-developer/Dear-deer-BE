@@ -50,6 +50,15 @@ enum LoginType {
   SOCIAL // 소셜 로그인 (Firebase)
 }
 
+enum ReportReason {
+  IMPERSONATION_FRAUD // 유출/사칭/사기
+  SEXUAL_CONTENT // 음란물/불건전한 대화
+  SPAM_AND_PHISHING // 낚시/놀람/도배
+  ABUSIVE_LANGUAGE // 욕설/비하
+  COMMERCIAL_AD // 상업적 광고 및 판매
+  POLITICAL_PROPAGANDA // 정당/정치인 비하 및 선거운동
+}
+
 model User {
   id               Int       @id @default(autoincrement())
   email            String?   @unique // (10.13 자체로그인시에만 저장)
@@ -61,6 +70,7 @@ model User {
   isAdmin          Boolean   @default(false) @map("is_admin")
   isAgreed         Boolean   @default(false) @map("is_agreed")
   lastGiftViewedAt DateTime? @map("last_gift_viewed_at")
+  banInfo          Ban?
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
@@ -76,6 +86,11 @@ model User {
   userGifts             UserGift[]
   userEquipSlots        UserEquipSlot[]
   calendarRewardRecords CalendarRewardRecord[]
+  //신고 관계
+  reportsSent           Report[]               @relation("Reporter")
+  reportsReceived       Report[]               @relation("ReportedUser")
+  blocksSent            Block[]                @relation("Blocker")
+  blocksReceived        Block[]                @relation("Blocked")
 
   @@map("users")
 }
@@ -122,6 +137,7 @@ model Letter {
   sender   User        @relation("SentLetters", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User?       @relation("ReceivedLetters", fields: [receiverId], references: [id], onDelete: SetNull)
   paper    LetterPaper @relation(fields: [paperId], references: [id], onDelete: Restrict)
+  reports  Report[]
 
   @@map("letters")
 }
@@ -359,4 +375,49 @@ model CalendarRewardRecord {
   @@id([userId, localDate])
   @@index([giftId])
   @@map("calendar_reward_records")
+}
+
+// 신고 접수 내역
+model Report {
+  id             Int          @id @default(autoincrement())
+  reporterId     Int          @map("reporter_id")
+  reportedUserId Int          @map("reported_user_id")
+  letterId       Int?         @map("letter_id") // 편지 없이 신고할 수 도 있으므로 일단 optional 처리
+  reason         ReportReason
+  isResolved     Boolean      @default(false) @map("is_resolved") // 관리자 처리 여부
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  reporter     User    @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  letter       Letter? @relation(fields: [letterId], references: [id], onDelete: SetNull) // 편지가 삭제되어도 신고 기록은 남겨야 함
+
+  @@unique([reporterId, letterId])
+  @@map("reports")
+}
+
+// 차단 리스트 (상호 차단용)
+model Block {
+  id        Int      @id @default(autoincrement())
+  blockerId Int      @map("blocker_id")
+  blockedId Int      @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId]) // 중복 차단 방지
+  @@map("blocks")
+}
+
+// 유저 밴 (영구 정지)
+model Ban {
+  id       Int      @id @default(autoincrement())
+  userId   Int      @unique @map("user_id") // 유저당 하나의 밴 기록
+  reason   String   @db.Text // 관리자가 작성하는 구체적 사유
+  bannedAt DateTime @default(now()) @map("banned_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bans")
 }
