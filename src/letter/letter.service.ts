@@ -18,12 +18,14 @@ import { ResDraftLetterItemDto } from './dtos/res-draft-letter-item.dto';
 import { ResLetterDto } from './dtos/res-letter.dto';
 import { SANTA_USER_ID } from './santa-user-id.provider';
 import { nowKST } from 'src/common/functions/time.helper';
+import { ReportRepository } from 'src/report/report.repository';
 
 @Injectable()
 export class LetterService {
   constructor(
     private readonly letterRepository: LetterRepository,
     private readonly s3Service: S3Service,
+    private readonly reportRepository: ReportRepository,
     @Inject(SANTA_USER_ID) private readonly santaUserId: number,
   ) {
     console.log(`LetterService initialized with Santa ID: ${this.santaUserId}`);
@@ -34,9 +36,22 @@ export class LetterService {
     senderId: number,
     sendLetterDto: SendLetterDto,
   ): Promise<ResSendLetterDto> {
-    // 산타에게 편지 보내기 차단
+    // 1. 산타에게 편지 보내기 차단
     if (sendLetterDto.receiverId === this.santaUserId) {
       throw new BadRequestException('산타클로스에게 편지를 보낼 수 없습니다.');
+    }
+
+    // 2. 차단 관계 확인 (보내는 사람 <-> 받는 사람)
+    // ReportsRepository에 이 메서드를 추가해야 합니다 (아래 설명 참조)
+    const isBlocked = await this.reportRepository.checkBlockStatus(
+      senderId,
+      sendLetterDto.receiverId,
+    );
+
+    if (isBlocked) {
+      throw new ForbiddenException(
+        '차단 관계에 있는 사용자에게는 편지를 보낼 수 없습니다.',
+      );
     }
 
     return this.letterRepository.sendLetter({
@@ -57,18 +72,19 @@ export class LetterService {
 
   /** 단일 조회 */
   async findLetter(letterId: number, userId: number): Promise<ResLetterDto> {
-    const nowKst = nowKST();
+    // 신고기능 구현을 위해 임시 주석 처리 (12.03)
+    // const nowKst = nowKST();
 
-    const currentMonth = nowKst.getUTCMonth() + 1; // 0부터 시작하므로 +1
-    const currentDay = nowKst.getUTCDate();
+    // const currentMonth = nowKst.getUTCMonth() + 1; // 0부터 시작하므로 +1
+    // const currentDay = nowKst.getUTCDate();
 
-    // 2. 12월 25일 이전인지 체크
-    // (12월이 아니거나, 12월이어도 25일 전이라면)
-    if (currentMonth !== 12 || currentDay < 25) {
-      throw new ForbiddenException(
-        '아직 개봉할 수 없습니다! 12월 25일에 열어볼 수 있어요',
-      );
-    }
+    // // 2. 12월 25일 이전인지 체크
+    // // (12월이 아니거나, 12월이어도 25일 전이라면)
+    // if (currentMonth !== 12 || currentDay < 25) {
+    //   throw new ForbiddenException(
+    //     '아직 개봉할 수 없습니다! 12월 25일에 열어볼 수 있어요',
+    //   );
+    // }
 
     // 일단 편지 데이터를 조회
     const letter = await this.letterRepository.findLetterByIdAndUser(

@@ -19,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ImagePresignModule } from './image/image-presign.module';
 import { MusicModule } from './music/music.module';
 import { CalendarRewardModule } from './calendar-reward/calendar-reward.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { CalendarRewardModule } from './calendar-reward/calendar-reward.module';
     ImagePresignModule,
     MusicModule,
     CalendarRewardModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
