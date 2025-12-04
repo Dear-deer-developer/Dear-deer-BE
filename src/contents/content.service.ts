@@ -58,15 +58,20 @@ export class ContentService {
         let thumbnailUrl = null;
 
         if (imageKey) {
-          thumbnailUrl =
-            await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+          try {
+            thumbnailUrl =
+              await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+          } catch (e) {
+            console.error(`S3 Error (Content ID : ${content.id}):`, e);
+            thumbnailUrl = null;
+          }
         }
 
         return {
           id: content.id,
           title: content.title,
           thumbnail: thumbnailUrl,
-          author: content.author.nickname,
+          author: content.author?.nickname ?? '알 수 없음',
           subCategory: content.subCategory,
           createdAt: content.createdAt,
         };
@@ -90,7 +95,14 @@ export class ContentService {
 
     //2. Key들을 '조회 가능한 Presigned URL'로 변환한다. (병렬처리)
     const imageUrls = await Promise.all(
-      imageKeys.map((key) => this.s3Service.generateGetObjectPresignedUrl(key)),
+      imageKeys.map(async (key) => {
+        try {
+          return await this.s3Service.generateGetObjectPresignedUrl(key);
+        } catch (e) {
+          console.error(`S3 Error (Key: ${key}):`, e);
+          return null;
+        }
+      }),
     );
     //3. 스크랩 여부 확인
     const scrapCount = await this.scrapRepository.count(userId, contentId);
@@ -100,7 +112,7 @@ export class ContentService {
       id: content.id,
       title: content.title,
       body: content.body,
-      author: content.author.nickname,
+      author: content.author?.nickname ?? '알 수 없음',
       subCategory: content.subCategory,
       images: imageUrls,
       createdAt: content.createdAt,
@@ -126,15 +138,20 @@ export class ContentService {
         let thumbnailUrl = null;
 
         if (imageKey) {
-          thumbnailUrl =
-            await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+          try {
+            thumbnailUrl =
+              await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+          } catch (e) {
+            console.error(`S3 Error (Admin List - ID: ${content.id}):`, e);
+            thumbnailUrl = null;
+          }
         }
 
         return {
           id: content.id,
           title: content.title,
           thumbnail: thumbnailUrl,
-          author: content.author.nickname,
+          author: content.author?.nickname ?? '관리자',
           subCategory: content.subCategory,
           createdAt: content.createdAt,
           status: content.status,
@@ -153,14 +170,20 @@ export class ContentService {
 
     const imageKeys = content.images.map((img) => img.url);
     const imageUrls = await Promise.all(
-      imageKeys.map((key) => this.s3Service.generateGetObjectPresignedUrl(key)),
+      imageKeys.map(async (key) => {
+        try {
+          return await this.s3Service.generateGetObjectPresignedUrl(key);
+        } catch (e) {
+          return null;
+        }
+      }),
     );
 
     return {
       id: content.id,
       title: content.title,
       body: content.body,
-      author: content.author.nickname,
+      author: content.author?.nickname ?? '관리자',
       subCategory: content.subCategory,
       images: imageUrls,
       createdAt: content.createdAt,
