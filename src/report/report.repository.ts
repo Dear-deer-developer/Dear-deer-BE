@@ -47,7 +47,7 @@ export class ReportRepository {
   }
 
   /**
-   * [Admin] 처리되지 않은 신고 목록 조회
+   * [Admin] 처리되지 않은 신고 내역 조회
    */
   async findAllPendingReports() {
     return this.prisma.report.findMany({
@@ -71,6 +71,36 @@ export class ReportRepository {
         },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * [Admin] 처리된 신고 내역 조회
+   */
+  async findAllResolvedReports() {
+    return this.prisma.report.findMany({
+      where: { isResolved: true }, // 처리된 것만
+      select: {
+        id: true,
+        reason: true,
+        createdAt: true,
+        updatedAt: true, // 처리된 시간
+
+        reporter: {
+          select: { id: true, nickname: true },
+        },
+        reportedUser: {
+          select: {
+            id: true,
+            nickname: true,
+            // 밴 정보가 있는지
+            banInfo: {
+              select: { id: true, bannedAt: true, reason: true },
+            },
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' }, // 처리된 최신순
     });
   }
 

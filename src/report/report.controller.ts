@@ -4,7 +4,6 @@ import {
   Body,
   Get,
   UseGuards,
-  Req,
   Param,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -35,12 +34,20 @@ export class ReportController {
     };
   }
 
-  // [Admin] 신고 목록 조회 API
+  // [Admin] 미처리 신고 내역 조회 API
   @Get('list')
   @UseGuards(AuthGuard('jwtAdmin')) // 관리자만 접근 가능하도록 설정
   @ApiReports.findAllPending()
   async getReports() {
     return this.reportService.getPendingReports();
+  }
+
+  // 2. [Admin] 처리된 신고 내역 조회 API
+  @Get('history')
+  @UseGuards(AuthGuard('jwtAdmin'))
+  @ApiReports.findAllHistory()
+  async getReportHistory() {
+    return this.reportService.getResolvedReports();
   }
 
   // [Admin] 상세 조회 API (편지 내용 확인용)

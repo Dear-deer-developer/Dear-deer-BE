@@ -387,6 +387,7 @@ model Report {
   isResolved     Boolean      @default(false) @map("is_resolved") // 관리자 처리 여부
 
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   reporter     User    @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
   reportedUser User    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)

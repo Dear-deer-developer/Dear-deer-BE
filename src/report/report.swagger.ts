@@ -12,6 +12,7 @@ import { BanUserDto } from './dtos/ban-user.dto';
 import { ResReportDto } from './dtos/res-report.dto';
 import { ResMessageDto } from 'src/common/dtos/res-message.dto';
 import { ResReportDetailDto } from './dtos/res-report-detail.dto';
+import { ResReportHistoryDto } from './dtos/res-report-history.dto';
 
 // 1. 공통 401 Unauthorized
 const ApiUnauthorizedResponse = ApiResponse({
@@ -75,18 +76,34 @@ export const ApiReports = {
   findAllPending: () =>
     applyDecorators(
       ApiOperation({
-        summary: '미처리 신고 목록 조회 (관리자)',
+        summary: '미처리 신고 내역 조회 (관리자)',
         description: '편지 내용 없이 가벼운 요약 목록을 반환합니다.',
       }),
       ApiBearerAuth('jwtAdmin'),
       ApiResponse({
         status: 200,
         description: '신고 목록 조회 성공',
-        type: ResReportDto, // ✅ 목록용 DTO 적용
+        type: ResReportDto, // 목록용 DTO 적용
         isArray: true,
       }),
       ApiUnauthorizedResponse,
       ApiForbiddenResponse,
+    ),
+
+  /** GET /reports/history (관리자 - 신고 처리 내역) */
+  findAllHistory: () =>
+    applyDecorators(
+      ApiOperation({
+        summary: '신고 처리 내역 조회 (관리자)',
+        description: '처리 완료된(밴 또는 반려) 신고 내역을 조회합니다.',
+      }),
+      ApiBearerAuth('jwtAdmin'),
+      ApiResponse({
+        status: 200,
+        description: '처리 내역 조회 성공',
+        type: ResReportHistoryDto,
+        isArray: true,
+      }),
     ),
 
   /** GET /reports/admin/:reportId (관리자 - 상세 조회) */
@@ -106,7 +123,7 @@ export const ApiReports = {
       ApiResponse({
         status: 200,
         description: '신고 상세 정보 조회 성공',
-        type: ResReportDetailDto, // ✅ 상세용 DTO 적용
+        type: ResReportDetailDto, // 상세용 DTO 적용
       }),
       ApiResponse({
         status: 404,
@@ -154,7 +171,7 @@ export const ApiReports = {
       }),
       ApiBearerAuth('jwtAdmin'),
       ApiResponse({
-        status: 201, // Post 요청이므로 201 또는 200
+        status: 201,
         description: '반려 처리 성공',
         type: ResMessageDto,
       }),

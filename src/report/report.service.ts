@@ -7,6 +7,8 @@ import { CreateReportDto } from './dtos/create-report.dto';
 import { BanUserDto } from './dtos/ban-user.dto';
 import { ReportRepository } from './report.repository';
 import { S3Service } from 'src/s3/s3.service';
+import { ResReportHistoryDto } from './dtos/res-report-history.dto';
+import { ResReportReporterDto } from './dtos/res-report.dto';
 
 @Injectable()
 export class ReportService {
@@ -25,9 +27,16 @@ export class ReportService {
     return this.reportRepository.createReportWithMutualBlock(userId, dto);
   }
 
-  // [Admin] 신고 목록 보기
+  // [Admin] 신고 내역 보기
   async getPendingReports() {
     return this.reportRepository.findAllPendingReports();
+  }
+
+  // [Admin] 신고 처리 내역 보기
+  async getResolvedReports() {
+    const reports = await this.reportRepository.findAllResolvedReports();
+
+    return reports.map((report) => ResReportHistoryDto.from(report));
   }
 
   // [Admin] 신고 상세 조회
