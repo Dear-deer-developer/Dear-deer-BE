@@ -14,6 +14,8 @@ import { CreateReportDto } from './dtos/create-report.dto';
 import { BanUserDto } from './dtos/ban-user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiReports } from './report.swagger';
+import { BlockUserDto } from './dtos/block-user.dto';
+import { ResMessageDto } from 'src/common/dtos/res-message.dto';
 
 @Controller('reports')
 @ApiTags('reports')
@@ -27,11 +29,19 @@ export class ReportController {
   async createReport(
     @GetUserId() userId: number,
     @Body() dto: CreateReportDto,
-  ) {
+  ): Promise<ResMessageDto> {
     await this.reportService.reportUser(userId, dto);
     return {
       message: '신고가 접수되었으며, 해당 사용자와 상호 차단되었습니다.',
     };
+  }
+  // [User] 사용자 차단 API
+  @Post('block')
+  @UseGuards(AuthGuard('accessToken'))
+  @ApiReports.block()
+  async blockUser(@GetUserId() userId: number, @Body() dto: BlockUserDto) {
+    await this.reportService.blockUser(userId, dto.targetUserId);
+    return { message: '사용자를 차단했습니다.' };
   }
 
   // [Admin] 미처리 신고 내역 조회 API

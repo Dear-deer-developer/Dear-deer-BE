@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import {
   ReportReason,
   reportReasonValue,
@@ -31,4 +37,12 @@ export class CreateReportDto {
   @IsEnum(reportReasonValue, { message: '유효하지 않은 신고 유형입니다.' })
   @IsNotEmpty()
   reason: ReportReason; // 클라이언트는 위 Enum String 중 하나를 보냄
+
+  @ApiProperty({
+    description: '신고 상세 내용',
+    example: '심한 욕설을 사용했습니다.',
+  })
+  @IsString()
+  @IsNotEmpty()
+  content: string;
 }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -24,7 +25,22 @@ export class ReportService {
       throw new BadRequestException('본인은 신고할 수 없습니다.');
     }
 
-    return this.reportRepository.createReportWithMutualBlock(userId, dto);
+    return this.reportRepository.createReportWithBlock(userId, dto);
+  }
+
+  // [User] 차단하기
+  async blockUser(myId: number, targetId: number) {
+    if (myId === targetId) {
+      throw new BadRequestException('본인을 차단할 수 없습니다.');
+    }
+
+    // 이미 차단했는지 확인
+    const exist = this.reportRepository.findBlockUser(myId, targetId);
+    if (exist) {
+      throw new ForbiddenException('이미 차단된 유저입니다.');
+    }
+
+    return this.reportRepository.blockUser(myId, targetId);
   }
 
   // [Admin] 신고 내역 보기
