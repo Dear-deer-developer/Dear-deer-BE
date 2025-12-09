@@ -41,18 +41,18 @@ export class LetterService {
       throw new BadRequestException('산타클로스에게 편지를 보낼 수 없습니다.');
     }
 
-    // 2. 차단 관계 확인 (보내는 사람 <-> 받는 사람)
-    // ReportsRepository에 이 메서드를 추가해야 합니다 (아래 설명 참조)
+    // 2. 차단 했는지 확인
     const isBlocked = await this.reportRepository.checkBlockStatus(
       senderId,
       sendLetterDto.receiverId,
     );
-
     if (isBlocked) {
       throw new ForbiddenException(
-        '차단 관계에 있는 사용자에게는 편지를 보낼 수 없습니다.',
+        '차단한 사용자에게는 편지를 보낼 수 없습니다.',
       );
     }
+
+    // 상대방이 나를 차단했는지는 체크하지 않습니다 (Ghosting)
 
     return this.letterRepository.sendLetter({
       ...sendLetterDto,

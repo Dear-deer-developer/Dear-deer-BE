@@ -384,9 +384,11 @@ model Report {
   reportedUserId Int          @map("reported_user_id")
   letterId       Int?         @map("letter_id") // 편지 없이 신고할 수 도 있으므로 일단 optional 처리
   reason         ReportReason
+  content        String       @db.Text
   isResolved     Boolean      @default(false) @map("is_resolved") // 관리자 처리 여부
 
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   reporter     User    @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
   reportedUser User    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)

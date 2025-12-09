@@ -38,13 +38,14 @@ type LetterDetail = Prisma.LetterGetPayload<{
 export class LetterRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // [Helper] 차단된 유저 필터링 조건 생성 함수
-  // 내가 차단했거나(blockerId=나), 나를 차단한(blockedId=나) 사람 제외
+  // [Helper] 일방 차단된 유저 필터링 조건 생성 함수
+  // 보낸 사람(sender)가 내가 차단한 사람이면 안 됨
   private getBlockFilter(userId: number) {
     return {
       sender: {
-        blocksReceived: { none: { blockerId: userId } }, // 내가 차단한 사람이 아님
-        blocksSent: { none: { blockedId: userId } }, // 나를 차단한 사람이 아님
+        blocksReceived: {
+          none: { blockerId: userId },
+        },
       },
     };
   }

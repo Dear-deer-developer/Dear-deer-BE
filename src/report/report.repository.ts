@@ -15,9 +15,9 @@ export class ReportRepository {
   }
 
   /**
-   * [User]신고 생성 및 상호 차단 처리 (Transaction)
+   * [User] 신고 생성 + 일방 차단 처리 (본인만 상대를 차단)
    */
-  async createReportWithMutualBlock(
+  async createReportWithBlock(
     reporterId: number,
     dto: CreateReportDto,
   ): Promise<Report> {
@@ -28,26 +28,43 @@ export class ReportRepository {
           reporterId: reporterId,
           reportedUserId: dto.targetUserId,
           letterId: dto.letterId,
-          reason: dto.reason, // Enum 값 저장
+          reason: dto.reason,
+          content: dto.content,
         },
       });
 
-      // 2. 상호 차단 생성 (서로의 글을 안 보이게 함)
-      // createMany + skipDuplicates: true 조합으로 이미 차단된 경우 에러 없이 무시
-      await tx.block.createMany({
-        data: [
-          { blockerId: reporterId, blockedId: dto.targetUserId },
-          { blockerId: dto.targetUserId, blockedId: reporterId },
-        ],
-        skipDuplicates: true,
+      // 2. 일방 차단 생성 (본인만 상대를 차단)
+      await tx.block.create({
+        data: {
+          blockerId: reporterId,
+          blockedId: dto.targetUserId,
+        },
       });
 
       return report;
     });
   }
 
+  // 차단한 유저가 있는지
+  async findBlockUser(blockerId: number, blockedId: number) {
+    const exists = await this.prisma.block.findUnique({
+      where: {
+        blockerId_blockedId: { blockerId, blockedId },
+      },
+    });
+
+    return exists;
+  }
+
+  // [User] 차단하기
+  async blockUser(blockerId: number, blockedId: number) {
+    return this.prisma.block.create({
+      data: { blockerId, blockedId },
+    });
+  }
+
   /**
-   * [Admin] 처리되지 않은 신고 목록 조회
+   * [Admin] 처리되지 않은 신고 내역 조회
    */
   async findAllPendingReports() {
     return this.prisma.report.findMany({
@@ -75,6 +92,36 @@ export class ReportRepository {
   }
 
   /**
+   * [Admin] 처리된 신고 내역 조회
+   */
+  async findAllResolvedReports() {
+    return this.prisma.report.findMany({
+      where: { isResolved: true }, // 처리된 것만
+      select: {
+        id: true,
+        reason: true,
+        createdAt: true,
+        updatedAt: true, // 처리된 시간
+
+        reporter: {
+          select: { id: true, nickname: true },
+        },
+        reportedUser: {
+          select: {
+            id: true,
+            nickname: true,
+            // 밴 정보가 있는지
+            banInfo: {
+              select: { id: true, bannedAt: true, reason: true },
+            },
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' }, // 처리된 최신순
+    });
+  }
+
+  /**
    * [Admin] 신고 단건 상세 조회 (편지 내용 포함)
    */
   async findReportDetail(reportId: number) {
@@ -84,14 +131,13 @@ export class ReportRepository {
       select: {
         id: true,
         reason: true,
+        content: true,
         createdAt: true,
-        // isResolved: true, // 필요하다면 주석 해제 (요청하신 JSON에는 없어서 뺌)
 
         reporter: {
           select: {
             id: true,
             nickname: true,
-            // email: true, // 필요 시 추가
           },
         },
         reportedUser: {
@@ -104,7 +150,7 @@ export class ReportRepository {
           select: {
             id: true,
             content: true,
-            imageUrl: true, // S3 URL 생성을 위해 필수
+            imageUrl: true,
             sentAt: true,
           },
         },
@@ -156,18 +202,21 @@ export class ReportRepository {
   }
 
   /**
-   * 두 사용자 간에 차단 관계가 존재하는지 확인 (양방향 체크)
-   * true 반환 시: 서로 편지 전송/조회 불가
+   * 특정 유저(blocker)가 대상(blocked)을 차단했는지 확인 (단방향)
    */
-  async checkBlockStatus(userId1: number, userId2: number): Promise<boolean> {
-    const count = await this.prisma.block.count({
+  async checkBlockStatus(
+    blockerId: number,
+    blockedId: number,
+  ): Promise<boolean> {
+    const block = await this.prisma.block.findUnique({
       where: {
-        OR: [
-          { blockerId: userId1, blockedId: userId2 }, // 1이 2를 차단
-          { blockerId: userId2, blockedId: userId1 }, // 2가 1을 차단
-        ],
+        blockerId_blockedId: {
+          blockerId: blockerId,
+          blockedId: blockedId,
+        },
       },
     });
-    return count > 0;
+
+    return !!block; // 존재하면 true, 없으면 false
   }
 }
