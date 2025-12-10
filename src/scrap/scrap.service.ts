@@ -7,12 +7,14 @@ import { ScrapRepository } from './scrap.repository';
 import { Prisma } from '@prisma/client';
 import { ContentRepository } from 'src/contents/content.repository';
 import { MyScrapDto } from './dtos/my-scrap.dto';
+import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
 export class ScrapService {
   constructor(
     private readonly scrapRepository: ScrapRepository,
     private readonly contentRepository: ContentRepository,
+    private readonly s3Service: S3Service,
   ) {}
 
   /** 스크랩 생성 */
@@ -52,14 +54,30 @@ export class ScrapService {
   async findMyScraps(userId: number): Promise<MyScrapDto[]> {
     const scraps = await this.scrapRepository.findManyByUserId(userId);
 
-    // DTO로 변환하여 반환
-    return scraps.map((scrap) => ({
-      scrapId: scrap.id,
-      contentId: scrap.content.id,
-      title: scrap.content.title,
-      thumbnail: scrap.content.images[0]?.url || null,
-      subCategory: scrap.content.subCategory,
-      scrappedAt: scrap.createdAt,
-    }));
+    return Promise.all(
+      scraps.map(async (scrap) => {
+        const imageKey = scrap.content.images[0]?.url || null;
+        let thumbnailUrl: string | null = null;
+
+        if (imageKey) {
+          try {
+            thumbnailUrl =
+              await this.s3Service.generateGetObjectPresignedUrl(imageKey);
+          } catch (e) {
+            console.error(`S3 Error (Scrap ID: ${scrap.id}):`, e);
+            thumbnailUrl = null;
+          }
+        }
+
+        return {
+          scrapId: scrap.id,
+          contentId: scrap.content.id,
+          title: scrap.content.title,
+          thumbnail: thumbnailUrl,
+          subCategory: scrap.content.subCategory,
+          scrappedAt: scrap.createdAt,
+        };
+      }),
+    );
   }
 }
