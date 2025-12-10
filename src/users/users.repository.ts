@@ -69,23 +69,15 @@ export class UsersRepository {
   async findUserByZipCode(
     zipCode: number,
     myId: number,
-  ): Promise<FoundUserDto> {
+  ): Promise<FoundUserDto | null> {
     return this.prisma.user.findFirst({
       where: {
         zipCode: zipCode, // 1. 우편번호 일치
-        NOT: {
-          id: myId, // 2. 본인 ID 제외
+        id: { not: myId }, // 2. 본인 제외
+        // 3. 내가 차단한 사람 제외
+        blocksReceived: {
+          none: { blockerId: myId },
         },
-        AND: [
-          {
-            // 내가 차단한 사람이 아닐 것 (수신한 차단 목록에 내가 없어야 함)
-            blocksReceived: { none: { blockerId: myId } },
-          },
-          {
-            // 나를 차단한 사람이 아닐 것 (발신한 차단 목록에 내가 없어야 함)
-            blocksSent: { none: { blockedId: myId } },
-          },
-        ],
       },
       select: {
         id: true,
