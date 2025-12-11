@@ -19,7 +19,10 @@ async function bootstrap() {
     .setTitle('Deardeer API')
     .setDescription('Deardeer 편지 서비스 백엔드 Swagger 문서')
     .setVersion('1.0')
-    .addBearerAuth() // JWT 인증 사용할 경우
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'accessToken', // 이 이름이 @ApiBearerAuth('accessToken')과 일치해야 합니다.
+    )
     .build();
 
   // 문서 생성

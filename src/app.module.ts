@@ -20,6 +20,7 @@ import { ImagePresignModule } from './image/image-presign.module';
 import { MusicModule } from './music/music.module';
 import { CalendarRewardModule } from './calendar-reward/calendar-reward.module';
 import { ReportModule } from './report/report.module';
+import { ScrapModule } from './scrap/scrap.module';
 
 @Module({
   imports: [
@@ -41,6 +42,8 @@ import { ReportModule } from './report/report.module';
     MusicModule,
     CalendarRewardModule,
     ReportModule,
+    ContentModule,
+    ScrapModule,
   ],
   controllers: [AppController],
   providers: [AppService],

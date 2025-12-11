@@ -8,15 +8,13 @@ import {
   ArrayMinSize,
   ArrayMaxSize,
   ValidateNested,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ContentImageUploadDto } from './content-image-upload.dto';
+import { ContentStatus } from '@prisma/client';
 
 export class CreateContentDto {
-  @ApiProperty({ example: 1, description: '콘텐츠를 등록하는 관리자의 ID' })
-  @IsInt()
-  authorId: number;
-
   @ApiProperty({
     example: 1,
     description: '콘텐츠가 속할 서브 카테고리 ID',
@@ -24,7 +22,10 @@ export class CreateContentDto {
   @IsInt()
   subCategoryId: number;
 
-  @ApiProperty({ example: '새로운 콘텐츠 제목', description: '콘텐츠 제목' })
+  @ApiProperty({
+    example: '새로운 콘텐츠 제목',
+    description: '콘텐츠 제목(1~100자)',
+  })
   @IsString()
   @IsNotEmpty()
   @Length(1, 100)
@@ -32,7 +33,7 @@ export class CreateContentDto {
 
   @ApiProperty({
     example: '여기에 콘텐츠 본문 내용을 작성합니다.',
-    description: '콘텐츠 본문',
+    description: '콘텐츠 본문 내용',
   })
   @IsString()
   @IsNotEmpty()
@@ -40,14 +41,27 @@ export class CreateContentDto {
 
   @ApiProperty({
     type: [ContentImageUploadDto],
-    description: '업로드할 이미지 파일 정보 (1장 이상, 10장 이하)',
+    description:
+      '업로드할 이미지 파일 정보 (파일명과 MIME 타입 필요, 최소 1장 ~ 최대 10장)',
+    example: [
+      { originalFileName: '산타캐릭터.jpg', contentType: 'image/jpeg' },
+      { originalFileName: '눈오는풍경.png', contentType: 'image/png' },
+    ],
   })
   @IsArray()
-  @ArrayMinSize(1, { message: '이미지는 최소 1장 이상 업로드해야 합니다.' })
+  @ArrayMinSize(0)
   @ArrayMaxSize(10, {
     message: '이미지는 최대 10장까지만 업로드 가능합니다.',
   })
   @ValidateNested({ each: true })
   @Type(() => ContentImageUploadDto)
   images: ContentImageUploadDto[];
+
+  @ApiProperty({
+    enum: ContentStatus,
+    example: 'WRITING',
+    description: '콘텐츠 상태 (WRTING: 임시저장, PUBLISHED: 발행)',
+  })
+  @IsIn([ContentStatus.WRITING, ContentStatus.PUBLISHED])
+  status: ContentStatus;
 }

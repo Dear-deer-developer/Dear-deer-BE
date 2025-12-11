@@ -5,11 +5,11 @@ import {
   Get,
   HttpCode,
   Query,
-  Req,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { S3Service } from './s3.service';
-import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
+//import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
 import { ApiS3 } from './s3.swagger';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -88,6 +88,28 @@ export class S3Controller {
     );
 
     return result;
+  }
+
+  /**(테스트용)콘텐츠 이미지 업로드용 presigned URL 발급*/
+  @Post('content-images')
+  @ApiExcludeEndpoint()
+  async testGeneratePresingedUrls(
+    @Body()
+    body: {
+      userId: number;
+      contentId: number;
+      files: { originalFileName: string; contentType: string }[];
+    },
+  ) {
+    const { userId, contentId, files } = body;
+    if (!files || files.length === 0) {
+      throw new Error('files 배열이 필요합니다.');
+    }
+    return this.s3Service.generateContentImagePresignedUrls(
+      body.userId,
+      body.files,
+      body.contentId,
+    );
   }
 
   /** 이미지 조회용 Presigned URL 발급 */

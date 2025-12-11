@@ -1,22 +1,22 @@
 import {
   Controller,
   Get,
-  Post,
-  Put,
-  Delete,
   Param,
   ParseIntPipe,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ContentService } from './content.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiContent } from './content.swagger';
 import { ContentsQueryDto } from './dtos/contents-query.dto';
-import { FirebaseAuthGuard } from 'src/auth/firebase-auth.guard';
-import { AdminGuard } from 'src/admin/admin.guard';
+import { ContentListItemDto } from './dtos/content-list-item.dto';
+import { ContentDetailDto } from './dtos/content-detail.dto';
+import { GetUserId } from 'src/auth/decorators/get-user-id.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('contents')
+@UseGuards(AuthGuard('accessToken'))
 @Controller('contents')
 export class ContentController {
   constructor(private readonly contentService: ContentService) {}
@@ -24,14 +24,19 @@ export class ContentController {
   /** 콘텐츠 리스트 조회 (카테고리별 필터링) */
   @Get()
   @ApiContent.findAll()
-  async findAll(@Query() query: ContentsQueryDto) {
+  async findAll(
+    @Query() query: ContentsQueryDto,
+  ): Promise<ContentListItemDto[]> {
     return this.contentService.findAllPublishedContents(query);
   }
 
   /** 특정 콘텐츠 상세 조회 */
   @Get(':contentId')
   @ApiContent.findOne()
-  async findOne(@Param('contentId', ParseIntPipe) contentId: number) {
-    return this.contentService.findOnePublishedContent(contentId);
+  async findOne(
+    @Param('contentId', ParseIntPipe) contentId: number,
+    @GetUserId('userId') userId: number,
+  ): Promise<ContentDetailDto> {
+    return this.contentService.findOnePublishedContent(contentId, userId);
   }
 }

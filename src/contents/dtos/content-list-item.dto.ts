@@ -1,0 +1,27 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { SubCategoryDto } from './content-category.dto';
+
+export class ContentListItemDto {
+  @ApiProperty({ example: 1, description: '콘텐츠 ID' })
+  id: number;
+
+  @ApiProperty({ example: '첫 번째 콘텐츠 제목', description: '콘텐츠 제목' })
+  title: string;
+
+  @ApiProperty({
+    example: 'https://s3-bucket.amazonaws.com/contents/1/10/uuid1.jpg',
+    description:
+      '콘텐츠 썸네일 이미지 Presigned URL (첫 번째 이미지, 5분간 유효)',
+    nullable: true,
+  })
+  thumbnail: string | null;
+
+  @ApiProperty({ description: '작성자(관리자) 정보_닉네임' })
+  author: string;
+
+  @ApiProperty({ description: '서브 카테고리 정보' })
+  subCategory: SubCategoryDto;
+
+  @ApiProperty({ description: '콘텐츠 생성 일시' })
+  createdAt: Date;
+}
