@@ -63,7 +63,10 @@ export class LetterService {
   }
 
   /** 임시 저장, status: writing */
-  async saveWriting(senderId: number, saveWritingDto: SaveWritingDto) {
+  async saveWriting(
+    senderId: number,
+    saveWritingDto: SaveWritingDto,
+  ): Promise<ResDraftLetterDto> {
     return this.letterRepository.upsertWriting(senderId, saveWritingDto);
   }
 
