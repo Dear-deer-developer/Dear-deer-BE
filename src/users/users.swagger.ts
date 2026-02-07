@@ -20,9 +20,12 @@ export function SwaggerGetUser() {
       schema: {
         example: {
           id: 1,
+          email: 'user@example.com',
           nickname: '디어디어',
           zipCode: 0,
+          loginType: 'GOOGLE',
           providerId: '4000000000',
+          isAdmin: false,
           createdAt: '2025-08-27T04:31:11.043Z',
           updatedAt: '2025-08-27T04:31:11.043Z',
         },
